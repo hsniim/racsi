@@ -1,5 +1,5 @@
 CREATE DATABASE db_racsi;
-USE room_info;
+USE db_racsi;
 
 CREATE TABLE rooms (
   id INT AUTO_INCREMENT PRIMARY KEY,
