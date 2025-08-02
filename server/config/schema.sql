@@ -1,4 +1,4 @@
-CREATE DATABASE room_info;
+CREATE DATABASE db_racsi;
 USE room_info;
 
 CREATE TABLE rooms (
