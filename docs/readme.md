@@ -20,5 +20,5 @@ Racsi : Room and Control Schedule Interface
 
 ## Database
 1. Install MySQL.
-2. Buat database `room_info`.
-3. Jalankan skema di `/server/config/schema.sql`.
+2. Buat database `db_racsi`.
+3. Jalankan skema database di `/server/config/schema.sql`.
