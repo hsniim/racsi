@@ -1,13 +1,14 @@
-CREATE DATABASE db_racsi;
-USE db_racsi;
+CREATE DATABASE IF NOT EXISTS racsites;
 
-CREATE TABLE rooms (
+USE racsites;
+
+CREATE TABLE IF NOT EXISTS rooms (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(50) NOT NULL,
   status ENUM('kosong', 'terpakai') DEFAULT 'kosong'
 );
 
-CREATE TABLE schedules (
+CREATE TABLE IF NOT EXISTS schedules (
   id INT AUTO_INCREMENT PRIMARY KEY,
   room_id INT,
   event VARCHAR(100),
