@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS tes;
-USE tes;
+CREATE DATABASE IF NOT EXISTS db_racsi;
+USE db_racsi;
 
 -- Tabel gedung
 CREATE TABLE gedung (
