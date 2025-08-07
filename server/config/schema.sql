@@ -22,7 +22,7 @@ CREATE TABLE ruangan (
     id_lantai INT UNSIGNED NOT NULL,
     nama_ruangan VARCHAR(20) NOT NULL,
     kapasitas VARCHAR(20) NOT NULL,
-    status VARCHAR(20) NOT NULL,
+    status ENUM('kosong', 'terpakai') DEFAULT 'kosong',
     FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
