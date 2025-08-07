@@ -42,6 +42,7 @@ CREATE TABLE kegiatan (
 CREATE TABLE jadwal (
     id_jadwal INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_kegiatan INT UNSIGNED NOT NULL,
+    id_ruangan INT UNSIGNED NOT NULL,
     jam_mulai TIME NOT NULL,
     jam_selesai TIME NOT NULL,
     FOREIGN KEY (id_kegiatan) REFERENCES kegiatan(id_kegiatan)
