@@ -29,6 +29,9 @@ app.use('/api', jadwalRoutes);
 // Routes Kegiatan
 const kegiatanRoutes = require('./routes/kegiatanRoutes');
 app.use('/api', kegiatanRoutes);
+// Routes lantai
+const lantaiRoutes = require('./routes/lantaiRoutes');
+app.use('/api', lantaiRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {
