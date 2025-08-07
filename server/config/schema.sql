@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS db_racsi;
-USE db_racsi;
+CREATE DATABASE IF NOT EXISTS tes;
+USE tes;
 
 -- Tabel gedung
 CREATE TABLE gedung (
@@ -46,5 +46,7 @@ CREATE TABLE jadwal (
     waktu_mulai TIME NOT NULL,
     waktu_selesai TIME NOT NULL,
     FOREIGN KEY (id_kegiatan) REFERENCES kegiatan(id_kegiatan)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
