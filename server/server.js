@@ -17,8 +17,18 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+// Routes Ruangan
 const roomRoutes = require('./routes/roomRoutes');
 app.use('/api', roomRoutes);
+// Routes Gedung
+const gedungRoutes = require('./routes/gedungRoutes');
+app.use('/api', gedungRoutes);
+// Routes Jadwal
+const jadwalRoutes = require('./routes/jadwalRoutes');
+app.use('/api', jadwalRoutes);
+// Routes Kegiatan
+const kegiatanRoutes = require('./routes/kegiatanRoutes');
+app.use('/api', kegiatanRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {

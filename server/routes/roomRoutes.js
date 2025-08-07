@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { getAllRooms } = require('../controllers/roomControllers');
+const {  getAllRuangan } = require('../controllers/roomControllers');
 
-router.get('/rooms', getAllRooms);
+router.get('/ruangan', getAllRuangan);
 
 module.exports = router;

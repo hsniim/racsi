@@ -1,12 +1,12 @@
 const pool = require('../config/db');
 
-const getAllRooms = async (req, res) => {
+const getAllRuangan = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM rooms');
+    const [rows] = await pool.query('SELECT * FROM ruangan');
     res.json(rows);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching rooms', error });
+    res.status(500).json({ message: 'Error fetching ruangan', error });
   }
 };
 
-module.exports = { getAllRooms };
+module.exports = {getAllRuangan};
