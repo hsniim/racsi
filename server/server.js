@@ -18,8 +18,8 @@ app.use(express.json());
 
 // Routes
 // Routes Ruangan
-const roomRoutes = require('./routes/roomRoutes');
-app.use('/api', roomRoutes);
+const ruanganRoutes = require('./routes/ruanganRoutes');
+app.use('/api', ruanganRoutes);
 // Routes Gedung
 const gedungRoutes = require('./routes/gedungRoutes');
 app.use('/api', gedungRoutes);
