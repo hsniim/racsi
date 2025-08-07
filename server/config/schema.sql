@@ -32,7 +32,7 @@ CREATE TABLE kegiatan (
     id_ruangan INT UNSIGNED NOT NULL,
     nama_kegiatan VARCHAR(50) NOT NULL,
     deskripsi_kegiatan TEXT,
-    penanggung_jawab VARCHAR(20),
+    penanggung_jawab VARCHAR(20) NOT NULL,
     FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
