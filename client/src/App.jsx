@@ -1,23 +1,28 @@
 import { useEffect, useState } from 'react';
-import { fetchRooms } from './utils/api';
-import RoomList from './components/RoomList';
+import { fetchRuangan, fetchJadwal } from './utils/api';
+import Home from './pages/Home';
 import './index.css';
 
 function App() {
-  const [rooms, setRooms] = useState([]);
+  const [ruangan, setRuangan] = useState([]);
+  const [jadwal, setJadwal] = useState([]);
 
   useEffect(() => {
-    const loadRooms = async () => {
-      const data = await fetchRooms();
-      setRooms(data);
+    const loadData = async () => {
+      const ruanganData = await fetchRuangan();
+      const jadwalData = await fetchJadwal();
+      setRuangan(ruanganData);
+      setJadwal(jadwalData);
     };
-    loadRooms();
+    loadData();
+    const interval = setInterval(loadData, 60000); // Perbarui setiap 1 menit
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-4xl font-bold text-center text-black mb-6">Racsi</h1>
-      <RoomList rooms={rooms} />
+    <div className="min-h-screen bg-primary p-4">
+      <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
+      <Home ruangan={ruangan} jadwal={jadwal} />
     </div>
   );
 }
