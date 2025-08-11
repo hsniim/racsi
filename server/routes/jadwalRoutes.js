@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {  getAllJadwal } = require('../controllers/jadwalController');
+const { addJadwal } = require('../controllers/jadwalController');
+const { authenticate } = require('../middleware/auth');
 
-router.get('/jadwal', getAllJadwal);
+router.post('/jadwal', authenticate, addJadwal);
 
 module.exports = router;

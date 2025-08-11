@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {  getAllRuangan } = require('../controllers/ruanganController');
+const { addRuangan } = require('../controllers/ruanganController');
+const { authenticate } = require('../middleware/auth');
 
-router.get('/ruangan', getAllRuangan);
+router.post('/ruangan', authenticate, addRuangan);
 
 module.exports = router;

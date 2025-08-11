@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {  getAllKegiatan } = require('../controllers/kegiatanController');
+const { addKegiatan } = require('../controllers/kegiatanController');
+const { authenticate } = require('../middleware/auth');
 
-router.get('/kegiatan', getAllKegiatan);
+router.post('/kegiatan', authenticate, addKegiatan);
 
 module.exports = router;

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const {  getAllGedung } = require('../controllers/gedungController');
+const { addGedung } = require('../controllers/gedungController');
+const { authenticate } = require('../middleware/auth'); // Impor middleware
 
-router.get('/gedung', getAllGedung);
+// Terapkan middleware sebelum handler
+router.post('/gedung', authenticate, addGedung);
 
 module.exports = router;

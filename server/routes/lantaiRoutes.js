@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const {  getAllLantai } = require('../controllers/lantaiController');
+const { addLantai } = require('../controllers/lantaiController');
+const { authenticate } = require('../middleware/auth');
 
-router.get('/lantai', getAllLantai);
+router.post('/lantai', authenticate, addLantai);
 
 module.exports = router;
