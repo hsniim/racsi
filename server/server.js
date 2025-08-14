@@ -32,7 +32,8 @@ app.use('/api', kegiatanRoutes);
 // Routes lantai
 const lantaiRoutes = require('./routes/lantaiRoutes');
 app.use('/api', lantaiRoutes);
-
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/api', adminRoutes);
 // Socket.IO
 io.on('connection', (socket) => {
   console.log('Client connected');

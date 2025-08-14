@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { fetchRuangan, fetchJadwal } from './utils/api';
+
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+
 import './index.css';
 
 function App() {
@@ -20,10 +25,26 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-primary p-4">
-      <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
-      <Home ruangan={ruangan} jadwal={jadwal} />
-    </div>
+    <Router>
+      <Routes>
+        {/* Halaman Utama */}
+        <Route
+          path="/"
+          element={
+            <div className="min-h-screen bg-primary p-4">
+              <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
+              <Home ruangan={ruangan} jadwal={jadwal} />
+            </div>
+          }
+        />
+
+        {/* Halaman Login Admin */}
+        <Route path="/admin" element={<Login />} />
+
+        {/* Halaman Dashboard Admin */}
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+      </Routes>
+    </Router>
   );
 }
 

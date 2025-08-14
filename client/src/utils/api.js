@@ -17,3 +17,16 @@ export const fetchJadwal = async () => {
     return [];
   }
 };
+
+// src/utils/api.js
+import axios from "axios";
+
+export const fetchGedung = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/gedung");
+    return res.data; // mengembalikan array gedung
+  } catch (error) {
+    console.error("Gagal mengambil data gedung:", error);
+    return [];
+  }
+};
