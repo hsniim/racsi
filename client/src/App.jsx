@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { fetchRuangan, fetchJadwal } from './utils/api';
+import Home from './pages/Home';
+import './index.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [ruangan, setRuangan] = useState([]);
+  const [jadwal, setJadwal] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const ruanganData = await fetchRuangan();
+      const jadwalData = await fetchJadwal();
+      setRuangan(ruanganData);
+      setJadwal(jadwalData);
+    };
+    loadData();
+    const interval = setInterval(loadData, 60000); // Perbarui setiap 1 menit
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-primary p-4">
+      <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
+      <Home ruangan={ruangan} jadwal={jadwal} />
+    </div>
+  );
 }
 
-export default App
+export default App;
