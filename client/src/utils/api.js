@@ -25,3 +25,13 @@ export const fetchGedung = async () => {
     return [];
   }
 };
+
+export const fetchRuangan = async () => {
+  // Implementasi sesuai kebutuhan Anda
+  return [];
+};
+
+export const fetchJadwal = async () => {
+  // Implementasi sesuai kebutuhan Anda
+  return [];
+};

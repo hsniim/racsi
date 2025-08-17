@@ -24,9 +24,12 @@ Racsi : Room and Control Schedule Interface
 3. Jalankan skema database di `/server/config/schema.sql`.
 
 ## Autentikasi
-1. buat data di table admin 
-2. node hashPassword.js
-3. curl -X POST http://localhost:5000/api/admin/login -H "Content-Type: application/json" -d '{"username":"racmin","password":"minrac21"}'; 
+1. pastikan sudah ada tabel admin di database
+2. npm install jsonwebtoken bcryptjs
+3. node hashPassword.js
+4. login mysql 
+5. INSERT INTO admin (username, password) VALUES ('racmin', 'paste_hash_di_sini');
+6. curl -X POST http://localhost:5000/api/admin/login -H "Content-Type: application/json" -d '{"username":"racmin","password":"minrac21"}'
 
 curl -X POST http://localhost:5000/api/gedung -H "Content-Type: application/json" -H "Authorization: Bearer <token>" -d '{"nama_gedung":"Gedung A","lokasi_gedung":"jakarta","pj_gedung":"Admin A"}'
 

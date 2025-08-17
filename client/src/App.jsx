@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { fetchRuangan, fetchJadwal } from './utils/api';
+import { fetchRuangan, fetchJadwal, fetchDataTV } from './utils/api'; // Tambahkan baris ini
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -24,7 +24,7 @@ function App() {
   return (
     <div className="min-h-screen bg-primary p-4">
       <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
-      <Home ruangan={ruangan} jadwal={jadwal} />
+      <Home data={data} />
     </div>
   );
 }

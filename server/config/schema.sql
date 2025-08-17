@@ -169,7 +169,9 @@ BEGIN
     -- Hapus semua kegiatan yang jadwalnya sudah lewat hari ini
     DELETE FROM kegiatan
     WHERE id_kegiatan IN (
-        SELECT id_kegiatan FROM jadwal WHERE tanggal < CURDATE()
+        SELECT id_kegiatan FROM jadwal
+        WHERE (tanggal < CURDATE())
+           OR (tanggal = CURDATE() AND waktu_selesai < CURTIME())
     );
 
     -- Update status ruangan yang tidak ada kegiatan aktif menjadi "tidak_digunakan"
@@ -184,6 +186,7 @@ DELIMITER ;
 
 SET GLOBAL event_scheduler = ON;
 
-CREATE EVENT IF NOT EXISTS daily_cleanup
-ON SCHEDULE EVERY 1 DAY STARTS '2025-08-11 00:00:00'
+CREATE EVENT IF NOT EXISTS cleanup_every_5min
+ON SCHEDULE EVERY 5 MINUTE
+STARTS '2025-08-16 00:00:00'
 DO CALL cleanup_expired_schedules();
