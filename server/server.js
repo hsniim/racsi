@@ -33,7 +33,8 @@ app.use('/api', jadwalRoutes);
 // Routes TV
 const tvRoutes = require('./routes/tvRoutes');
 app.use('/api', tvRoutes);
-
+const adminRoutes = require('./routes/adminRoutes');
+app.use('/api', adminRoutes);
 // Socket.IO
 io.on('connection', (socket) => {
   console.log('Client connected');

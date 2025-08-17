@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
-import { fetchDataTV } from './utils/api';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { fetchRuangan, fetchJadwal } from './utils/api';
+
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+
 import './index.css';
 
 function App() {
@@ -17,9 +22,9 @@ function App() {
   }, []);
 
   return (
-    <div className="h-15 bg-headercolor p-4">
-      <h1 className="text-4xl font-bold text-center text-white mb-6">RACSI</h1>
-      <Home data={data} />
+    <div className="min-h-screen bg-primary p-4">
+      <h1 className="text-4xl font-bold text-center text-white mb-6">Racsi</h1>
+      <Home ruangan={ruangan} jadwal={jadwal} />
     </div>
   );
 }
