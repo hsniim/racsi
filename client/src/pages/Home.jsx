@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchRuangan } from '../utils/api';  // Ganti
+import { fetchRuangan } from '../utils/api';
 import RoomCard from '../components/RoomCard';
 
 function Home() {
@@ -9,7 +9,7 @@ function Home() {
 
   useEffect(() => {
     const loadData = async () => {
-      const ruangan = await fetchRuangan();  // Ganti
+      const ruangan = await fetchRuangan();
       console.log('Data Ruangan:', JSON.stringify(ruangan, null, 2));
       setData(ruangan);
     };
@@ -17,7 +17,6 @@ function Home() {
     const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
   }, []);
-
 
   // Update waktu realtime setiap detik
   useEffect(() => {
@@ -52,61 +51,70 @@ function Home() {
   const usedRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'sedang_digunakan');
   const upcomingRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'akan_digunakan');
 
-return (
-  <div className="min-h-screen bg-gray-900 text-white flex justify-center">
-    <div className="w-full max-w-5xl p-6">
-      <h1 className="text-6xl font-bold text-center mb-8">RACSI - Lantai</h1>
+  return (
+    <div className="min-h-screen w-full bg-gray-900 text-white">
+      <div className="w-full max-w-none px-4 py-6">
+        <h1 className="text-6xl font-bold text-center mb-8">RACSI - Lantai</h1>
 
-      {/* Waktu realtime */}
-      <div className="text-center mb-6">
-        <p className="text-2xl">Tanggal: {currentDate}</p>
-        <p className="text-2xl">Jam: {currentTime}</p>
-      </div>
+        {/* Waktu realtime */}
+        <div className="text-center mb-6">
+          <p className="text-2xl">Tanggal: {currentDate}</p>
+          <p className="text-2xl">Jam: {currentTime}</p>
+        </div>
 
-      {/* Section: Tidak Digunakan */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md inline-block text-green-400 mb-4">
-          Tidak Digunakan
-        </h2>
-        {unusedRuangan.length > 0 ? (
-          unusedRuangan.map((d) => (
-            <RoomCard key={d.id_ruangan} room={d} type="tidak_digunakan" />
-          ))
-        ) : (
-          <p className="text-gray-400">Tidak ada ruangan.</p>
-        )}
-      </div>
+        {/* Container Flex untuk 3 kolom sejajar dengan proporsi berbeda */}
+        <div className="flex gap-6 w-full">
+          {/* Section: Tidak Digunakan */}
+          <div className="flex-[1] min-w-0">
+            <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md text-green-400 mb-4 text-center">
+              Tidak Digunakan
+            </h2>
+            <div className="w-full">
+              {unusedRuangan.length > 0 ? (
+                unusedRuangan.map((d) => (
+                  <RoomCard key={d.id_ruangan} room={d} type="tidak_digunakan" />
+                ))
+              ) : (
+                <p className="text-gray-400 text-center">Tidak ada ruangan.</p>
+              )}
+            </div>
+          </div>
 
-      {/* Section: Sedang Digunakan */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md inline-block text-red-400 mb-4">
-          Sedang Digunakan
-        </h2>
-        {usedRuangan.length > 0 ? (
-          usedRuangan.map((d) => (
-            <RoomCard key={d.id_ruangan} room={d} type="sedang_digunakan" />
-          ))
-        ) : (
-          <p className="text-gray-400">Tidak ada ruangan.</p>
-        )}
-      </div>
+          {/* Section: Sedang Digunakan - Lebih lebar */}
+          <div className="flex-[2] min-w-0">
+            <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md text-red-400 mb-4 text-center">
+              Sedang Digunakan
+            </h2>
+            <div className="w-full">
+              {usedRuangan.length > 0 ? (
+                usedRuangan.map((d) => (
+                  <RoomCard key={d.id_ruangan} room={d} type="sedang_digunakan" />
+                ))
+              ) : (
+                <p className="text-gray-400 text-center">Tidak ada ruangan.</p>
+              )}
+            </div>
+          </div>
 
-      {/* Section: Akan Digunakan */}
-      <div>
-        <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md inline-block text-yellow-400 mb-4">
-          Akan Digunakan
-        </h2>
-        {upcomingRuangan.length > 0 ? (
-          upcomingRuangan.map((d) => (
-            <RoomCard key={d.id_ruangan} room={d} type="akan_digunakan" />
-          ))
-        ) : (
-          <p className="text-gray-400">Tidak ada ruangan.</p>
-        )}
+          {/* Section: Akan Digunakan */}
+          <div className="flex-[1] min-w-0">
+            <h2 className="text-xl font-bold px-4 py-2 bg-gray-800 rounded-md text-yellow-400 mb-4 text-center">
+              Akan Digunakan
+            </h2>
+            <div className="w-full">
+              {upcomingRuangan.length > 0 ? (
+                upcomingRuangan.map((d) => (
+                  <RoomCard key={d.id_ruangan} room={d} type="akan_digunakan" />
+                ))
+              ) : (
+                <p className="text-gray-400 text-center">Tidak ada ruangan.</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default Home;

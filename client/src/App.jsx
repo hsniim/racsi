@@ -12,7 +12,7 @@ import Kegiatan from "./pages/Kegiatan";
 import Jadwal from "./pages/Jadwal";
 import Riwayat from "./pages/Riwayat";
 
-import AdminLayout from "./layouts/AdminLayout"; // ⬅️ Import Layout
+import AdminLayout from "./layouts/AdminLayout";
 
 import "./index.css";
 
@@ -35,19 +35,20 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Halaman Utama */}
-<Route
-  path="/"
-  element={
-    <div className="min-h-screen bg-primary p-4">
-      <h1 className="text-4xl font-bold text-center text-white mb-6">
-        Racsi
-      </h1>
-      <Home ruangan={ruangan} jadwal={jadwal} />
-    </div>
-  }
-/>
-
+        {/* Halaman Utama - Full Width */}
+        <Route
+          path="/"
+          element={
+            <div className="min-h-screen w-full bg-gray-900">
+              <div className="w-full px-4 py-6">
+                <h1 className="text-4xl font-bold text-center text-white mb-6">
+                  Racsi
+                </h1>
+                <Home ruangan={ruangan} jadwal={jadwal} />
+              </div>
+            </div>
+          }
+        />
 
         {/* Halaman Login Admin */}
         <Route path="/admin" element={<Login />} />
