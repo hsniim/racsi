@@ -11,7 +11,7 @@ const loginAdmin = async (req, res) => {
     const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'Password salah' });
-    const token = jwt.sign({ id: user.id_admin }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id_admin }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token });
   } catch (error) {
     res.status(500).json({ message: 'Error login', error });

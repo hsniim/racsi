@@ -12,7 +12,7 @@ export default function Sidebar() {
         </span>
       </div>
       <nav className="flex flex-col space-y-6 w-full">
-        <Link to="/admin" className="flex items-center space-x-3 font-semibold">
+        <Link to="/admin/dashboard" className="flex items-center space-x-3 font-semibold">
           <i className="fas fa-th-large"></i>
           <span className="hidden md:inline">Dashboard</span>
         </Link>
