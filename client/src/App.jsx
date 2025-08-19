@@ -36,17 +36,18 @@ function App() {
     <Router>
       <Routes>
         {/* Halaman Utama */}
-        <Route
-          path="/"
-          element={
-            <div className="min-h-screen bg-primary p-4">
-              <h1 className="text-4xl font-bold text-center text-white mb-6">
-                Racsi
-              </h1>
-              <Home ruangan={ruangan} jadwal={jadwal} />
-            </div>
-          }
-        />
+<Route
+  path="/"
+  element={
+    <div className="min-h-screen bg-primary p-4">
+      <h1 className="text-4xl font-bold text-center text-white mb-6">
+        Racsi
+      </h1>
+      <Home ruangan={ruangan} jadwal={jadwal} />
+    </div>
+  }
+/>
+
 
         {/* Halaman Login Admin */}
         <Route path="/admin" element={<Login />} />

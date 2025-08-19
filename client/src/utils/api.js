@@ -27,8 +27,13 @@ export const fetchGedung = async () => {
 };
 
 export const fetchRuangan = async () => {
-  // Implementasi sesuai kebutuhan Anda
-  return [];
+  try {
+    const res = await axios.get("http://localhost:5000/api/ruangan/with-jadwal");
+    return res.data;
+  } catch (error) {
+    console.error("Gagal mengambil data ruangan:", error);
+    return [];
+  }
 };
 
 export const fetchJadwal = async () => {
