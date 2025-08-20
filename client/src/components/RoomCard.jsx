@@ -111,7 +111,7 @@ function RoomCard({ room, type }) {
               <h4 className="text-3xl font-semibold">
                 {jadwal.nama_kegiatan || "Nama Kegiatan Tidak Ada"}
               </h4>
-              <p className="text-gray-300 text-sm mt-2">
+              <p className="text-gray-300 text-md mt-2">
                 {jadwal.deskripsi_kegiatan || "Deskripsi tidak tersedia"}
               </p>
             </div>
