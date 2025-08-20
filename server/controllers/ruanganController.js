@@ -17,23 +17,28 @@ const addRuangan = async (req, res) => {
   }
 };
 
+// controllers/ruanganController.js
+
 const getRuanganWithJadwal = async (req, res) => {
   try {
-const [rows] = await pool.query(`
+      const [rows] = await pool.query(`
   SELECT r.id_ruangan, r.nama_ruangan, r.kapasitas, r.status,
          j.id_jadwal,
-         DATE_FORMAT(j.tanggal, '%Y-%m-%d') AS tanggal,   -- ✅ fix format
-         j.waktu_mulai, j.waktu_selesai,
-         k.id_kegiatan, k.nama_kegiatan, k.pengguna
+         DATE_FORMAT(j.tanggal, '%Y-%m-%d') AS tanggal,
+         TIME_FORMAT(j.waktu_mulai, '%H:%i') AS waktu_mulai,
+         TIME_FORMAT(j.waktu_selesai, '%H:%i') AS waktu_selesai,
+         k.id_kegiatan, k.nama_kegiatan, k.pengguna, k.deskripsi_kegiatan
   FROM ruangan r
-  LEFT JOIN kegiatan k ON r.id_ruangan = k.id_ruangan
-  LEFT JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
-    AND j.tanggal = CURDATE()
-  ORDER BY r.id_ruangan, j.waktu_mulai;
-`);
+  LEFT JOIN kegiatan k 
+    ON r.id_ruangan = k.id_ruangan
+  LEFT JOIN jadwal j 
+    ON k.id_kegiatan = j.id_kegiatan
+   AND j.tanggal = CURDATE()
+  ORDER BY r.id_ruangan, j.waktu_mulai;`
+);
 
-    // Gabungkan data jadwal per ruangan
     const ruanganMap = {};
+
     rows.forEach(row => {
       if (!ruanganMap[row.id_ruangan]) {
         ruanganMap[row.id_ruangan] = {
@@ -53,7 +58,8 @@ const [rows] = await pool.query(`
           waktu_selesai: row.waktu_selesai,
           id_kegiatan: row.id_kegiatan,
           nama_kegiatan: row.nama_kegiatan,
-          pengguna: row.pengguna
+          pengguna: row.pengguna,
+          deskripsi_kegiatan: row.deskripsi_kegiatan   // ✅ tambahkan ini
         });
       }
     });
@@ -61,7 +67,7 @@ const [rows] = await pool.query(`
     res.json(Object.values(ruanganMap));
   } catch (error) {
     console.error("Error fetching ruangan with jadwal:", error);
-    res.status(500).json({ message: "Gagal mengambil data", error });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
