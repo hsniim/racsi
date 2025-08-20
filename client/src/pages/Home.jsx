@@ -23,7 +23,7 @@ function Home() {
     const updateTime = () => {
       const now = new Date();
       setCurrentDate(now.toISOString().split('T')[0]); // YYYY-MM-DD
-      setCurrentTime(now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 8)); // HH:MM:SS
+      setCurrentTime(now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)); // HH:MM
     };
     updateTime();
     const timer = setInterval(updateTime, 1000); // update tiap detik
