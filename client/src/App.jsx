@@ -39,11 +39,8 @@ function App() {
         <Route
           path="/"
           element={
-            <div className="min-h-screen w-full bg-gray-900">
+            <div className="max-h-screen w-full bg-gray-900">
               <div className="w-full px-4 py-6">
-                <h1 className="text-4xl font-bold text-center text-white mb-6">
-                  Racsi
-                </h1>
                 <Home ruangan={ruangan} jadwal={jadwal} />
               </div>
             </div>
