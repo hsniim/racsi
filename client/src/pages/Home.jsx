@@ -82,19 +82,23 @@ function Home() {
         </h2>
         <div className={`w-full ${containerHeight} overflow-hidden relative`}>
           <div 
-            className={`auto-scroll-container auto-scroll-${bgColor}`}
+            className={`scroll-${bgColor}`}
             style={{
-              animation: `autoScroll ${scrollSpeed}s linear infinite`,
-              animationDelay: '1s'
+              '--scroll-speed': `${scrollSpeed}s`
             }}
           >
-            {/* Render rooms dua kali untuk efek infinite */}
-            {rooms.map((room) => (
-              <RoomCard key={`first-${room.id_ruangan}`} room={room} type={bgColor} />
-            ))}
-            {rooms.map((room) => (
-              <RoomCard key={`second-${room.id_ruangan}`} room={room} type={bgColor} />
-            ))}
+            {/* First set of rooms */}
+            <div className="room-set">
+              {rooms.map((room) => (
+                <RoomCard key={`first-${room.id_ruangan}`} room={room} type={bgColor} />
+              ))}
+            </div>
+            {/* Duplicate set for seamless loop */}
+            <div className="room-set">
+              {rooms.map((room) => (
+                <RoomCard key={`second-${room.id_ruangan}`} room={room} type={bgColor} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -104,17 +108,42 @@ function Home() {
   return (
     <div className="max-h-screen h-screen w-full bg-primary text-white">
       <div className="w-full max-w-none px-4 py-6">
-        <h1 className="text-6xl font-bold text-center mb-8">RACSI - Lantai</h1>
 
-        {/* Waktu realtime */}
-        <div className="text-center mb-6">
-          <p className="text-2xl">Tanggal: {currentDate}</p>
-          <p className="text-2xl">Jam: {currentTime}</p>
-        </div>
+{/* header */}
+<div className='flex justify-between items-center mb-7 p-6 bg-gray-800 rounded-lg'>
+  {/* Logo dan Title */}
+  <div className="flex items-center">
+    <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4 transform rotate-45">
+      <div className="w-6 h-6 bg-gray-800 rounded-sm transform -rotate-45 flex items-center justify-center">
+        <div className="w-3 h-2 bg-white rounded-sm"></div>
+      </div>
+    </div>
+    <h1 className="text-5xl font-bold text-white">RACSI</h1>
+  </div>
+
+  {/* Info Tengah */}
+  <div className="text-center">
+    <p className="text-3xl text-white font-medium">Lantai 3</p>
+    <p className="text-2xl text-gray-300">Pak Budi | Pak Nasir</p>
+  </div>
+
+  {/* Waktu */}
+  <div className="text-right">
+    <p className="text-4xl font-bold text-white">{currentTime}</p>
+    <p className="text-base text-gray-300">
+      {new Date().toLocaleDateString('id-ID', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      })}
+    </p>
+  </div>
+</div>
 
         {/* Container Flex untuk 3 kolom sejajar dengan proporsi berbeda */}
         <div className="flex gap-6 w-full">
-          {/* Section: Tidak Digunakan - Maksimal 4 roomcard */}
+          {/* Section: Tidak Digunakan - Maksimal 3 roomcard */}
           <div className="flex-[1]">
             <ScrollableSection
               title="Tidak Digunakan"
@@ -122,7 +151,7 @@ function Home() {
               maxCards={3}
               bgColor="tidak_digunakan"
               textColor="text-green-400"
-              scrollSpeed={50} // Kecepatan scroll untuk "Tidak Digunakan" (lebih lambat)
+              scrollSpeed={50}
             />
           </div>
 
@@ -134,7 +163,7 @@ function Home() {
               maxCards={2}
               bgColor="sedang_digunakan"
               textColor="text-red-400"
-              scrollSpeed={25} // Kecepatan scroll untuk "Sedang Digunakan" (paling cepat)
+              scrollSpeed={25}
             />
           </div>
 
@@ -146,31 +175,51 @@ function Home() {
               maxCards={2}
               bgColor="akan_digunakan"
               textColor="text-yellow-400"
-              scrollSpeed={25} // Kecepatan scroll untuk "Akan Digunakan" (sedang)
+              scrollSpeed={25}
             />
           </div>
         </div>
       </div>
 
-      {/* Custom CSS untuk auto-scroll animation */}
-      <style jsx>{`
-        .auto-scroll-container {
+      {/* Global CSS untuk persistent animation */}
+      <style jsx global>{`
+        .scroll-tidak_digunakan,
+        .scroll-sedang_digunakan,
+        .scroll-akan_digunakan {
+          display: flex;
+          flex-direction: column;
+          animation: continuousScroll var(--scroll-speed) linear infinite;
+          animation-fill-mode: forwards;
+        }
+
+        .scroll-tidak_digunakan:hover,
+        .scroll-sedang_digunakan:hover,
+        .scroll-akan_digunakan:hover {
+          animation-play-state: paused;
+        }
+
+        .room-set {
           display: flex;
           flex-direction: column;
         }
-        
-        @keyframes autoScroll {
-          0% {
+
+        @keyframes continuousScroll {
+          from {
             transform: translateY(0);
           }
-          100% {
+          to {
             transform: translateY(-50%);
           }
         }
-        
-        /* Pause animation on hover */
-        .auto-scroll-container:hover {
-          animation-play-state: paused;
+
+        /* Force hardware acceleration untuk smoother animation */
+        .scroll-tidak_digunakan,
+        .scroll-sedang_digunakan,
+        .scroll-akan_digunakan {
+          backface-visibility: hidden;
+          perspective: 1000px;
+          transform-style: preserve-3d;
+          will-change: transform;
         }
       `}</style>
     </div>
