@@ -39,7 +39,7 @@ function App() {
         <Route
           path="/"
           element={
-            <div className="max-h-screen w-full bg-gray-900">
+            <div className="max-h-screen h-screen w-full bg-primary">
               <div className="w-full px-4 py-6">
                 <Home ruangan={ruangan} jadwal={jadwal} />
               </div>

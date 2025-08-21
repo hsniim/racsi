@@ -54,7 +54,7 @@ function Home() {
   // Komponen untuk section dengan infinite scroll otomatis
   const ScrollableSection = ({ title, rooms, maxCards, bgColor, textColor, scrollSpeed = 30 }) => {
     const shouldScroll = rooms.length > maxCards;
-    const containerHeight = maxCards === 4 ? 'h-96' : 'h-96'; // 4 cards = h-96, 2 cards = h-96
+    const containerHeight = maxCards === 3 ? 'h-96' : 'h-96';
 
     if (!shouldScroll) {
       return (
@@ -102,7 +102,7 @@ function Home() {
   };
 
   return (
-    <div className="max-h-screen w-full bg-gray-900 text-white">
+    <div className="max-h-screen h-screen w-full bg-primary text-white">
       <div className="w-full max-w-none px-4 py-6">
         <h1 className="text-6xl font-bold text-center mb-8">RACSI - Lantai</h1>
 
@@ -119,7 +119,7 @@ function Home() {
             <ScrollableSection
               title="Tidak Digunakan"
               rooms={unusedRuangan}
-              maxCards={4}
+              maxCards={3}
               bgColor="tidak_digunakan"
               textColor="text-green-400"
               scrollSpeed={50} // Kecepatan scroll untuk "Tidak Digunakan" (lebih lambat)
