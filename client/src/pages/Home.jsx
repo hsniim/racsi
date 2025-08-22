@@ -132,7 +132,7 @@ function Home() {
     <p className="text-4xl font-bold text-white">{currentTime}</p>
     <p className="text-base text-gray-300">
       {new Date().toLocaleDateString('id-ID', { 
-        weekday: 'long', 
+        weekday: 'long',                      
         day: 'numeric', 
         month: 'short', 
         year: 'numeric' 
@@ -182,7 +182,7 @@ function Home() {
       </div>
 
       {/* Global CSS untuk persistent animation */}
-      <style jsx global>{`
+      <style>{`
         .scroll-tidak_digunakan,
         .scroll-sedang_digunakan,
         .scroll-akan_digunakan {
