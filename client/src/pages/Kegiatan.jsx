@@ -3,18 +3,18 @@ import axios from "axios";
 
 export default function Kegiatan() {
   const [kegiatans, setKegiatans] = useState([]);
-  const [ruangans, setRuangans] = useState([]); // daftar ruangan untuk dropdown
+  const [ruangans, setRuangans] = useState([]);
   const [form, setForm] = useState({
     id_ruangan: "",
     nama_kegiatan: "",
     deskripsi_kegiatan: "",
     pengguna: "",
   });
+  const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
-  // Ambil semua kegiatan
   const fetchKegiatans = async () => {
     if (!token) return setError("Token tidak tersedia.");
     try {
@@ -28,7 +28,6 @@ export default function Kegiatan() {
     }
   };
 
-  // Ambil daftar ruangan untuk dropdown
   const fetchRuangans = async () => {
     if (!token) return;
     try {
@@ -46,20 +45,51 @@ export default function Kegiatan() {
     fetchRuangans();
   }, []);
 
-  // Tambah kegiatan
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!token) return setError("Token tidak tersedia.");
 
     try {
-      await axios.post("http://localhost:5000/api/kegiatan", form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (editId) {
+        // Update
+        await axios.put(`http://localhost:5000/api/kegiatan/${editId}`, form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        // Tambah
+        await axios.post("http://localhost:5000/api/kegiatan", form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
       setForm({ id_ruangan: "", nama_kegiatan: "", deskripsi_kegiatan: "", pengguna: "" });
+      setEditId(null);
       fetchKegiatans();
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setError(err.response?.data?.message || "Gagal menambahkan kegiatan");
+      setError(err.response?.data?.message || "Gagal menyimpan kegiatan");
+    }
+  };
+
+  const handleEdit = (k) => {
+    setForm({
+      id_ruangan: ruangans.find(r => r.nama_ruangan === k.nama_ruangan)?.id_ruangan || "",
+      nama_kegiatan: k.nama_kegiatan,
+      deskripsi_kegiatan: k.deskripsi_kegiatan,
+      pengguna: k.pengguna,
+    });
+    setEditId(k.id_kegiatan);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus kegiatan ini?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/kegiatan/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchKegiatans();
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError("Gagal menghapus kegiatan");
     }
   };
 
@@ -71,12 +101,11 @@ export default function Kegiatan() {
         <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{error}</div>
       )}
 
-      {/* Form tambah kegiatan */}
+      {/* Form tambah / edit kegiatan */}
       <form
         onSubmit={handleSubmit}
         className="space-y-3 p-4 border rounded-lg shadow-md mb-6"
       >
-        {/* Dropdown Ruangan */}
         <select
           value={form.id_ruangan}
           onChange={(e) => setForm({ ...form, id_ruangan: e.target.value })}
@@ -120,7 +149,7 @@ export default function Kegiatan() {
           type="submit"
           className="bg-gray-600 text-white px-4 py-2 rounded"
         >
-          Tambah Kegiatan
+          {editId ? "Simpan Perubahan" : "Tambah Kegiatan"}
         </button>
       </form>
 
@@ -134,6 +163,7 @@ export default function Kegiatan() {
             <th className="p-2 border text-black">Nama Kegiatan</th>
             <th className="p-2 border text-black">Deskripsi</th>
             <th className="p-2 border text-black">Pengguna</th>
+            <th className="p-2 border text-black">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -146,11 +176,25 @@ export default function Kegiatan() {
                 <td className="p-2 border text-center">{k.nama_kegiatan}</td>
                 <td className="p-2 border text-center">{k.deskripsi_kegiatan}</td>
                 <td className="p-2 border text-center">{k.pengguna}</td>
+                <td className="p-2 border text-center space-x-2">
+                  <button
+                    onClick={() => handleEdit(k)}
+                    className="bg-yellow-500 text-white px-2 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(k.id_kegiatan)}
+                    className="bg-red-600 text-white px-2 py-1 rounded"
+                  >
+                    Hapus
+                  </button>
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="p-2 text-center text-white">
+              <td colSpan="7" className="p-2 text-center">
                 Tidak ada data kegiatan
               </td>
             </tr>

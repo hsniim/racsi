@@ -65,7 +65,7 @@ export default function Jadwal() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Manajemen Jadwal</h1>
+      <h1 className="text-xl font-bold mb-4">Kelola Jadwal</h1>
 
       {error && (
         <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{error}</div>

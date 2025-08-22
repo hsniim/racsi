@@ -21,7 +21,6 @@ const addKegiatan = async (req, res) => {
 // Ambil semua kegiatan
 const getKegiatans = async (req, res) => {
   try {
-    // Join ruangan, lantai, gedung supaya frontend bisa menampilkan konteks kegiatan
     const [rows] = await pool.query(`
       SELECT k.id_kegiatan, k.nama_kegiatan, k.deskripsi_kegiatan, k.pengguna,
              r.nama_ruangan, l.nomor_lantai, g.nama_gedung
@@ -37,4 +36,35 @@ const getKegiatans = async (req, res) => {
   }
 };
 
-module.exports = { addKegiatan, getKegiatans };
+// Update kegiatan
+const updateKegiatan = async (req, res) => {
+  const { id } = req.params;
+  const { id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna } = req.body;
+  if (!id_ruangan || !nama_kegiatan || !deskripsi_kegiatan || !pengguna) {
+    return res.status(400).json({ message: 'Semua field wajib diisi' });
+  }
+  try {
+    await pool.query(
+      'UPDATE kegiatan SET id_ruangan=?, nama_kegiatan=?, deskripsi_kegiatan=?, pengguna=? WHERE id_kegiatan=?',
+      [id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna, id]
+    );
+    res.json({ message: 'Kegiatan berhasil diperbarui' });
+  } catch (error) {
+    console.error('Error updating kegiatan:', error);
+    res.status(500).json({ message: 'Gagal memperbarui kegiatan', error });
+  }
+};
+
+// Hapus kegiatan
+const deleteKegiatan = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM kegiatan WHERE id_kegiatan=?', [id]);
+    res.json({ message: 'Kegiatan berhasil dihapus' });
+  } catch (error) {
+    console.error('Error deleting kegiatan:', error);
+    res.status(500).json({ message: 'Gagal menghapus kegiatan', error });
+  }
+};
+
+module.exports = { addKegiatan, getKegiatans, updateKegiatan, deleteKegiatan };

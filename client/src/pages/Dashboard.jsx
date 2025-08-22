@@ -9,26 +9,36 @@ export default function Dashboard() {
   });
   const [updates, setUpdates] = useState([]);
 
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setStats({
+        totalGedung: res.data.totalGedung || 0,
+        totalLantai: res.data.totalLantai || 0,
+        totalRuangan: res.data.totalRuangan || 0,
+      });
+
+      setUpdates(res.data.rooms || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setStats({
-          totalGedung: res.data.totalGedung || 0,
-          totalLantai: res.data.totalLantai || 0,
-          totalRuangan: res.data.totalRuangan || 0,
-        });
-
-        setUpdates(res.data.rooms || []);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    // Fetch pertama kali
     fetchData();
+
+    // Refresh otomatis setiap 5 detik
+    const interval = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    // Bersihkan interval saat komponen unmount
+    return () => clearInterval(interval);
   }, []);
 
   return (
