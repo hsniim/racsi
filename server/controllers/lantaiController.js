@@ -17,4 +17,19 @@ const addLantai = async (req, res) => {
   }
 };
 
-module.exports = { addLantai };
+// Ambil semua lantai
+const getLantai = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT l.*, g.nama_gedung 
+       FROM lantai l 
+       JOIN gedung g ON l.id_gedung = g.id_gedung`
+    );
+    res.json({ data: rows });
+  } catch (error) {
+    console.error('Error fetching lantai:', error);
+    res.status(500).json({ message: 'Gagal mengambil data lantai', error });
+  }
+};
+
+module.exports = { addLantai, getLantai };

@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { loginAdmin } = require('../controllers/adminController');
-const { authenticate } = require('../middleware/auth'); // Opsional, jika autentikasi dibutuhkan
+const { loginAdmin, getDashboardStats } = require('../controllers/adminController');
+const { authenticate } = require('../middleware/auth');
 
-router.post('/admin/login', loginAdmin); // Tanpa authenticate untuk login awal
+// Endpoint login admin
+router.post('/admin/login', loginAdmin);
+
+// Endpoint dashboard (butuh token JWT)
+router.get('/admin/dashboard', authenticate, getDashboardStats);
 
 module.exports = router;

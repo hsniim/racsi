@@ -24,14 +24,16 @@ const ruanganRoutes = require('./routes/ruanganRoutes');
 const kegiatanRoutes = require('./routes/kegiatanRoutes');
 const jadwalRoutes = require('./routes/jadwalRoutes');
 const tvRoutes = require('./routes/tvRoutes');
+const riwayatRoutes = require('./routes/riwayatRoutes');
 
-app.use('/api/admin', adminRoutes);
-app.use('/api/gedung', gedungRoutes);
-app.use('/api/lantai', lantaiRoutes);
-app.use('/api/ruangan', ruanganRoutes);  
-app.use('/api/kegiatan', kegiatanRoutes);
-app.use('/api/jadwal', jadwalRoutes);
+app.use('/api', adminRoutes);
+app.use('/api/', gedungRoutes);
+app.use('/api/', lantaiRoutes);
+app.use('/api/', ruanganRoutes);  
+app.use('/api/', kegiatanRoutes);
+app.use('/api/', jadwalRoutes);
 app.use('/api/tv', tvRoutes);
+app.use('/api/', riwayatRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {

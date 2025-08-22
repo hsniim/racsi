@@ -66,28 +66,28 @@ export default function Dashboard() {
 
       {/* Updates Table */}
       <section className="bg-white rounded-lg p-4 md:p-6 max-w-full overflow-x-auto shadow">
-        <h2 className="font-semibold text-sm md:text-base mb-4 select-none">
+        <h2 className="font-semibold text-sm md:text-base mb-4 select-none text-black">
           Pembaruan Terkini
         </h2>
         <table className="w-full text-xs md:text-sm border-collapse">
           <thead>
             <tr className="bg-black text-white text-left">
-              <th className="py-2 px-3 rounded-l-md">Gedung</th>
-              <th className="py-2 px-3">Lantai</th>
-              <th className="py-2 px-3">Ruangan</th>
-              <th className="py-2 px-3">Kegiatan</th>
-              <th className="py-2 px-3 rounded-r-md">Jadwal</th>
+              <th className="py-2 px-3 rounded-l-md text-center">Gedung</th>
+              <th className="py-2 px-3 text-center">Lantai</th>
+              <th className="py-2 px-3 text-center">Ruangan</th>
+              <th className="py-2 px-3 text-center">Kegiatan</th>
+              <th className="py-2 px-3 rounded-r-md text-center">Jadwal</th>
             </tr>
           </thead>
           <tbody className="text-gray-700">
             {updates.length > 0 ? (
               updates.map((room, idx) => (
                 <tr key={idx} className="border-b">
-                  <td className="py-2 px-3">{room.gedung}</td>
+                  <td className="py-2 px-3 text-center">{room.gedung}</td>
                   <td className="py-2 px-3 text-center">{room.lantai}</td>
                   <td className="py-2 px-3 text-center">{room.nama}</td>
-                  <td className="py-2 px-3">{room.kegiatan}</td>
-                  <td className="py-2 px-3">{room.jadwal}</td>
+                  <td className="py-2 px-3 text-center">{room.kegiatan}</td>
+                  <td className="py-2 px-3 text-center">{room.jadwal}</td>
                 </tr>
               ))
             ) : (

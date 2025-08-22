@@ -10,7 +10,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/admin', { username, password });
+      const res = await axios.post('http://localhost:5000/api/admin/login', { username, password });
       localStorage.setItem('token', res.data.token);
       navigate('/admin/dashboard');
     } catch {
@@ -19,7 +19,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-600 to-indigo-700">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-black-600 to-indigo-700">
       <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login Admin</h2>
         <form onSubmit={handleLogin} className="space-y-5">
@@ -52,7 +52,7 @@ export default function Login() {
           {/* Tombol */}
           <button
             type="submit"
-            className="w-full py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-200"
+            className="w-full py-2 bg-black-600 text-white font-semibold rounded-lg hover:bg-black-700 transition duration-200"
           >
             Login
           </button>
