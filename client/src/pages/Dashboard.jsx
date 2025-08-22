@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Building2, Layers, DoorOpen } from "lucide-react";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -43,36 +44,39 @@ export default function Dashboard() {
 
   return (
     <>
-      {/* Stats Cards */}
-      <section className="flex flex-wrap gap-4 mb-8">
-        <div className="bg-black text-white rounded-lg p-4 w-[140px] md:w-[180px]">
-          <div className="flex items-center gap-2 font-semibold text-sm md:text-base mb-1">
-            <i className="fas fa-building"></i>
-            <span>Total Gedung</span>
-          </div>
-          <div className="text-lg md:text-xl font-bold select-none">
-            {stats.totalGedung}
-          </div>
-        </div>
-        <div className="bg-black text-white rounded-lg p-4 w-[140px] md:w-[180px]">
-          <div className="flex items-center gap-2 font-semibold text-sm md:text-base mb-1">
-            <i className="fas fa-chart-bar"></i>
-            <span>Total Lantai</span>
-          </div>
-          <div className="text-lg md:text-xl font-bold select-none">
-            {stats.totalLantai}
-          </div>
-        </div>
-        <div className="bg-black text-white rounded-lg p-4 w-[140px] md:w-[180px]">
-          <div className="flex items-center gap-2 font-semibold text-sm md:text-base mb-1">
-            <i className="fas fa-columns"></i>
-            <span>Total Ruangan</span>
-          </div>
-          <div className="text-lg md:text-xl font-bold select-none">
-            {stats.totalRuangan}
-          </div>
-        </div>
-      </section>
+ {/* Stats Cards */}
+<section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 w-full">
+  <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
+    <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
+      <Building2 className="w-8 h-8" />
+      <span>Total Gedung</span>
+    </div>
+    <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
+      {stats.totalGedung}
+    </div>
+  </div>
+
+  <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
+    <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
+      <Layers className="w-8 h-8" />
+      <span>Total Lantai</span>
+    </div>
+    <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
+      {stats.totalLantai}
+    </div>
+  </div>
+
+  <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
+    <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
+      <DoorOpen className="w-8 h-8" />
+      <span>Total Ruangan</span>
+    </div>
+    <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
+      {stats.totalRuangan}
+    </div>
+  </div>
+</section>
+
 
       {/* Updates Table */}
       <section className="bg-white rounded-lg p-4 md:p-6 max-w-full overflow-x-auto shadow">

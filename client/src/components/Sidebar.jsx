@@ -1,4 +1,14 @@
 import { Link } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Building2,
+  Layers,
+  DoorClosed,
+  ClipboardList,
+  CalendarDays,
+  History,
+  Monitor,
+} from "lucide-react";
 
 export default function Sidebar() {
   return (
@@ -6,7 +16,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center space-x-2 mb-12 w-full">
         <div className="bg-black rounded-md p-3 flex justify-center items-center">
-          <i className="fas fa-desktop text-white text-xl"></i>
+          <Monitor className="text-white" size={20} />
         </div>
         <span className="hidden md:inline font-extrabold text-xl select-none text-black">
           RACSI
@@ -19,7 +29,7 @@ export default function Sidebar() {
           to="/admin/dashboard"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-th-large text-lg"></i>
+          <LayoutDashboard size={20} />
           <span className="hidden md:inline">Dashboard</span>
         </Link>
 
@@ -27,7 +37,7 @@ export default function Sidebar() {
           to="/admin/gedung"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-building text-lg"></i>
+          <Building2 size={20} />
           <span className="hidden md:inline">Gedung</span>
         </Link>
 
@@ -35,7 +45,7 @@ export default function Sidebar() {
           to="/admin/lantai"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-layer-group text-lg"></i>
+          <Layers size={20} />
           <span className="hidden md:inline">Lantai</span>
         </Link>
 
@@ -43,7 +53,7 @@ export default function Sidebar() {
           to="/admin/ruangan"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-door-closed text-lg"></i>
+          <DoorClosed size={20} />
           <span className="hidden md:inline">Ruangan</span>
         </Link>
 
@@ -51,7 +61,7 @@ export default function Sidebar() {
           to="/admin/kegiatan"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-clipboard-list text-lg"></i>
+          <ClipboardList size={20} />
           <span className="hidden md:inline">Kegiatan</span>
         </Link>
 
@@ -59,7 +69,7 @@ export default function Sidebar() {
           to="/admin/jadwal"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-calendar-alt text-lg"></i>
+          <CalendarDays size={20} />
           <span className="hidden md:inline">Jadwal</span>
         </Link>
 
@@ -67,7 +77,7 @@ export default function Sidebar() {
           to="/admin/riwayat"
           className="flex items-center space-x-3 font-semibold text-gray-800 hover:text-black"
         >
-          <i className="fas fa-history text-lg"></i>
+          <History size={20} />
           <span className="hidden md:inline">Riwayat</span>
         </Link>
       </nav>
