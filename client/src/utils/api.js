@@ -28,10 +28,13 @@ export const fetchGedung = async () => {
 
 export const fetchRuangan = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/ruangan/with-jadwal");
+    const token = localStorage.getItem("token"); // ambil token dari login
+    const res = await axios.get("http://localhost:5000/api/ruangan/with-jadwal", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
     return res.data;
   } catch (error) {
-    console.error("Gagal mengambil data ruangan:", error);
+    console.error("Gagal mengambil data ruangan:", error.response?.data || error.message);
     return [];
   }
 };
