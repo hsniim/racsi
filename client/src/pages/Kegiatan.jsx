@@ -201,74 +201,72 @@ export default function Kegiatan() {
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
-              <tr className="bg-gray-700/50 backdrop-blur-sm">
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2"><Building className="w-4 h-4" /> Gedung</div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2"><Layers className="w-4 h-4" /> Lantai</div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2"><Grid className="w-4 h-4" /> Ruangan</div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2"><ClipboardList className="w-4 h-4" /> Kegiatan</div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  Deskripsi
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2"><User className="w-4 h-4" /> Pengguna</div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {kegiatans.length > 0 ? (
-                kegiatans.map((k, index) => (
-                  <tr
-                    key={k.id_kegiatan}
-                    className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200"
+          <thead>
+          <tr className="bg-gray-700/50 backdrop-blur-sm">
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
+              <div className="flex items-center gap-2"><Building className="w-4 h-4" /> Gedung</div>
+            </th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
+              <div className="flex items-center gap-2"><Layers className="w-4 h-4" /> Lantai</div>
+            </th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
+              <div className="flex items-center gap-2"><Grid className="w-4 h-4" /> Ruangan</div>
+            </th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
+              <div className="flex items-center gap-2"><ClipboardList className="w-4 h-4" /> Kegiatan</div>
+            </th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">Deskripsi</th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
+              <div className="flex items-center gap-2"><User className="w-4 h-4" /> Pengguna</div>
+            </th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {kegiatans.length > 0 ? (
+            kegiatans.map((k) => (
+              <tr
+                key={k.id_kegiatan}
+                className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200"
+              >
+                <td className="p-4 text-gray-200 whitespace-nowrap">{k.nama_gedung}</td>
+                <td className="p-4 text-gray-200 whitespace-nowrap">{k.nomor_lantai}</td>
+                <td className="p-4 text-gray-200 whitespace-nowrap">{k.nama_ruangan}</td>
+                <td className="p-4 text-gray-200 font-medium max-w-[180px] truncate">{k.nama_kegiatan}</td>
+                <td className="p-4 text-gray-400 max-w-[250px] truncate">{k.deskripsi_kegiatan}</td>
+                <td className="p-4 text-gray-200 whitespace-nowrap">
+                  <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm rounded-full border border-blue-400/30">
+                    {k.pengguna}
+                  </span>
+                </td>
+                <td className="p-4 text-gray-200 space-x-2 whitespace-nowrap">
+                  <button
+                    onClick={() => handleEdit(k)}
+                    className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg border border-yellow-400/30 hover:bg-yellow-500/30"
                   >
-                    <td className="p-4 text-gray-200">{k.nama_gedung}</td>
-                    <td className="p-4 text-gray-200">{k.nomor_lantai}</td>
-                    <td className="p-4 text-gray-200">{k.nama_ruangan}</td>
-                    <td className="p-4 text-gray-200 font-medium">{k.nama_kegiatan}</td>
-                    <td className="p-4 text-gray-400">{k.deskripsi_kegiatan}</td>
-                    <td className="p-4 text-gray-200">
-                      <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-sm rounded-full border border-blue-400/30">
-                        {k.pengguna}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-200 space-x-2">
-                      <button
-                        onClick={() => handleEdit(k)}
-                        className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg border border-yellow-400/30 hover:bg-yellow-500/30"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(k.id_kegiatan)}
-                        className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30"
-                      >
-                        Hapus
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="p-8 text-center text-gray-400">
-                    <div className="flex flex-col items-center">
-                      <ClipboardList className="w-16 h-16 text-gray-600 mb-4" />
-                      <p className="text-lg mb-2">Tidak ada data kegiatan</p>
-                      <p className="text-sm text-gray-500">Mulai dengan menambahkan kegiatan pertama Anda</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(k.id_kegiatan)}
+                    className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30"
+                  >
+                    Hapus
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="p-8 text-center text-gray-400">
+                <div className="flex flex-col items-center">
+                  <ClipboardList className="w-16 h-16 text-gray-600 mb-4" />
+                  <p className="text-lg mb-2">Tidak ada data kegiatan</p>
+                  <p className="text-sm text-gray-500">Mulai dengan menambahkan kegiatan pertama Anda</p>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
           </table>
         </div>
       </div>
