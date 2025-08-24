@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Building2, Layers, DoorOpen } from "lucide-react";
+import { Building2, Layers, DoorOpen, DoorClosed, ClipboardList, CalendarDays } from "lucide-react";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -78,42 +78,76 @@ export default function Dashboard() {
 </section>
 
 
-      {/* Updates Table */}
-      <section className="bg-white rounded-lg p-4 md:p-6 max-w-full overflow-x-auto shadow">
-        <h2 className="font-semibold text-sm md:text-base mb-4 select-none text-black">
-          Pembaruan Terkini
-        </h2>
-        <table className="w-full text-xs md:text-sm border-collapse">
-          <thead>
-            <tr className="bg-black text-white text-left">
-              <th className="py-2 px-3 rounded-l-md text-center">Gedung</th>
-              <th className="py-2 px-3 text-center">Lantai</th>
-              <th className="py-2 px-3 text-center">Ruangan</th>
-              <th className="py-2 px-3 text-center">Kegiatan</th>
-              <th className="py-2 px-3 rounded-r-md text-center">Jadwal</th>
+{/* Updates Table */}
+<div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 shadow-2xl overflow-hidden">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-xl font-semibold text-gray-300">Pembaruan Terkini</h2>
+    <span className="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full border border-gray-600/30">
+      {updates.length} Update
+    </span>
+  </div>
+
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead>
+        <tr className="bg-gray-700/50 backdrop-blur-sm">
+          <th className="p-4 text-left text-gray-300 font-medium">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" /> Gedung
+            </div>
+          </th>
+          <th className="p-4 text-left text-gray-300 font-medium">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4" /> Lantai
+            </div>
+          </th>
+          <th className="p-4 text-left text-gray-300 font-medium">
+            <div className="flex items-center gap-2">
+              <DoorClosed className="w-4 h-4" /> Ruangan
+            </div>
+          </th>
+          <th className="p-4 text-left text-gray-300 font-medium">
+            <div className="flex items-center gap-2">
+              <ClipboardList className="w-4 h-4" /> Kegiatan
+            </div>
+          </th>
+          <th className="p-4 text-left text-gray-300 font-medium">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-4 h-4" /> Jadwal
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {updates.length > 0 ? (
+          updates.map((room, idx) => (
+            <tr
+              key={idx}
+              className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200"
+            >
+              <td className="p-4 text-gray-200">{room.gedung}</td>
+              <td className="p-4 text-gray-200">{room.lantai}</td>
+              <td className="p-4 text-gray-200">{room.nama}</td>
+              <td className="p-4 text-gray-200">{room.kegiatan}</td>
+              <td className="p-4 text-gray-200">{room.jadwal}</td>
             </tr>
-          </thead>
-          <tbody className="text-gray-700">
-            {updates.length > 0 ? (
-              updates.map((room, idx) => (
-                <tr key={idx} className="border-b">
-                  <td className="py-2 px-3 text-center">{room.gedung}</td>
-                  <td className="py-2 px-3 text-center">{room.lantai}</td>
-                  <td className="py-2 px-3 text-center">{room.nama}</td>
-                  <td className="py-2 px-3 text-center">{room.kegiatan}</td>
-                  <td className="py-2 px-3 text-center">{room.jadwal}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="text-center py-4">
-                  Tidak ada data terbaru.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="5" className="p-8 text-center text-gray-400">
+              <div className="flex flex-col items-center">
+                <DoorOpen className="w-16 h-16 text-gray-600 mb-4" />
+                <p className="text-lg mb-2">Tidak ada pembaruan terbaru</p>
+                <p className="text-sm text-gray-500">Kegiatan terbaru akan muncul di sini</p>
+              </div>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
     </>
   );
 }
