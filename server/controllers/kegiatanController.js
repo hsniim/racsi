@@ -1,11 +1,12 @@
 const pool = require('../config/db');
 
-// Tambah kegiatan (sudah ada)
+// Tambah kegiatan
 const addKegiatan = async (req, res) => {
   const { id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna } = req.body;
   if (!id_ruangan || !nama_kegiatan || !deskripsi_kegiatan || !pengguna) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
+
   try {
     const [result] = await pool.query(
       'INSERT INTO kegiatan (id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna) VALUES (?, ?, ?, ?)',
@@ -18,16 +19,29 @@ const addKegiatan = async (req, res) => {
   }
 };
 
-// Ambil semua kegiatan
+// Ambil semua kegiatan yang masih punya jadwal aktif
 const getKegiatans = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT k.id_kegiatan, k.nama_kegiatan, k.deskripsi_kegiatan, k.pengguna,
-             r.nama_ruangan, l.nomor_lantai, g.nama_gedung
+      SELECT 
+        k.id_kegiatan,
+        k.nama_kegiatan,
+        k.deskripsi_kegiatan,
+        k.pengguna,
+        r.nama_ruangan,
+        l.nomor_lantai,
+        g.nama_gedung,
+        j.id_jadwal,
+        j.tanggal,
+        j.waktu_mulai,
+        j.waktu_selesai
       FROM kegiatan k
+      JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
       JOIN ruangan r ON k.id_ruangan = r.id_ruangan
       JOIN lantai l ON r.id_lantai = l.id_lantai
       JOIN gedung g ON l.id_gedung = g.id_gedung
+      WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) >= NOW()
+      ORDER BY j.tanggal, j.waktu_mulai
     `);
     res.json({ data: rows });
   } catch (error) {
@@ -40,9 +54,11 @@ const getKegiatans = async (req, res) => {
 const updateKegiatan = async (req, res) => {
   const { id } = req.params;
   const { id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna } = req.body;
+
   if (!id_ruangan || !nama_kegiatan || !deskripsi_kegiatan || !pengguna) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
+
   try {
     await pool.query(
       'UPDATE kegiatan SET id_ruangan=?, nama_kegiatan=?, deskripsi_kegiatan=?, pengguna=? WHERE id_kegiatan=?',
@@ -55,7 +71,7 @@ const updateKegiatan = async (req, res) => {
   }
 };
 
-// Hapus kegiatan
+// Hapus kegiatan beserta jadwalnya (ON DELETE CASCADE)
 const deleteKegiatan = async (req, res) => {
   const { id } = req.params;
   try {
