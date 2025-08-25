@@ -44,7 +44,7 @@ const getJadwals = async (req, res) => {
       `SELECT j.*, k.nama_kegiatan, k.pengguna, k.id_ruangan
        FROM jadwal j
        JOIN kegiatan k ON j.id_kegiatan = k.id_kegiatan
-       WHERE CONCAT(j.tanggal, ' ', j.waktu_selesai) < NOW()`
+       WHERE CONCAT(j.tanggal, ' ', j.waktu_selesai) < NOW()- INTERVAL 5 MINUTE`
     );
 
     for (const jadwal of expired) {
@@ -88,4 +88,57 @@ const getJadwals = async (req, res) => {
   }
 };
 
-module.exports = { addJadwal, getJadwals };
+// Update jadwal
+const updateJadwal = async (req, res) => {
+  const { id } = req.params;
+  const { id_kegiatan, tanggal, waktu_mulai, waktu_selesai } = req.body;
+
+  if (!id_kegiatan || !tanggal || !waktu_mulai || !waktu_selesai) {
+    return res.status(400).json({ message: "Semua field wajib diisi" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE jadwal 
+       SET id_kegiatan = ?, tanggal = ?, waktu_mulai = ?, waktu_selesai = ?
+       WHERE id_jadwal = ?`,
+      [id_kegiatan, tanggal, waktu_mulai, waktu_selesai, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Jadwal tidak ditemukan" });
+    }
+
+    res.json({ message: "Jadwal berhasil diperbarui" });
+  } catch (error) {
+    console.error("Error updating jadwal:", error);
+    res.status(500).json({ message: "Gagal mengupdate jadwal", error });
+  }
+};
+
+// Delete jadwal
+const deleteJadwal = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // ambil dulu info ruangan sebelum hapus
+    const [rows] = await pool.query("SELECT id_ruangan FROM kegiatan k JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan WHERE j.id_jadwal = ?", [id]);
+
+    if (rows.length > 0) {
+      await pool.query("UPDATE ruangan SET status = 'kosong' WHERE id_ruangan = ?", [rows[0].id_ruangan]);
+    }
+
+    const [result] = await pool.query("DELETE FROM jadwal WHERE id_jadwal = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Jadwal tidak ditemukan" });
+    }
+
+    res.json({ message: "Jadwal berhasil dihapus" });
+  } catch (error) {
+    console.error("Error deleting jadwal:", error);
+    res.status(500).json({ message: "Gagal menghapus jadwal", error });
+  }
+};
+
+module.exports = { addJadwal, getJadwals, updateJadwal, deleteJadwal };
