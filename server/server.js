@@ -25,6 +25,7 @@ const kegiatanRoutes = require('./routes/kegiatanRoutes');
 const jadwalRoutes = require('./routes/jadwalRoutes');
 const tvRoutes = require('./routes/tvRoutes');
 const riwayatRoutes = require('./routes/riwayatRoutes');
+const headerRoutes = require('./routes/headerRoutes');
 
 app.use('/api', adminRoutes);
 app.use('/api/', gedungRoutes);
@@ -34,6 +35,7 @@ app.use('/api/', kegiatanRoutes);
 app.use('/api/', jadwalRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/', riwayatRoutes);
+app.use('/api/', headerRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {
