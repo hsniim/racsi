@@ -237,6 +237,38 @@ function Home() {
             />
           </div>
         </div>
+
+        {/* Footer - Updated Version */}
+        <div className="mt-7 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl">
+          <div className="flex justify-between items-center gap-8">
+            {/* PJ Gedung */}
+            <div className='flex items-center gap-3'>
+              <div className="w-20 h-20">
+                <img className='rounded-md w-full h-full object-cover' src="/assets/qr-codehusni.png" alt="" />
+              </div>
+              {/* Content */}
+              <div className="flex flex-col">
+                <div className="flex flex-col gap-0">
+                  <h3 className='text-2xl font-semibold text-white leading-tight'>PJ Gedung</h3>
+                  <p className="text-md text-gray-300 -mt-1">0899-8378-498</p>
+                </div>
+                <p className="text-md text-gray-300 mt-1">Husni</p>
+              </div>
+            </div>
+
+            {/* Peminjaman Ruang */}
+            <div className='flex items-center gap-3'>
+              <div className="w-20 h-20">
+                <img className='rounded-md w-full h-full object-cover' src="/assets/qr-code.png" alt="" />
+              </div>
+              {/* Content */}
+              <div className="flex flex-col gap-3">
+                <h3 className='text-2xl font-semibold text-white leading-none'>Peminjaman<br />Ruang</h3>
+                <p className="text-md text-gray-300">https://www.example.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Global CSS untuk persistent animation */}
