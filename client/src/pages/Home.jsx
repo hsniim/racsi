@@ -159,7 +159,7 @@ function Home() {
   };
 
   return (
-    <div className="max-h-screen h-screen w-full bg-primary text-white">
+    <div className="h-full w-full bg-primary text-white">
       <div className="w-full max-w-none px-4 py-6">
         {/* Header dengan Dynamic Data */}
         <div className='flex justify-between items-center mb-7 p-6 bg-gray-800 rounded-lg'>
@@ -239,7 +239,7 @@ function Home() {
         </div>
 
         {/* Footer - Updated Version */}
-        <div className="mt-7 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl">
+        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl">
           <div className="flex justify-between items-center gap-8">
             {/* PJ Gedung */}
             <div className='flex items-center gap-3'>
