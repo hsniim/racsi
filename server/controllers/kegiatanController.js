@@ -19,9 +19,17 @@ const addKegiatan = async (req, res) => {
   }
 };
 
-// Ambil semua kegiatan yang masih punya jadwal aktif
+// Ambil semua kegiatan (hapus otomatis kalau jadwal berakhir)
 const getKegiatans = async (req, res) => {
   try {
+    // 1. Hapus kegiatan yang jadwalnya sudah selesai (end time < NOW)
+    await pool.query(`
+      DELETE k FROM kegiatan k
+      INNER JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
+      WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) < NOW()
+    `);
+
+    // 2. Ambil data kegiatan yang masih aktif (atau belum ada jadwal)
     const [rows] = await pool.query(`
       SELECT 
         k.id_kegiatan,
@@ -36,13 +44,14 @@ const getKegiatans = async (req, res) => {
         j.waktu_mulai,
         j.waktu_selesai
       FROM kegiatan k
-      JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
-      JOIN ruangan r ON k.id_ruangan = r.id_ruangan
-      JOIN lantai l ON r.id_lantai = l.id_lantai
-      JOIN gedung g ON l.id_gedung = g.id_gedung
-      WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) >= NOW()
-      ORDER BY j.tanggal, j.waktu_mulai
+      LEFT JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan 
+        AND TIMESTAMP(j.tanggal, j.waktu_selesai) >= NOW()
+      LEFT JOIN ruangan r ON k.id_ruangan = r.id_ruangan
+      LEFT JOIN lantai l ON r.id_lantai = l.id_lantai
+      LEFT JOIN gedung g ON l.id_gedung = g.id_gedung
+      ORDER BY j.tanggal ASC, j.waktu_mulai ASC
     `);
+
     res.json({ data: rows });
   } catch (error) {
     console.error('Error fetching kegiatan:', error);
@@ -71,7 +80,7 @@ const updateKegiatan = async (req, res) => {
   }
 };
 
-// Hapus kegiatan beserta jadwalnya (ON DELETE CASCADE)
+// Hapus kegiatan
 const deleteKegiatan = async (req, res) => {
   const { id } = req.params;
   try {
