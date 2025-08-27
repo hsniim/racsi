@@ -19,17 +19,28 @@ const addKegiatan = async (req, res) => {
   }
 };
 
-// Ambil semua kegiatan (hapus otomatis kalau jadwal berakhir)
+// Ambil semua kegiatan (hapus otomatis kalau jadwal berakhir & pindahkan ke histori)
 const getKegiatans = async (req, res) => {
   try {
-    // 1. Hapus kegiatan yang jadwalnya sudah selesai (end time < NOW)
-    await pool.query(`
-      DELETE k FROM kegiatan k
-      INNER JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
+    // 1. Migrasi kegiatan yang sudah selesai ke histori
+    const [expired] = await pool.query(`
+      SELECT k.id_kegiatan, j.id_jadwal, k.nama_kegiatan, k.pengguna, k.id_ruangan, j.tanggal, j.waktu_mulai, j.waktu_selesai
+      FROM kegiatan k
+      JOIN jadwal j ON k.id_kegiatan = j.id_kegiatan
       WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) < NOW()
     `);
 
-    // 2. Ambil data kegiatan yang masih aktif (atau belum ada jadwal)
+    for (const k of expired) {
+      await pool.query(`
+        INSERT INTO histori_kegiatan_jadwal
+        (id_kegiatan, id_jadwal, nama_kegiatan, pengguna, id_ruangan, tanggal, waktu_mulai, waktu_selesai, migrated)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `, [k.id_kegiatan, k.id_jadwal, k.nama_kegiatan, k.pengguna, k.id_ruangan, k.tanggal, k.waktu_mulai, k.waktu_selesai]);
+
+      await pool.query('DELETE FROM kegiatan WHERE id_kegiatan = ?', [k.id_kegiatan]);
+    }
+
+    // 2. Ambil kegiatan yang masih aktif
     const [rows] = await pool.query(`
       SELECT 
         k.id_kegiatan,
@@ -59,11 +70,9 @@ const getKegiatans = async (req, res) => {
   }
 };
 
-// Update kegiatan
 const updateKegiatan = async (req, res) => {
   const { id } = req.params;
   const { id_ruangan, nama_kegiatan, deskripsi_kegiatan, pengguna } = req.body;
-
   if (!id_ruangan || !nama_kegiatan || !deskripsi_kegiatan || !pengguna) {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
@@ -80,7 +89,6 @@ const updateKegiatan = async (req, res) => {
   }
 };
 
-// Hapus kegiatan
 const deleteKegiatan = async (req, res) => {
   const { id } = req.params;
   try {

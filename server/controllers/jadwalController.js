@@ -1,6 +1,5 @@
 const pool = require('../config/db');
 
-// Tambah jadwal
 const addJadwal = async (req, res) => {
   const { id_kegiatan, tanggal, waktu_mulai, waktu_selesai } = req.body;
   if (!id_kegiatan || !tanggal || !waktu_mulai || !waktu_selesai) {
@@ -8,25 +7,19 @@ const addJadwal = async (req, res) => {
   }
 
   try {
-    // Insert jadwal baru
     const [result] = await pool.query(
       'INSERT INTO jadwal (id_kegiatan, tanggal, waktu_mulai, waktu_selesai) VALUES (?, ?, ?, ?)',
       [id_kegiatan, tanggal, waktu_mulai, waktu_selesai]
     );
 
-    // Ambil info kegiatan beserta id_ruangan
     const [kegiatan] = await pool.query(
       'SELECT id_ruangan, pengguna FROM kegiatan WHERE id_kegiatan = ?',
       [id_kegiatan]
     );
 
-    if (kegiatan.length === 0) {
-      return res.status(400).json({ message: 'Kegiatan tidak ditemukan' });
-    }
+    if (kegiatan.length === 0) return res.status(400).json({ message: 'Kegiatan tidak ditemukan' });
 
     const { id_ruangan } = kegiatan[0];
-
-    // Update status ruangan menjadi 'digunakan'
     await pool.query('UPDATE ruangan SET status = "digunakan" WHERE id_ruangan = ?', [id_ruangan]);
 
     res.status(201).json({ id_jadwal: result.insertId, message: 'Jadwal berhasil ditambahkan' });
@@ -36,48 +29,37 @@ const addJadwal = async (req, res) => {
   }
 };
 
-// Ambil semua jadwal (aktif + migrasi yang lewat ke histori)
 const getJadwals = async (req, res) => {
   try {
-    // 1. Pindahkan jadwal yang sudah lewat ke histori
-    const [expired] = await pool.query(
-      `SELECT j.*, k.nama_kegiatan, k.pengguna, k.id_ruangan
-       FROM jadwal j
-       JOIN kegiatan k ON j.id_kegiatan = k.id_kegiatan
-       WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) < NOW() - INTERVAL 5 MINUTE`
-    );
+    // 1. Migrasi jadwal yang sudah selesai ke histori
+    const [expired] = await pool.query(`
+      SELECT j.*, k.nama_kegiatan, k.pengguna, k.id_ruangan
+      FROM jadwal j
+      JOIN kegiatan k ON j.id_kegiatan = k.id_kegiatan
+      WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) < NOW() - INTERVAL 5 MINUTE
+    `);
 
-    for (const jadwal of expired) {
-      await pool.query(
-        `INSERT INTO histori_kegiatan_jadwal 
-         (id_kegiatan, id_jadwal, nama_kegiatan, pengguna, id_ruangan, tanggal, waktu_mulai, waktu_selesai, migrated)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-        [
-          jadwal.id_kegiatan,
-          jadwal.id_jadwal,
-          jadwal.nama_kegiatan,
-          jadwal.pengguna,
-          jadwal.id_ruangan,
-          jadwal.tanggal,
-          jadwal.waktu_mulai,
-          jadwal.waktu_selesai
-        ]
-      );
+    for (const j of expired) {
+      await pool.query(`
+        INSERT INTO histori_kegiatan_jadwal
+        (id_kegiatan, id_jadwal, nama_kegiatan, pengguna, id_ruangan, tanggal, waktu_mulai, waktu_selesai, migrated)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+      `, [j.id_kegiatan, j.id_jadwal, j.nama_kegiatan, j.pengguna, j.id_ruangan, j.tanggal, j.waktu_mulai, j.waktu_selesai]);
 
-      await pool.query('DELETE FROM jadwal WHERE id_jadwal = ?', [jadwal.id_jadwal]);
-      await pool.query('UPDATE ruangan SET status = "kosong" WHERE id_ruangan = ?', [jadwal.id_ruangan]);
+      await pool.query('DELETE FROM jadwal WHERE id_jadwal = ?', [j.id_jadwal]);
+      await pool.query('UPDATE ruangan SET status = "kosong" WHERE id_ruangan = ?', [j.id_ruangan]);
     }
 
-    // 2. Ambil jadwal yang masih aktif
-    const [jadwals] = await pool.query(
-      `SELECT j.id_jadwal, j.tanggal, j.waktu_mulai, j.waktu_selesai,
-              k.nama_kegiatan, k.pengguna, r.nama_ruangan
-       FROM jadwal j
-       JOIN kegiatan k ON j.id_kegiatan = k.id_kegiatan
-       JOIN ruangan r ON k.id_ruangan = r.id_ruangan
-       WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) >= NOW()
-       ORDER BY j.tanggal ASC, j.waktu_mulai ASC`
-    );
+    // 2. Ambil jadwal aktif
+    const [jadwals] = await pool.query(`
+      SELECT j.id_jadwal, j.tanggal, j.waktu_mulai, j.waktu_selesai,
+             k.nama_kegiatan, k.pengguna, r.nama_ruangan
+      FROM jadwal j
+      JOIN kegiatan k ON j.id_kegiatan = k.id_kegiatan
+      JOIN ruangan r ON k.id_ruangan = r.id_ruangan
+      WHERE TIMESTAMP(j.tanggal, j.waktu_selesai) >= NOW()
+      ORDER BY j.tanggal ASC, j.waktu_mulai ASC
+    `);
 
     res.json({ data: jadwals });
   } catch (error) {
@@ -86,14 +68,13 @@ const getJadwals = async (req, res) => {
   }
 };
 
-// Update jadwal
+// Update & Delete jadwal tetap sama
 const updateJadwal = async (req, res) => {
   const { id } = req.params;
   const { id_kegiatan, tanggal, waktu_mulai, waktu_selesai } = req.body;
 
-  if (!id_kegiatan || !tanggal || !waktu_mulai || !waktu_selesai) {
+  if (!id_kegiatan || !tanggal || !waktu_mulai || !waktu_selesai)
     return res.status(400).json({ message: "Semua field wajib diisi" });
-  }
 
   try {
     const [result] = await pool.query(
@@ -103,9 +84,7 @@ const updateJadwal = async (req, res) => {
       [id_kegiatan, tanggal, waktu_mulai, waktu_selesai, id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Jadwal tidak ditemukan" });
-    }
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Jadwal tidak ditemukan" });
 
     res.json({ message: "Jadwal berhasil diperbarui" });
   } catch (error) {
@@ -114,7 +93,6 @@ const updateJadwal = async (req, res) => {
   }
 };
 
-// Delete jadwal
 const deleteJadwal = async (req, res) => {
   const { id } = req.params;
 
@@ -130,9 +108,7 @@ const deleteJadwal = async (req, res) => {
 
     const [result] = await pool.query("DELETE FROM jadwal WHERE id_jadwal = ?", [id]);
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Jadwal tidak ditemukan" });
-    }
+    if (result.affectedRows === 0) return res.status(404).json({ message: "Jadwal tidak ditemukan" });
 
     res.json({ message: "Jadwal berhasil dihapus" });
   } catch (error) {
