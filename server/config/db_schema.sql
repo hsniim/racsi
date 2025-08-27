@@ -17,8 +17,19 @@ CREATE TABLE IF NOT EXISTS gedung (
     id_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nama_gedung VARCHAR(50) NOT NULL,
     lokasi_gedung ENUM('jakarta','depok') DEFAULT 'jakarta',
-    pj_gedung VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE pj_gedung (
+    id_pj_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    gedung_id INT UNSIGNED NOT NULL,
+    nama VARCHAR(30) NOT NULL,
+    no_telp VARCHAR(30) NOT NULL,
+    link_peminjaman VARCHAR(50) NOT NULL,
+    qrcode_path VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pj_gedung FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung) ON DELETE CASCADE,
+    INDEX idx_pj_gedung (id_gedung)
 );
 
 -- 3) LANTAI
@@ -26,8 +37,6 @@ CREATE TABLE IF NOT EXISTS lantai (
     id_lantai INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_gedung INT UNSIGNED NOT NULL,
     nomor_lantai TINYINT NOT NULL,
-    pj_lantaipagi VARCHAR(50) NOT NULL,
-    pj_lantaisiang VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_lantai_gedung
         FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung)
@@ -36,12 +45,24 @@ CREATE TABLE IF NOT EXISTS lantai (
 -- Indeks FK
 CREATE INDEX idx_lantai_id_gedung ON lantai(id_gedung);
 
+CREATE TABLE pj_lantai (
+    id_pj_lantai INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    lantai_id INT UNSIGNED NOT NULL,
+    shift ENUM('pagi','siang','malam') NOT NULL,
+    nama VARCHAR(30) NOT NULL,
+    no_telp VARCHAR(30) NOT NULL,
+    qrcode_path VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pj_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai) ON DELETE CASCADE,
+    INDEX idx_pj_lantai (id_lantai)
+);
+
 -- 4) RUANGAN
 CREATE TABLE IF NOT EXISTS ruangan (
     id_ruangan INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_lantai INT UNSIGNED NOT NULL,
-    nama_ruangan VARCHAR(50) NOT NULL,
-    kapasitas TINYINT NOT NULL,
+    nama_ruangan VARCHAR(30) NOT NULL,
+    kapasitas SMALLINT NOT NULL,
     status ENUM('tidak_digunakan','digunakan') DEFAULT 'tidak_digunakan',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_ruangan_lantai
@@ -55,9 +76,9 @@ CREATE INDEX idx_ruangan_id_lantai ON ruangan(id_lantai);
 CREATE TABLE IF NOT EXISTS kegiatan (
     id_kegiatan INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_ruangan INT UNSIGNED NOT NULL,
-    nama_kegiatan VARCHAR(100) NOT NULL,
+    nama_kegiatan VARCHAR(50) NOT NULL,
     deskripsi_kegiatan TEXT NOT NULL,
-    pengguna VARCHAR(50) NOT NULL,
+    pengguna VARCHAR(30) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_kegiatan_ruangan
         FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan)
@@ -86,7 +107,7 @@ CREATE INDEX idx_jadwal_tanggal_selesai ON jadwal(tanggal, waktu_selesai);
 -- 7) LOG AKTIVITAS
 CREATE TABLE IF NOT EXISTS log_aktivitas (
     id_log BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    nama_tabel VARCHAR(50) NOT NULL,
+    nama_tabel VARCHAR(30) NOT NULL,
     aksi ENUM('INSERT','UPDATE','DELETE') NOT NULL,
     data_lama JSON NULL,
     data_baru JSON NULL,
@@ -101,8 +122,8 @@ CREATE TABLE IF NOT EXISTS histori_kegiatan_jadwal (
     id_histori BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_kegiatan INT UNSIGNED,
     id_jadwal INT UNSIGNED,
-    nama_kegiatan VARCHAR(100),
-    pengguna VARCHAR(50),
+    nama_kegiatan VARCHAR(50),
+    pengguna VARCHAR(30),
     id_ruangan INT UNSIGNED,
     tanggal DATE,
     waktu_mulai TIME,
@@ -513,15 +534,15 @@ END$$
 
 DELIMITER ;
 
--- EVENT D: BULANAN (tgl 15 jam 01:00) - bersihkan log_aktivitas utama > 3 tahun
+-- EVENT D: SETIAP 6 BULAN - bersihkan log_aktivitas utama > 6 bulan
 DELIMITER $$
 
 DROP EVENT IF EXISTS ev_bersihkan_log_utama$$
 
 CREATE EVENT ev_bersihkan_log_utama
-ON SCHEDULE EVERY 1 MONTH
-STARTS '2025-09-15 01:00:00'  -- Menggunakan tanggal fixed yang dekat
-COMMENT 'Bersihkan log aktivitas lama setiap tanggal 15'
+ON SCHEDULE EVERY 6 MONTH
+STARTS '2025-09-01 01:00:00'  -- Mulai 1 September 2025, kemudian setiap 6 bulan
+COMMENT 'Bersihkan log aktivitas lama setiap 6 bulan'
 DO
 BEGIN
     DECLARE v_batch_size INT DEFAULT 2000;
@@ -534,12 +555,12 @@ BEGIN
         VALUES ('event_error', 'INSERT', JSON_OBJECT('event', 'ev_bersihkan_log_utama', 'error_time', NOW()));
     END;
 
-    -- Hapus log lama dalam batch
+    -- Hapus log lama dalam batch (data lebih dari 6 bulan)
     delete_loop: LOOP
         START TRANSACTION;
         
         DELETE FROM log_aktivitas
-        WHERE waktu < DATE_SUB(NOW(), INTERVAL 3 YEAR)
+        WHERE waktu < DATE_SUB(NOW(), INTERVAL 6 MONTH)
         AND nama_tabel NOT IN ('event_error', 'event_success') -- Preserve event logs
         LIMIT v_batch_size;
         
