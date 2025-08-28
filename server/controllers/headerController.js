@@ -10,10 +10,12 @@ const getHeaderData = async (req, res) => {
       SELECT 
         g.nama_gedung,
         l.nomor_lantai,
-        l.pj_lantaipagi,
-        l.pj_lantaisiang
+        pj_pagi.nama as pj_lantaipagi,
+        pj_siang.nama as pj_lantaisiang
       FROM gedung g
       JOIN lantai l ON g.id_gedung = l.id_gedung
+      LEFT JOIN pj_lantai pj_pagi ON l.id_lantai = pj_pagi.id_lantai AND pj_pagi.shift = 'pagi'
+      LEFT JOIN pj_lantai pj_siang ON l.id_lantai = pj_siang.id_lantai AND pj_siang.shift = 'siang'
       ORDER BY g.id_gedung ASC, l.nomor_lantai ASC
       LIMIT 1
     `);
@@ -28,8 +30,8 @@ const getHeaderData = async (req, res) => {
       data: {
         nama_gedung: headerData[0].nama_gedung,
         nomor_lantai: headerData[0].nomor_lantai,
-        pj_lantaipagi: headerData[0].pj_lantaipagi,
-        pj_lantaisiang: headerData[0].pj_lantaisiang
+        pj_lantaipagi: headerData[0].pj_lantaipagi || 'Belum ditentukan',
+        pj_lantaisiang: headerData[0].pj_lantaisiang || 'Belum ditentukan'
       }
     });
 
@@ -51,10 +53,12 @@ const getHeaderDataByIds = async (req, res) => {
       SELECT 
         g.nama_gedung,
         l.nomor_lantai,
-        l.pj_lantaipagi,
-        l.pj_lantaisiang
+        pj_pagi.nama as pj_lantaipagi,
+        pj_siang.nama as pj_lantaisiang
       FROM gedung g
       JOIN lantai l ON g.id_gedung = l.id_gedung
+      LEFT JOIN pj_lantai pj_pagi ON l.id_lantai = pj_pagi.id_lantai AND pj_pagi.shift = 'pagi'
+      LEFT JOIN pj_lantai pj_siang ON l.id_lantai = pj_siang.id_lantai AND pj_siang.shift = 'siang'
       WHERE g.id_gedung = ? AND l.id_lantai = ?
     `, [id_gedung, id_lantai]);
 
@@ -68,8 +72,8 @@ const getHeaderDataByIds = async (req, res) => {
       data: {
         nama_gedung: headerData[0].nama_gedung,
         nomor_lantai: headerData[0].nomor_lantai,
-        pj_lantaipagi: headerData[0].pj_lantaipagi,
-        pj_lantaisiang: headerData[0].pj_lantaisiang
+        pj_lantaipagi: headerData[0].pj_lantaipagi || 'Belum ditentukan',
+        pj_lantaisiang: headerData[0].pj_lantaisiang || 'Belum ditentukan'
       }
     });
 
