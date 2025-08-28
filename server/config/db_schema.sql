@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS pj_gedung (
     nama VARCHAR(30) NOT NULL,
     no_telp VARCHAR(30) NOT NULL,
     link_peminjaman VARCHAR(100) NOT NULL,
-    qrcode_path VARCHAR(200) NOT NULL,
+    qrcodepath_pinjam VARCHAR(200) NOT NULL,
+    qrcodepath_kontak VARCHAR(200) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pj_gedung FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung) ON DELETE CASCADE,
     INDEX idx_pj_gedung (id_gedung)

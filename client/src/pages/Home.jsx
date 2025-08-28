@@ -244,7 +244,7 @@ function Home() {
             {/* PJ Gedung */}
             <div className='flex items-center gap-3'>
               <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src="/assets/qr-codehusni.png" alt="" />
+                <img className='rounded-md w-full h-full object-cover' src="/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png" alt="" />
               </div>
               {/* Content */}
               <div className="flex flex-col">
@@ -259,7 +259,7 @@ function Home() {
             {/* Peminjaman Ruang */}
             <div className='flex items-center gap-3'>
               <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src="/assets/qr-code.png" alt="" />
+                <img className='rounded-md w-full h-full object-cover' src="/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png" alt="" />
               </div>
               {/* Content */}
               <div className="flex flex-col gap-3">
