@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS gedung (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE pj_gedung (
+CREATE TABLE IF NOT EXISTS pj_gedung (
     id_pj_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    gedung_id INT UNSIGNED NOT NULL,
+    id_gedung INT UNSIGNED NOT NULL,
     nama VARCHAR(30) NOT NULL,
     no_telp VARCHAR(30) NOT NULL,
-    link_peminjaman VARCHAR(50) NOT NULL,
-    qrcode_path VARCHAR(100) NOT NULL,
+    link_peminjaman VARCHAR(100) NOT NULL,
+    qrcode_path VARCHAR(200) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pj_gedung FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung) ON DELETE CASCADE,
     INDEX idx_pj_gedung (id_gedung)
@@ -45,13 +45,11 @@ CREATE TABLE IF NOT EXISTS lantai (
 -- Indeks FK
 CREATE INDEX idx_lantai_id_gedung ON lantai(id_gedung);
 
-CREATE TABLE pj_lantai (
+CREATE TABLE IF NOT EXISTS pj_lantai (
     id_pj_lantai INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    lantai_id INT UNSIGNED NOT NULL,
+    id_lantai INT UNSIGNED NOT NULL,
     shift ENUM('pagi','siang','malam') NOT NULL,
     nama VARCHAR(30) NOT NULL,
-    no_telp VARCHAR(30) NOT NULL,
-    qrcode_path VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pj_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai) ON DELETE CASCADE,
     INDEX idx_pj_lantai (id_lantai)
@@ -223,23 +221,25 @@ DELIMITER ;
 -- ==========================================
 DELIMITER $$
 
--- GEDUNG
+-- GEDUNG (FIXED - menghapus referensi pj_gedung yang tidak ada)
 CREATE TRIGGER log_gedung_ins AFTER INSERT ON gedung
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
-  VALUES ('gedung','INSERT', JSON_OBJECT('id_gedung',NEW.id_gedung,'nama_gedung',NEW.nama_gedung,'lokasi_gedung',NEW.lokasi_gedung,'pj_gedung',NEW.pj_gedung));
+  VALUES ('gedung','INSERT', JSON_OBJECT('id_gedung',NEW.id_gedung,'nama_gedung',NEW.nama_gedung,'lokasi_gedung',NEW.lokasi_gedung));
 END$$
+
 CREATE TRIGGER log_gedung_upd AFTER UPDATE ON gedung
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
   VALUES ('gedung','UPDATE',
-          JSON_OBJECT('id_gedung',OLD.id_gedung,'nama_gedung',OLD.nama_gedung,'lokasi_gedung',OLD.lokasi_gedung,'pj_gedung',OLD.pj_gedung),
-          JSON_OBJECT('id_gedung',NEW.id_gedung,'nama_gedung',NEW.nama_gedung,'lokasi_gedung',NEW.lokasi_gedung,'pj_gedung',NEW.pj_gedung));
+          JSON_OBJECT('id_gedung',OLD.id_gedung,'nama_gedung',OLD.nama_gedung,'lokasi_gedung',OLD.lokasi_gedung),
+          JSON_OBJECT('id_gedung',NEW.id_gedung,'nama_gedung',NEW.nama_gedung,'lokasi_gedung',NEW.lokasi_gedung));
 END$$
+
 CREATE TRIGGER log_gedung_del AFTER DELETE ON gedung
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
-  VALUES ('gedung','DELETE', JSON_OBJECT('id_gedung',OLD.id_gedung,'nama_gedung',OLD.nama_gedung,'lokasi_gedung',OLD.lokasi_gedung,'pj_gedung',OLD.pj_gedung));
+  VALUES ('gedung','DELETE', JSON_OBJECT('id_gedung',OLD.id_gedung,'nama_gedung',OLD.nama_gedung,'lokasi_gedung',OLD.lokasi_gedung));
 END$$
 
 -- LANTAI
@@ -284,38 +284,38 @@ END$$
 CREATE TRIGGER log_kegiatan_ins AFTER INSERT ON kegiatan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
-  VALUES ('kegiatan','INSERT', JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'pengguna',NEW.pengguna));
+  VALUES ('kegiatan','INSERT', JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'deskripsi_kegiatan',NEW.deskripsi_kegiatan,'pengguna',NEW.pengguna));
 END$$
 CREATE TRIGGER log_kegiatan_upd AFTER UPDATE ON kegiatan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
   VALUES ('kegiatan','UPDATE',
-          JSON_OBJECT('id_kegiatan',OLD.id_kegiatan,'id_ruangan',OLD.id_ruangan,'nama_kegiatan',OLD.nama_kegiatan,'pengguna',OLD.pengguna),
-          JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'pengguna',NEW.pengguna));
+          JSON_OBJECT('id_kegiatan',OLD.id_kegiatan,'id_ruangan',OLD.id_ruangan,'nama_kegiatan',OLD.nama_kegiatan,'deskripsi_kegiatan',OLD.deskripsi_kegiatan,'pengguna',OLD.pengguna),
+          JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'deskripsi_kegiatan',NEW.deskripsi_kegiatan,'pengguna',NEW.pengguna));
 END$$
 CREATE TRIGGER log_kegiatan_del AFTER DELETE ON kegiatan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
-  VALUES ('kegiatan','DELETE', JSON_OBJECT('id_kegiatan',OLD.id_kegiatan,'id_ruangan',OLD.id_ruangan,'nama_kegiatan',OLD.nama_kegiatan,'pengguna',OLD.pengguna));
+  VALUES ('kegiatan','DELETE', JSON_OBJECT('id_kegiatan',OLD.id_kegiatan,'id_ruangan',OLD.id_ruangan,'nama_kegiatan',OLD.nama_kegiatan,'deskripsi_kegiatan',OLD.deskripsi_kegiatan,'pengguna',OLD.pengguna));
 END$$
 
 -- JADWAL
 CREATE TRIGGER log_jadwal_ins AFTER INSERT ON jadwal
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
-  VALUES ('jadwal','INSERT', JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'mulai',NEW.waktu_mulai,'selesai',NEW.waktu_selesai));
+  VALUES ('jadwal','INSERT', JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'waktu_mulai',NEW.waktu_mulai,'waktu_selesai',NEW.waktu_selesai));
 END$$
 CREATE TRIGGER log_jadwal_upd AFTER UPDATE ON jadwal
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
   VALUES ('jadwal','UPDATE',
-          JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'mulai',OLD.waktu_mulai,'selesai',OLD.waktu_selesai),
-          JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'mulai',NEW.waktu_mulai,'selesai',NEW.waktu_selesai));
+          JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'waktu_mulai',OLD.waktu_mulai,'waktu_selesai',OLD.waktu_selesai),
+          JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'waktu_mulai',NEW.waktu_mulai,'waktu_selesai',NEW.waktu_selesai));
 END$$
 CREATE TRIGGER log_jadwal_del AFTER DELETE ON jadwal
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
-  VALUES ('jadwal','DELETE', JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'mulai',OLD.waktu_mulai,'selesai',OLD.waktu_selesai));
+  VALUES ('jadwal','DELETE', JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'waktu_mulai',OLD.waktu_mulai,'waktu_selesai',OLD.waktu_selesai));
 END$$
 
 DELIMITER ;
