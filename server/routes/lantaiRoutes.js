@@ -4,6 +4,6 @@ const { addLantai, getLantai } = require('../controllers/lantaiController');
 const { authenticate } = require('../middleware/auth');
 
 router.post('/lantai', authenticate, addLantai);
-router.get('/lantai', authenticate, getLantai); // endpoint untuk fetch data lantai
+router.get('/lantai', authenticate, getLantai);
 
 module.exports = router;

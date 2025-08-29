@@ -91,7 +91,7 @@ export default function Dashboard() {
     <table className="w-full">
       <thead>
         <tr className="bg-gray-700/50 backdrop-blur-sm">
-          <th className="p-4 text-left text-gray-300 font-medium">
+          <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4" /> Gedung
             </div>
@@ -111,7 +111,7 @@ export default function Dashboard() {
               <ClipboardList className="w-4 h-4" /> Kegiatan
             </div>
           </th>
-          <th className="p-4 text-left text-gray-300 font-medium">
+          <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4" /> Jadwal
             </div>

@@ -8,6 +8,7 @@ import {
   CalendarDays,
   History,
   Monitor,
+  User
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -46,9 +47,19 @@ export default function Sidebar() {
           <span className="hidden md:inline">Gedung</span>
         </Link>
 
+        <Link to="/admin/pj_gedung" className={getLinkClasses("/admin/pj_gedung")}>
+          <User size={20} />
+          <span className="hidden md:inline">Pj Gedung</span>
+        </Link>
+
         <Link to="/admin/lantai" className={getLinkClasses("/admin/lantai")}>
           <Layers size={20} />
           <span className="hidden md:inline">Lantai</span>
+        </Link>
+
+        <Link to="/admin/pj_lantai" className={getLinkClasses("/admin/pj_lantai")}>
+          <User size={20} />
+          <span className="hidden md:inline">Pj Lantai</span>
         </Link>
 
         <Link to="/admin/ruangan" className={getLinkClasses("/admin/ruangan")}>

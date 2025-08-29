@@ -203,8 +203,8 @@ export default function Kegiatan() {
           <table className="w-full">
           <thead>
           <tr className="bg-gray-700/50 backdrop-blur-sm">
-            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
-              <div className="flex items-center gap-2"><Building className="w-4 h-4" /> Gedung</div>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap first:rounded-tl-xl first:rounded-bl-xl">
+              <div className="flex items-center gap-2"><Building className="w-4 h-4 " /> Gedung</div>
             </th>
             <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
               <div className="flex items-center gap-2"><Layers className="w-4 h-4" /> Lantai</div>
@@ -219,7 +219,7 @@ export default function Kegiatan() {
             <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">
               <div className="flex items-center gap-2"><User className="w-4 h-4" /> Pengguna</div>
             </th>
-            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap">Aksi</th>
+            <th className="p-4 text-left text-gray-300 font-medium whitespace-nowrap last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
           </tr>
         </thead>
         <tbody>

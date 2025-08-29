@@ -26,6 +26,8 @@ const jadwalRoutes = require('./routes/jadwalRoutes');
 const tvRoutes = require('./routes/tvRoutes');
 const riwayatRoutes = require('./routes/riwayatRoutes');
 const headerRoutes = require('./routes/headerRoutes');
+const pjGedungRoutes = require("./routes/pjGedungRoutes");
+const pjLantaiRoutes = require("./routes/pjLantaiRoutes");
 
 app.use('/api', adminRoutes);
 app.use('/api/', gedungRoutes);
@@ -36,6 +38,8 @@ app.use('/api/', jadwalRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/', riwayatRoutes);
 app.use('/api/', headerRoutes);
+app.use("/api/pj-gedung", pjGedungRoutes);
+app.use("/api/pj-lantai", pjLantaiRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {

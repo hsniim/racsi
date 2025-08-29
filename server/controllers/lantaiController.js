@@ -1,14 +1,15 @@
 const pool = require('../config/db');
 
+// Tambah lantai baru
 const addLantai = async (req, res) => {
-  const { id_gedung, nomor_lantai, pj_lantaipagi, pj_lantaisiang } = req.body;
-  if (!id_gedung || !nomor_lantai || !pj_lantaipagi || !pj_lantaisiang) {
-    return res.status(400).json({ message: 'Semua field wajib diisi' });
+  const { id_gedung, nomor_lantai } = req.body;
+  if (!id_gedung || !nomor_lantai) {
+    return res.status(400).json({ message: 'id_gedung dan nomor_lantai wajib diisi' });
   }
   try {
     const [result] = await pool.query(
-      'INSERT INTO lantai (id_gedung, nomor_lantai, pj_lantaipagi, pj_lantaisiang) VALUES (?, ?, ?, ?)',
-      [id_gedung, nomor_lantai, pj_lantaipagi, pj_lantaisiang]
+      'INSERT INTO lantai (id_gedung, nomor_lantai) VALUES (?, ?)',
+      [id_gedung, nomor_lantai]
     );
     res.status(201).json({ id_lantai: result.insertId, message: 'Lantai berhasil ditambahkan' });
   } catch (error) {

@@ -170,7 +170,7 @@ export default function Ruangan() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-700/50 backdrop-blur-sm">
-                <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl last:rounded-tr-xl">
+                <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
                   <div className="flex items-center gap-2">
                     <Building className="w-4 h-4" /> Gedung
                   </div>
@@ -190,7 +190,7 @@ export default function Ruangan() {
                     <Users className="w-4 h-4" /> Kapasitas
                   </div>
                 </th>
-                <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl">
+                <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
                   Status
                 </th>
               </tr>

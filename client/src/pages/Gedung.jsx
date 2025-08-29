@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Building2 } from "lucide-react"; // ✅ Tambah import icon
+import { Building2, MapPin } from "lucide-react";
 
 export default function Gedung() {
   const [gedungs, setGedungs] = useState([]);
   const [form, setForm] = useState({
     nama_gedung: "",
     lokasi_gedung: "Jakarta",
-    pj_gedung: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -24,7 +23,6 @@ export default function Gedung() {
       const res = await axios.get("http://localhost:5000/api/gedung", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
       setGedungs(res.data.data || []);
     } catch (err) {
       console.error(err.response?.data || err.message);
@@ -48,7 +46,7 @@ export default function Gedung() {
       await axios.post("http://localhost:5000/api/gedung", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setForm({ nama_gedung: "", lokasi_gedung: "Jakarta", pj_gedung: "" });
+      setForm({ nama_gedung: "", lokasi_gedung: "Jakarta" });
       setSuccess("Gedung berhasil ditambahkan!");
       setError("");
       setTimeout(() => setSuccess(""), 3000);
@@ -64,7 +62,7 @@ export default function Gedung() {
     <div className="">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className=" mb-8">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
             Kelola Gedung
           </h1>
@@ -94,7 +92,7 @@ export default function Gedung() {
           <h2 className="text-xl font-semibold mb-4 text-gray-300">Tambah Gedung Baru</h2>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
                   Nama Gedung
@@ -123,32 +121,13 @@ export default function Gedung() {
                   <option value="Depok">Depok</option>
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Penanggung Jawab
-                </label>
-                <input
-                  type="text"
-                  placeholder="Nama penanggung jawab"
-                  value={form.pj_gedung}
-                  onChange={(e) => setForm({ ...form, pj_gedung: e.target.value })}
-                  className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
-                  required
-                />
-              </div>
             </div>
 
             <button
               type="submit"
               className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg border border-gray-600/30"
             >
-              <span className="flex items-center justify-center">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Tambah Gedung
-              </span>
+              Tambah Gedung
             </button>
           </form>
         </div>
@@ -166,29 +145,16 @@ export default function Gedung() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-700/50 backdrop-blur-sm">
-                  <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl last:rounded-tr-xl">
+                  <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
                     <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m2 0V9m0 0H5m14 0V3" />
-                      </svg>
+                      <Building2 className="w-4 h-4 mr-2" />
                       Nama Gedung
                     </div>
                   </th>
-                  <th className="p-4 text-left text-gray-300 font-medium">
+                  <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
                     <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+                      <MapPin className="w-4 h-4 mr-2" />
                       Lokasi
-                    </div>
-                  </th>
-                  <th className="p-4 text-left text-gray-300 font-medium">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Penanggung Jawab
                     </div>
                   </th>
                 </tr>
@@ -196,45 +162,20 @@ export default function Gedung() {
               <tbody>
                 {gedungs.length > 0 ? (
                   gedungs.map((g, index) => (
-                    <tr 
-                      key={g.id_gedung || g.id} 
+                    <tr
+                      key={g.id_gedung}
                       className={`border-b border-gray-700/30 transition-all duration-200 hover:bg-gray-700/30 ${
                         index === gedungs.length - 1 ? 'last:rounded-b-xl' : ''
                       }`}
                     >
-                      <td className="p-4 text-gray-200 first:rounded-bl-xl">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                          {g.nama_gedung}
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-200">
-                        <span className="px-3 py-1 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30">
-                          {g.lokasi_gedung}
-                        </span>
-                      </td>
-                      <td className="p-4 text-gray-200 last:rounded-br-xl">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
-                            <span className="text-xs font-medium text-gray-300">
-                              {g.pj_gedung?.charAt(0)?.toUpperCase() || 'P'}
-                            </span>
-                          </div>
-                          {g.pj_gedung}
-                        </div>
-                      </td>
+                      <td className="p-4 text-gray-200 first:rounded-tl-xl first:rounded-bl-xl">{g.nama_gedung}</td>
+                      <td className="p-4 text-gray-200 last:rounded-tr-xl last:rounded-br-xl">{g.lokasi_gedung}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="3" className="p-8 text-center text-gray-400">
-                      <div className="flex flex-col items-center justify-center">
-                        <svg className="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m2 0V9m0 0H5m14 0V3" />
-                        </svg>
-                        <p className="text-lg mb-2">Tidak ada data gedung</p>
-                        <p className="text-sm text-gray-500">Mulai dengan menambahkan gedung pertama Anda</p>
-                      </div>
+                    <td colSpan="2" className="p-8 text-center text-gray-400">
+                      Tidak ada data gedung
                     </td>
                   </tr>
                 )}

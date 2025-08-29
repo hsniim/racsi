@@ -7,7 +7,9 @@ export default function AdminLayout() {
   const pageTitles = {
     "/admin/dashboard": "Dashboard",
     "/admin/gedung": "Gedung",
+    "/admin/pj_gedung": "Pj Gedung",
     "/admin/lantai": "Lantai",
+    "/admin/pj_lantai": "Pj Lantai",
     "/admin/ruangan": "Ruangan",
     "/admin/kegiatan": "Kegiatan",
     "/admin/jadwal": "Jadwal",
