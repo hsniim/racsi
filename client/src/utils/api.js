@@ -75,3 +75,21 @@ export const fetchHeaderDataByIds = async (id_gedung, id_lantai) => {
     };
   }
 };
+
+// Fungsi untuk ambil data PJ Gedung
+export const fetchPjGedung = async () => {
+  try {
+    const response = await axios.get("http://localhost:5000/api/pj-gedung");
+    return response.data.data; // return array of pj_gedung data
+  } catch (error) {
+    console.error("Gagal mengambil data PJ Gedung:", error.response?.data || error.message);
+    // Return default fallback data
+    return [{
+      nama: "Husni",
+      no_telp: "0899-8378-498",
+      link_peminjaman: "https://www.example.com",
+      qrcodepath_pinjam: "/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png",
+      qrcodepath_kontak: "/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png"
+    }];
+  }
+};

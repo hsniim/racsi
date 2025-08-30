@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchRuangan, fetchHeaderData } from '../utils/api';
+import { fetchRuangan, fetchHeaderData, fetchPjGedung } from '../utils/api';
 import RoomCard from '../components/RoomCard';
 
 function Home() {
@@ -9,6 +9,13 @@ function Home() {
     nomor_lantai: 3,
     pj_lantaipagi: "Pak Budi",
     pj_lantaisiang: "Pak Nasir"
+  });
+  const [pjGedungData, setPjGedungData] = useState({
+    nama: "Husni",
+    no_telp: "0899-8378-498",
+    link_peminjaman: "https://www.example.com",
+    qrcodepath_pinjam: "/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png",
+    qrcodepath_kontak: "/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png"
   });
   const [currentDate, setCurrentDate] = useState('');
   const [currentTime, setCurrentTime] = useState('');
@@ -24,6 +31,13 @@ function Home() {
       const header = await fetchHeaderData();
       console.log('Data Header:', header);
       setHeaderData(header);
+
+      // Load PJ Gedung data
+      const pjGedung = await fetchPjGedung();
+      console.log('Data PJ Gedung:', pjGedung);
+      if (pjGedung && pjGedung.length > 0) {
+        setPjGedungData(pjGedung[0]); // Use the first PJ Gedung data
+      }
     };
 
     loadData();
@@ -244,27 +258,27 @@ function Home() {
             {/* PJ Gedung */}
             <div className='flex items-center gap-3'>
               <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src="/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png" alt="" />
+                <img className='rounded-md w-full h-full object-cover' src={pjGedungData.qrcodepath_kontak} alt="" />
               </div>
               {/* Content */}
               <div className="flex flex-col">
                 <div className="flex flex-col gap-0">
                   <h3 className='text-2xl font-semibold text-white leading-tight'>PJ Gedung</h3>
-                  <p className="text-md text-gray-300 -mt-1">0899-8378-498</p>
+                  <p className="text-md text-gray-300 -mt-1">{pjGedungData.no_telp}</p>
                 </div>
-                <p className="text-md text-gray-300 mt-1">Husni</p>
+                <p className="text-md text-gray-300 mt-1">{pjGedungData.nama}</p>
               </div>
             </div>
 
             {/* Peminjaman Ruang */}
             <div className='flex items-center gap-3'>
               <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src="/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png" alt="" />
+                <img className='rounded-md w-full h-full object-cover' src={pjGedungData.qrcodepath_pinjam} alt="" />
               </div>
               {/* Content */}
               <div className="flex flex-col gap-3">
                 <h3 className='text-2xl font-semibold text-white leading-none'>Peminjaman<br />Ruang</h3>
-                <p className="text-md text-gray-300">https://www.example.com</p>
+                <p className="text-md text-gray-300">{pjGedungData.link_peminjaman}</p>
               </div>
             </div>
           </div>
