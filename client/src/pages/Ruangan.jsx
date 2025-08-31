@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Building, Layers, Grid, Users } from "lucide-react";
+import { Plus, Building, Layers, Grid, Users, Edit, Trash2, X } from "lucide-react";
 
 export default function Ruangan() {
   const [ruangans, setRuangans] = useState([]);
@@ -11,6 +11,7 @@ export default function Ruangan() {
     kapasitas: "",
     status: "tidak_digunakan",
   });
+  const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -47,19 +48,60 @@ export default function Ruangan() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/ruangan", form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (editId) {
+        // update ruangan
+        await axios.put(`http://localhost:5000/api/ruangan/${editId}`, form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSuccess("Ruangan berhasil diperbarui!");
+      } else {
+        // tambah ruangan
+        await axios.post("http://localhost:5000/api/ruangan", form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSuccess("Ruangan berhasil ditambahkan!");
+      }
       setForm({ id_lantai: "", nama_ruangan: "", kapasitas: "", status: "tidak_digunakan" });
-      setSuccess("Ruangan berhasil ditambahkan!");
+      setEditId(null);
       setError("");
       setTimeout(() => setSuccess(""), 3000);
       fetchRuangans();
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setError(err.response?.data?.message || "Gagal menambahkan ruangan");
+      setError(err.response?.data?.message || "Gagal menyimpan ruangan");
       setSuccess("");
     }
+  };
+
+  const handleEdit = (r) => {
+    setEditId(r.id_ruangan);
+    setForm({
+      id_lantai: r.id_lantai,
+      nama_ruangan: r.nama_ruangan,
+      kapasitas: r.kapasitas,
+      status: r.status,
+    });
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Yakin ingin menghapus ruangan ini?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/ruangan/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccess("Ruangan berhasil dihapus!");
+      fetchRuangans();
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError(err.response?.data?.message || "Gagal menghapus ruangan");
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditId(null);
+    setForm({ id_lantai: "", nama_ruangan: "", kapasitas: "", status: "tidak_digunakan" });
+    setError("");
   };
 
   return (
@@ -74,24 +116,20 @@ export default function Ruangan() {
       {/* Notifications */}
       {error && (
         <div className="mb-6 p-4 bg-red-600/20 border border-red-500/30 rounded-xl text-red-200 backdrop-blur-sm">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-red-500 rounded-full mr-3 animate-pulse"></div>
-            {error}
-          </div>
+          {error}
         </div>
       )}
       {success && (
         <div className="mb-6 p-4 bg-green-600/20 border border-green-500/30 rounded-xl text-green-200 backdrop-blur-sm">
-          <div className="flex items-center">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            {success}
-          </div>
+          {success}
         </div>
       )}
 
       {/* Form */}
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 mb-8 shadow-2xl">
-        <h2 className="text-xl font-semibold mb-4 text-gray-300">Tambah Ruangan Baru</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-300">
+          {editId ? "Edit Ruangan" : "Tambah Ruangan Baru"}
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -99,7 +137,7 @@ export default function Ruangan() {
               <select
                 value={form.id_lantai}
                 onChange={(e) => setForm({ ...form, id_lantai: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
                 required
               >
                 <option value="">Pilih Lantai</option>
@@ -118,7 +156,7 @@ export default function Ruangan() {
                 placeholder="Masukkan nama ruangan"
                 value={form.nama_ruangan}
                 onChange={(e) => setForm({ ...form, nama_ruangan: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
                 required
               />
             </div>
@@ -130,7 +168,7 @@ export default function Ruangan() {
                 placeholder="Kapasitas ruangan"
                 value={form.kapasitas}
                 onChange={(e) => setForm({ ...form, kapasitas: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
                 required
               />
             </div>
@@ -140,7 +178,7 @@ export default function Ruangan() {
               <select
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
               >
                 <option value="tidak_digunakan">Tidak Digunakan</option>
                 <option value="digunakan">Digunakan</option>
@@ -148,12 +186,23 @@ export default function Ruangan() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg border border-gray-600/30 flex items-center justify-center gap-2"
-          >
-            <Plus className="w-5 h-5" /> Tambah Ruangan
-          </button>
+          <div className="flex gap-2 mt-4">
+            {editId && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl flex items-center gap-2"
+              >
+                <X className="w-4 h-4" /> Batal
+              </button>
+            )}
+            <button
+              type="submit"
+              className="px-6 py-3 bg-gradient-to-r from-gray-700 to-gray-600 text-white font-medium rounded-xl flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" /> {editId ? "Update Ruangan" : "Tambah Ruangan"}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -169,50 +218,24 @@ export default function Ruangan() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-700/50 backdrop-blur-sm">
-                <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4" /> Gedung
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4" /> Lantai
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <Grid className="w-4 h-4" /> Ruangan
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Kapasitas
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
-                  Status
-                </th>
+              <tr className="bg-gray-700/50">
+                <th className="p-4 text-gray-300 text-center first:rounded-tl-xl first:rounded-bl-xl">Gedung</th>
+                <th className="p-4 text-gray-300 text-center">Lantai</th>
+                <th className="p-4 text-gray-300 text-center">Ruangan</th>
+                <th className="p-4 text-gray-300 text-center">Kapasitas</th>
+                <th className="p-4 text-gray-300 text-center">Status</th>
+                <th className="p-4 text-gray-300 text-center last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {ruangans.length > 0 ? (
-                ruangans.map((r, index) => (
-                  <tr
-                    key={r.id_ruangan || r.id}
-                    className={`border-b border-gray-700/30 transition-all duration-200 hover:bg-gray-700/30 ${
-                      index === ruangans.length - 1 ? "last:rounded-b-xl" : ""
-                    }`}
-                  >
-                    <td className="p-4 text-gray-200 first:rounded-bl-xl">{r.nama_gedung}</td>
-                    <td className="p-4 text-gray-200">{r.nomor_lantai}</td>
-                    <td className="p-4 text-gray-200">{r.nama_ruangan}</td>
-                    <td className="p-4 text-gray-200">
-                      <span className="px-3 py-1 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30">
-                        {r.kapasitas}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-200">
+                ruangans.map((r) => (
+                  <tr key={r.id_ruangan} className="border-b border-gray-700/30 hover:bg-gray-700/30">
+                    <td className="p-4 text-gray-200 text-center first:rounded-tl-xl first:rounded-bl-xl">{r.nama_gedung}</td>
+                    <td className="p-4 text-gray-200 text-center">{r.nomor_lantai}</td>
+                    <td className="p-4 text-gray-200 text-center">{r.nama_ruangan}</td>
+                    <td className="p-4 text-gray-200 text-center">{r.kapasitas}</td>
+                    <td className="p-4 text-gray-200 text-center">
                       <span
                         className={`px-3 py-1 text-sm rounded-full border ${
                           r.status === "digunakan"
@@ -223,18 +246,26 @@ export default function Ruangan() {
                         {r.status.replace("_", " ")}
                       </span>
                     </td>
+                    <td className="p-4 text-center space-x-2 last:rounded-tr-xl last:rounded-br-xl">
+                      <button
+                        onClick={() => handleEdit(r)}
+                        className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg border border-yellow-400/30 hover:bg-yellow-500/30"
+                      >
+                        <Edit className="inline w-4 h-4 mr-1" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(r.id_ruangan)}
+                        className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30"
+                      >
+                        <Trash2 className="inline w-4 h-4 mr-1" /> Hapus
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-gray-400">
-                    <div className="flex flex-col items-center justify-center">
-                      <svg className="w-16 h-16 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m2 0V9m0 0H5m14 0V3" />
-                      </svg>
-                      <p className="text-lg mb-2">Tidak ada data ruangan</p>
-                      <p className="text-sm text-gray-500">Mulai dengan menambahkan ruangan pertama Anda</p>
-                    </div>
+                  <td colSpan="6" className="p-8 text-center text-gray-400">
+                    Tidak ada data ruangan
                   </td>
                 </tr>
               )}

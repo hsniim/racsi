@@ -90,4 +90,43 @@ const getRuanganWithJadwal = async (req, res) => {
   }
 };
 
-module.exports = { addRuangan, getRuangans, getRuanganWithJadwal };
+// Update ruangan
+const updateRuangan = async (req, res) => {
+  const { id } = req.params;
+  const { id_lantai, nama_ruangan, kapasitas, status } = req.body;
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE ruangan SET id_lantai=?, nama_ruangan=?, kapasitas=?, status=? WHERE id_ruangan=?",
+      [id_lantai, nama_ruangan, kapasitas, status, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Ruangan tidak ditemukan" });
+    }
+
+    res.json({ message: "Ruangan berhasil diperbarui" });
+  } catch (error) {
+    console.error("Error updating ruangan:", error);
+    res.status(500).json({ message: "Gagal memperbarui ruangan", error });
+  }
+};
+
+// Delete ruangan
+const deleteRuangan = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await pool.query("DELETE FROM ruangan WHERE id_ruangan = ?", [id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Ruangan tidak ditemukan" });
+    }
+
+    res.json({ message: "Ruangan berhasil dihapus" });
+  } catch (error) {
+    console.error("Error deleting ruangan:", error);
+    res.status(500).json({ message: "Gagal menghapus ruangan", error });
+  }
+};
+
+module.exports = { addRuangan, getRuangans, getRuanganWithJadwal, updateRuangan, deleteRuangan };
