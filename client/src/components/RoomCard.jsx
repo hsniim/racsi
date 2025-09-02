@@ -1,6 +1,17 @@
 function RoomCard({ room, type }) {
+  if (!room) {
+    return (
+      <div className="w-full flex items-center bg-gray-800 rounded-lg overflow-hidden shadow-md mb-4">
+        <div className="w-3 self-stretch bg-gray-500"></div>
+        <div className="p-4 flex-1 w-full text-gray-400">
+          <h3 className="text-xl font-semibold">Memuat data...</h3>
+        </div>
+      </div>
+    );
+  }
+
   const jadwal =
-    room.jadwal_list && room.jadwal_list.length > 0
+    room?.jadwal_list && room.jadwal_list.length > 0
       ? room.jadwal_list[0]
       : null;
 
@@ -14,7 +25,7 @@ function RoomCard({ room, type }) {
 
   // Fungsi untuk format waktu tanpa detik
   const formatTime = (timeString) => {
-    if (!timeString) return timeString;
+    if (!timeString) return "";
     return timeString.slice(0, 5); // HH:MM
   };
 
@@ -46,10 +57,7 @@ function RoomCard({ room, type }) {
       {/* AKAN DIGUNAKAN */}
       {type === "akan_digunakan" && jadwal && (
         <div className="w-full flex bg-gray-800 rounded-lg overflow-hidden shadow-md mb-4">
-          {/* Strip kiri */}
           <div className={`w-3 self-stretch ${statusColor}`}></div>
-
-          {/* Konten utama */}
           <div className="p-4 flex-1 w-full text-white">
             <h3 className="text-4xl font-semibold">
               {room.nama_ruangan || "Nama Tidak Ada"}
@@ -72,19 +80,16 @@ function RoomCard({ room, type }) {
         </div>
       )}
 
-      {/* SEDANG DIGUNAKAN - Horizontal Split Card */}
+      {/* SEDANG DIGUNAKAN */}
       {type === "sedang_digunakan" && jadwal && (
         <div className="w-full flex mb-4 gap-2">
-          {/* Card Bagian Kiri - Info Ruangan */}
+          {/* Card Kiri */}
           <div className="flex flex-1 bg-gray-800 rounded-lg overflow-hidden shadow-md">
-            {/* Strip kiri */}
             <div className={`w-3 self-stretch ${statusColor}`}></div>
-            
             <div className="p-4 flex-[1] text-white">
               <h3 className="text-4xl font-semibold">
                 {room.nama_ruangan || "Nama Tidak Ada"}
               </h3>
-
               <div className="flex items-center text-gray-300 mt-2">
                 <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-5 h-5 mr-2" />
                 <span className="text-xl">
@@ -102,11 +107,9 @@ function RoomCard({ room, type }) {
             </div>
           </div>
 
-          {/* Card Bagian Kanan - Info Kegiatan */}
+          {/* Card Kanan */}
           <div className="flex-[2] bg-gray-800 rounded-lg overflow-hidden shadow-md">
-            {/* Strip kiri untuk bagian kanan juga */}
             <div className={`w-3 self-stretch ${statusColor}`}></div>
-            
             <div className="p-4 flex-1 text-white">
               <h4 className="text-3xl font-semibold">
                 {jadwal.nama_kegiatan || "Nama Kegiatan Tidak Ada"}

@@ -2,17 +2,22 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { fetchRuangan, fetchJadwal } from "./utils/api";
 
+// Halaman Publik
 import Home from "./pages/Home";
+import TvDevicePage from "./pages/TvDevicePage";
+
+// Halaman Admin
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Gedung from "./pages/Gedung";
-import PJGedung from "./pages/PJGedung"
+import PJGedung from "./pages/PJGedung";
 import Lantai from "./pages/Lantai";
 import PJLantai from "./pages/PJLantai";
 import Ruangan from "./pages/Ruangan";
 import Kegiatan from "./pages/Kegiatan";
 import Jadwal from "./pages/Jadwal";
 import Riwayat from "./pages/Riwayat";
+import TvDevice from "./pages/TvDevice";
 
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -30,6 +35,7 @@ function App() {
       setJadwal(jadwalData);
     };
     loadData();
+
     const interval = setInterval(loadData, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -37,7 +43,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Halaman Utama - Full Width */}
+        {/* ----------------- ROUTE PUBLIK ----------------- */}
         <Route
           path="/"
           element={
@@ -49,10 +55,14 @@ function App() {
           }
         />
 
-        {/* Halaman Login Admin */}
-        <Route path="/admin" element={<Login />} />
+        {/* Halaman TV Device (Publik, mirip Home tapi beda data) */}
+        <Route
+          path="/tv_device/:id_gedung/:id_lantai"
+          element={<TvDevicePage />}
+        />
 
-        {/* Semua halaman admin pakai AdminLayout */}
+        {/* ----------------- ROUTE ADMIN ----------------- */}
+        <Route path="/admin" element={<Login />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="gedung" element={<Gedung />} />
@@ -63,6 +73,7 @@ function App() {
           <Route path="kegiatan" element={<Kegiatan />} />
           <Route path="jadwal" element={<Jadwal />} />
           <Route path="riwayat" element={<Riwayat />} />
+          <Route path="tv_device" element={<TvDevice />} />
         </Route>
       </Routes>
     </Router>
