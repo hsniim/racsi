@@ -56,6 +56,18 @@ CREATE TABLE IF NOT EXISTS pj_lantai (
     INDEX idx_pj_lantai (id_lantai)
 );
 
+CREATE TABLE IF NOT EXISTS tv_device (
+    id_device INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nama_device VARCHAR(100) NOT NULL,
+    id_gedung INT UNSIGNED NOT NULL,
+    id_lantai INT UNSIGNED NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tvdevice_gedung FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_tvdevice_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- 4) RUANGAN
 CREATE TABLE IF NOT EXISTS ruangan (
     id_ruangan INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
