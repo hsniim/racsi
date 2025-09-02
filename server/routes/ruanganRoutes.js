@@ -1,6 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { addRuangan, getRuangans, getRuanganWithJadwal, updateRuangan, deleteRuangan } = require('../controllers/ruanganController');
+const { 
+  addRuangan, 
+  getRuangans, 
+  getRuanganWithJadwal, 
+  getRuanganWithJadwalTv,
+  updateRuangan, 
+  deleteRuangan 
+} = require('../controllers/ruanganController');
 const { authenticate } = require('../middleware/auth');
 
 // Tambah ruangan (butuh token)
@@ -9,13 +16,19 @@ router.post('/ruangan', authenticate, addRuangan);
 // Ambil semua ruangan (butuh token)
 router.get('/ruangan', authenticate, getRuangans);
 
-// Ambil semua ruangan + jadwal hari ini (opsional, bisa dipanggil frontend terpisah)
+// Ambil ruangan + jadwal (ADMIN, butuh token)
 router.get('/ruangan/with-jadwal', authenticate, getRuanganWithJadwal);
 
-// Update ruangan
-router.put('/lantai/:id', authenticate, updateRuangan);
+// Ambil ruangan + jadwal (PUBLIC, tanpa token) -> untuk Home / publik
+router.get('/ruangan/public/with-jadwal', getRuanganWithJadwal);
 
-// Delte ruangan
+// Untuk TV Device → route public khusus TV (tidak pakai authenticate)
+router.get('/ruangan/tv/with-jadwal', getRuanganWithJadwalTv);
+
+// Update ruangan (butuh token)
+router.put('/ruangan/:id', authenticate, updateRuangan);
+
+// Delete ruangan (butuh token)
 router.delete('/ruangan/:id', authenticate, deleteRuangan);
 
 module.exports = router;

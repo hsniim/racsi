@@ -18,17 +18,44 @@ const addLantai = async (req, res) => {
   }
 };
 
-// Ambil semua lantai
+// Ambil semua lantai - PERBAIKAN: tambah nama_lantai computed dan return semua lantai
 const getLantai = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT l.*, g.nama_gedung 
+      `SELECT l.*, 
+              g.nama_gedung,
+              CONCAT('Lantai ', l.nomor_lantai) as nama_lantai
        FROM lantai l 
-       JOIN gedung g ON l.id_gedung = g.id_gedung`
+       JOIN gedung g ON l.id_gedung = g.id_gedung
+       ORDER BY g.nama_gedung, l.nomor_lantai`
     );
+    
+    console.log('Lantai query result:', rows); // Debug log
     res.json({ data: rows });
   } catch (error) {
     console.error('Error fetching lantai:', error);
+    res.status(500).json({ message: 'Gagal mengambil data lantai', error });
+  }
+};
+
+// TAMBAHAN: Endpoint khusus untuk ambil lantai berdasarkan gedung
+const getLantaiByGedung = async (req, res) => {
+  const { id_gedung } = req.params;
+  try {
+    const [rows] = await pool.query(
+      `SELECT l.*, 
+              g.nama_gedung,
+              CONCAT('Lantai ', l.nomor_lantai) as nama_lantai
+       FROM lantai l 
+       JOIN gedung g ON l.id_gedung = g.id_gedung
+       WHERE l.id_gedung = ?
+       ORDER BY l.nomor_lantai`,
+      [id_gedung]
+    );
+    
+    res.json({ data: rows });
+  } catch (error) {
+    console.error('Error fetching lantai by gedung:', error);
     res.status(500).json({ message: 'Gagal mengambil data lantai', error });
   }
 };
@@ -77,4 +104,4 @@ const deleteLantai = async (req, res) => {
   }
 };
 
-module.exports = { addLantai, getLantai, updateLantai, deleteLantai };
+module.exports = { addLantai, getLantai, getLantaiByGedung, updateLantai, deleteLantai };
