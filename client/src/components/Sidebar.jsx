@@ -44,7 +44,7 @@ export default function Sidebar() {
 
         <Link to="/admin/tv_device" className={getLinkClasses("/admin/tv_device")}>
         <Monitor size={20} />
-          <span className="hidden md:inline">TV</span>
+          <span className="hidden md:inline">Device</span>
         </Link>
 
         <Link to="/admin/gedung" className={getLinkClasses("/admin/gedung")}>
