@@ -109,9 +109,8 @@ export default function TvDevice() {
     <div className="max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-          TV Device
+          Kelola Device
         </h1>
-        <p className="text-gray-400">Tambah & kelola device untuk tiap TV lantai/gedung.</p>
       </div>
 
       {msg.text && (
@@ -211,7 +210,7 @@ export default function TvDevice() {
                     <button onClick={() => hapus(d.id_device)} className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30">
                       <Trash2 size={16} className="inline mr-1"/> Hapus
                     </button>
-                    <button onClick={() => window.open(`/tv_device/${d.id_gedung}/${d.id_lantai}`, "_blank")} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg border border-blue-400/30 hover:bg-blue-500/30 mr-2">
+                    <button onClick={() => window.open(`/tv_device/${d.id_gedung}/${d.id_lantai}`, "_blank")} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg border border-blue-400/30 hover:bg-blue-500/30 mr-2 ml-2">
                       <Monitor size={16} className="inline mr-1"/> Tampilkan
                     </button>
                   </td>

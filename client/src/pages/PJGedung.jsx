@@ -171,10 +171,10 @@ export default function PJGedung() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Nama PJ</label>
+              <label className="block text-sm font-medium text-gray-400 mb-2">Nama PJ Gedung</label>
               <input
                 type="text"
-                placeholder="Nama penanggung jawab"
+                placeholder="Nama Penanggung Jawab"
                 value={form.nama}
                 onChange={(e) => setForm({ ...form, nama: e.target.value })}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
@@ -198,7 +198,7 @@ export default function PJGedung() {
               <label className="block text-sm font-medium text-gray-400 mb-2">Link Peminjaman</label>
               <input
                 type="text"
-                placeholder="link peminjaman (opsional)"
+                placeholder="Link Peminjaman"
                 value={form.link_peminjaman}
                 onChange={(e) => setForm({ ...form, link_peminjaman: e.target.value })}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
@@ -206,10 +206,10 @@ export default function PJGedung() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">QR Pinjam</label>
+              <label className="block text-sm font-medium text-gray-400 mb-2">QR Code Peminjaman</label>
               <input
                 type="text"
-                placeholder="path QR pinjam"
+                placeholder="path QR Code"
                 value={form.qrcodepath_pinjam}
                 onChange={(e) => setForm({ ...form, qrcodepath_pinjam: e.target.value })}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
@@ -217,10 +217,10 @@ export default function PJGedung() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">QR Kontak</label>
+              <label className="block text-sm font-medium text-gray-400 mb-2">QR Code Kontak</label>
               <input
                 type="text"
-                placeholder="path QR kontak"
+                placeholder="path QR Code"
                 value={form.qrcodepath_kontak}
                 onChange={(e) => setForm({ ...form, qrcodepath_kontak: e.target.value })}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
