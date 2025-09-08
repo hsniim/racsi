@@ -13,6 +13,7 @@ export default function AdminLayout() {
     "/admin/ruangan": "Ruangan",
     "/admin/kegiatan": "Kegiatan",
     "/admin/jadwal": "Jadwal",
+    "/admin/agenda": "Agenda",
     "/admin/riwayat": "Riwayat",
   };
 

@@ -35,7 +35,7 @@ export default function Riwayat() {
       <div className="flex items-center gap-2 mb-6">
         <History className="w-7 h-7 text-gray-800 dark:text-gray-200" />
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          Riwayat Kegiatan
+          Riwayat Agenda
         </h1>
       </div>
 
@@ -44,7 +44,7 @@ export default function Riwayat() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-300">Daftar Riwayat</h2>
           <span className="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full border border-gray-600/30">
-            {riwayat.length} Kegiatan
+            {riwayat.length} Agenda
           </span>
         </div>
 
