@@ -90,6 +90,11 @@ CREATE TABLE IF NOT EXISTS kegiatan (
     nama_kegiatan VARCHAR(50) NOT NULL,
     deskripsi_kegiatan TEXT NOT NULL,
     pengguna VARCHAR(30) NOT NULL,
+    recurrence_type ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none',
+    recurrence_interval INT DEFAULT 1,
+    recurrence_days VARCHAR(50) NULL, -
+    recurrence_end_date DATE NULL,
+    recurrence_count INT NULL;
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_kegiatan_ruangan
         FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan)
@@ -105,6 +110,11 @@ CREATE TABLE IF NOT EXISTS jadwal (
     tanggal DATE NOT NULL,
     waktu_mulai TIME NOT NULL,
     waktu_selesai TIME NOT NULL,
+    recurrence_type ENUM('none', 'daily', 'weekly', 'monthly') DEFAULT 'none',
+    recurrence_interval INT DEFAULT 1,
+    recurrence_days VARCHAR(50) NULL, -
+    recurrence_end_date DATE NULL,
+    recurrence_count INT NULL;
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_jadwal_kegiatan
         FOREIGN KEY (id_kegiatan) REFERENCES kegiatan(id_kegiatan)

@@ -72,14 +72,9 @@ export default function Sidebar() {
           <span className="hidden md:inline">Ruangan</span>
         </Link>
 
-        <Link to="/admin/kegiatan" className={getLinkClasses("/admin/kegiatan")}>
+        <Link to="/admin/agenda" className={getLinkClasses("/admin/agenda")}>
           <ClipboardList size={20} />
-          <span className="hidden md:inline">Kegiatan</span>
-        </Link>
-
-        <Link to="/admin/jadwal" className={getLinkClasses("/admin/jadwal")}>
-          <CalendarDays size={20} />
-          <span className="hidden md:inline">Jadwal</span>
+          <span className="hidden md:inline">Agenda</span>
         </Link>
 
         {/* Menu Footer */}
