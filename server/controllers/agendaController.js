@@ -192,9 +192,9 @@ if (conflicts.length > 0) {
     for (const e of events) {
       const tanggalStr = e.toISOString().slice(0, 10);
       await conn.query(
-        `INSERT INTO jadwal 
-         (id_kegiatan, tanggal, waktu_mulai, waktu_selesai, created_at, template_id, recurrence_type, recurrence_interval, recurrence_days, recurrence_end_date, recurrence_count) 
-         VALUES (?, ?, ?, ?, NOW(), NULL, ?, ?, ?, ?, ?)`,
+  `     INSERT INTO jadwal 
+        (id_kegiatan, tanggal, waktu_mulai, waktu_selesai, created_at, recurrence_type, recurrence_interval, recurrence_days, recurrence_end_date, recurrence_count) 
+        VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)`,
         [
           kegiatan.insertId,
           tanggalStr,
