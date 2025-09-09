@@ -12,6 +12,58 @@ import {
   Repeat,
 } from "lucide-react";
 
+// Utility functions untuk format tanggal Indonesia
+const formatDateToIndonesian = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  
+  // Cek jika tanggal valid
+  if (isNaN(date.getTime())) return dateString;
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+};
+
+const formatDateWithMonthName = (dateString) => {
+  if (!dateString) return '';
+  
+  const date = new Date(dateString);
+  
+  // Cek jika tanggal valid
+  if (isNaN(date.getTime())) return dateString;
+  
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  
+  return `${day} ${month} ${year}`;
+};
+
+const formatTimeToIndonesian = (timeString) => {
+  if (!timeString) return '';
+  
+  // Jika sudah format HH:MM, return as is
+  if (timeString.match(/^\d{2}:\d{2}$/)) {
+    return timeString;
+  }
+  
+  // Jika format HH:MM:SS, ambil HH:MM saja
+  if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+    return timeString.substring(0, 5);
+  }
+  
+  return timeString;
+};
+
 export default function Agenda() {
   const [agendas, setAgendas] = useState([]);
   const [ruangans, setRuangans] = useState([]);
@@ -114,7 +166,7 @@ export default function Agenda() {
       tanggal: a.tanggal,
       waktu_mulai: a.waktu_mulai,
       waktu_selesai: a.waktu_selesai,
-      recurrence_type: "none", // default (karena getAgenda tidak bawa data recurrence)
+      recurrence_type: "none",
       recurrence_interval: 1,
       recurrence_days: [],
       recurrence_end_date: "",
@@ -403,7 +455,9 @@ export default function Agenda() {
                 <th className="p-4 text-left text-gray-300 font-medium">
                   <Calendar className="w-4 h-4 inline" /> Tanggal
                 </th>
-                <th className="p-4 text-left text-gray-300 font-medium"><Clock className="w-4 h-4 inline" /> Waktu</th>
+                <th className="p-4 text-left text-gray-300 font-medium">
+                  <Clock className="w-4 h-4 inline" /> Waktu
+                </th>
                 <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
                   Aksi
                 </th>
@@ -424,8 +478,12 @@ export default function Agenda() {
                     <td className="p-4 text-gray-200 font-medium">{a.nama_kegiatan}</td>
                     <td className="p-4 text-gray-400">{a.deskripsi_kegiatan}</td>
                     <td className="p-4 text-gray-200">{a.pengguna}</td>
-                    <td className="p-4 text-gray-200">{a.tanggal}</td>
-                    <td className="p-4 text-gray-200">{a.waktu_mulai} - {a.waktu_selesai}</td>
+                    <td className="p-4 text-gray-200">
+                      {formatDateWithMonthName(a.tanggal)}
+                    </td>
+                    <td className="p-4 text-gray-200">
+                      {formatTimeToIndonesian(a.waktu_mulai)} - {formatTimeToIndonesian(a.waktu_selesai)} WIB
+                    </td>
                     <td className="p-4 text-gray-200 space-x-2 last:rounded-tr-xl last:rounded-br-xl">
                       <button
                         onClick={() => handleEdit(a)}
