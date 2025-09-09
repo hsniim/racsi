@@ -482,7 +482,7 @@ export default function Agenda() {
                       {formatDateWithMonthName(a.tanggal)}
                     </td>
                     <td className="p-4 text-gray-200">
-                      {formatTimeToIndonesian(a.waktu_mulai)} - {formatTimeToIndonesian(a.waktu_selesai)} WIB
+                      {formatTimeToIndonesian(a.waktu_mulai)} - {formatTimeToIndonesian(a.waktu_selesai)}
                     </td>
                     <td className="p-4 text-gray-200 space-x-2 last:rounded-tr-xl last:rounded-br-xl">
                       <button
