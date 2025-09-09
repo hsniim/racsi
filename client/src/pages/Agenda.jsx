@@ -18,7 +18,6 @@ const formatDateToIndonesian = (dateString) => {
   
   const date = new Date(dateString);
   
-  // Cek jika tanggal valid
   if (isNaN(date.getTime())) return dateString;
   
   const day = date.getDate().toString().padStart(2, '0');
@@ -32,8 +31,6 @@ const formatDateWithMonthName = (dateString) => {
   if (!dateString) return '';
   
   const date = new Date(dateString);
-  
-  // Cek jika tanggal valid
   if (isNaN(date.getTime())) return dateString;
   
   const months = [
@@ -51,15 +48,9 @@ const formatDateWithMonthName = (dateString) => {
 const formatTimeToIndonesian = (timeString) => {
   if (!timeString) return '';
   
-  // Jika sudah format HH:MM, return as is
-  if (timeString.match(/^\d{2}:\d{2}$/)) {
-    return timeString;
-  }
+  if (timeString.match(/^\d{2}:\d{2}$/)) return timeString;
   
-  // Jika format HH:MM:SS, ambil HH:MM saja
-  if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
-    return timeString.substring(0, 5);
-  }
+  if (timeString.match(/^\d{2}:\d{2}:\d{2}$/)) return timeString.substring(0, 5);
   
   return timeString;
 };
@@ -80,6 +71,10 @@ export default function Agenda() {
     recurrence_days: [],
     recurrence_end_date: "",
     recurrence_count: "",
+    recurrence_monthly_mode: "date",
+    recurrence_monthly_day: "",           
+    recurrence_monthly_week: "",          
+    recurrence_monthly_weekday: "",
   });
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
@@ -146,6 +141,10 @@ export default function Agenda() {
         recurrence_days: [],
         recurrence_end_date: "",
         recurrence_count: "",
+        recurrence_monthly_mode: "date",
+        recurrence_monthly_day: "",           
+        recurrence_monthly_week: "",          
+        recurrence_monthly_weekday: "",
       });
       setEditId(null);
       setError("");
@@ -166,11 +165,15 @@ export default function Agenda() {
       tanggal: a.tanggal,
       waktu_mulai: a.waktu_mulai,
       waktu_selesai: a.waktu_selesai,
-      recurrence_type: "none",
-      recurrence_interval: 1,
-      recurrence_days: [],
-      recurrence_end_date: "",
-      recurrence_count: "",
+      recurrence_type: a.recurrence_type || "none",
+      recurrence_interval: a.recurrence_interval || 1,
+      recurrence_days: a.recurrence_days ? a.recurrence_days.split(",") : [],
+      recurrence_end_date: a.recurrence_end_date || "",
+      recurrence_count: a.recurrence_count || "",
+      recurrence_monthly_mode: a.recurrence_monthly_mode || "date",
+      recurrence_monthly_day: a.recurrence_monthly_day || "",
+      recurrence_monthly_week: a.recurrence_monthly_week || "",
+      recurrence_monthly_weekday: a.recurrence_monthly_weekday || "",
     });
     setEditId(a.id_jadwal);
   };
@@ -343,7 +346,7 @@ export default function Agenda() {
                   {/* Interval */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Interval
+                      Ulangi Setiap
                     </label>
                     <input
                       type="number"
@@ -370,7 +373,7 @@ export default function Agenda() {
                   {/* Count */}
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Jumlah Maksimal
+                      Jumlah Agenda
                     </label>
                     <input
                       type="number"
@@ -407,6 +410,62 @@ export default function Agenda() {
                           </label>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Bulanan */}
+                  {form.recurrence_type === "monthly" && (
+                    <div className="col-span-2 border border-gray-600/30 p-4 rounded-lg mt-4">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
+                        Mode Bulanan
+                      </label>
+                      <select
+                        value={form.recurrence_monthly_mode}
+                        onChange={(e) => setForm({ ...form, recurrence_monthly_mode: e.target.value })}
+                        className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white mb-3"
+                      >
+                        <option value="date">By Date (Tanggal)</option>
+                        <option value="day">By Day (Minggu + Hari)</option>
+                      </select>
+
+                      {form.recurrence_monthly_mode === "date" && (
+                        <input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={form.recurrence_monthly_day}
+                          onChange={(e) => setForm({ ...form, recurrence_monthly_day: e.target.value })}
+                          placeholder="Tanggal (1-31)"
+                          className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                        />
+                      )}
+
+                      {form.recurrence_monthly_mode === "day" && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <select
+                            value={form.recurrence_monthly_week}
+                            onChange={(e) => setForm({ ...form, recurrence_monthly_week: e.target.value })}
+                            className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                          >
+                            <option value="">-- Pilih Minggu ke --</option>
+                            <option value="1">Minggu ke-1</option>
+                            <option value="2">Minggu ke-2</option>
+                            <option value="3">Minggu ke-3</option>
+                            <option value="4">Minggu ke-4</option>
+                            <option value="-1">Minggu Terakhir</option>
+                          </select>
+                          <select
+                            value={form.recurrence_monthly_weekday}
+                            onChange={(e) => setForm({ ...form, recurrence_monthly_weekday: e.target.value })}
+                            className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                          >
+                            <option value="">-- Pilih Hari --</option>
+                            {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
+                              <option key={day} value={day}>{day}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
