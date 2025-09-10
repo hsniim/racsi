@@ -55,6 +55,32 @@ const formatTimeToIndonesian = (timeString) => {
   return timeString;
 };
 
+const getDefaultEndDate = (startDate, recurrenceType, interval = 1, count = 6) => {
+  if (!startDate) return "";
+  const date = new Date(startDate);
+
+  switch (recurrenceType) {
+    case "daily":
+      date.setDate(date.getDate() + count - 1);
+      break;
+    case "weekly":
+      date.setDate(date.getDate() + 7 * (count - 1));
+      break;
+    case "monthly":
+      date.setMonth(date.getMonth() + (count - 1));
+      break;
+    default:
+      return "";
+  }
+
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+
+
 export default function Agenda() {
   const [agendas, setAgendas] = useState([]);
   const [ruangans, setRuangans] = useState([]);
@@ -104,6 +130,26 @@ export default function Agenda() {
     }
   };
 
+  // Auto set default tanggal berakhir saat membuat agenda berulang
+useEffect(() => {
+  if (
+    form.recurrence_type !== "none" &&
+    form.tanggal &&
+    !form.recurrence_end_date &&
+    !form.recurrence_count
+  ) {
+    setForm(prev => ({
+      ...prev,
+      recurrence_end_date: getDefaultEndDate(
+        prev.tanggal,
+        prev.recurrence_type,
+        prev.recurrence_interval
+      )
+    }));
+  }
+}, [form.tanggal, form.recurrence_type, form.recurrence_interval]);
+
+
   useEffect(() => {
     fetchAgendas();
     fetchRuangans();
@@ -112,10 +158,17 @@ export default function Agenda() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
+      // logika baru: hanya kirim salah satu (end_date atau count)
+      let payload = {
         ...form,
         recurrence_days: form.recurrence_days.join(","),
       };
+
+      if (form.recurrence_end_date) {
+        payload.recurrence_count = ""; // kosongkan jika end_date dipakai
+      } else if (form.recurrence_count) {
+        payload.recurrence_end_date = ""; // kosongkan jika count dipakai
+      }
 
       if (editId) {
         await axios.put(`http://localhost:5000/api/agenda/${editId}`, payload, {
@@ -292,13 +345,24 @@ export default function Agenda() {
             {/* Tanggal */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Tanggal</label>
-              <input
-                type="date"
-                value={form.tanggal}
-                onChange={(e) => setForm({ ...form, tanggal: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
-                required
-              />
+<input
+  type="date"
+  value={form.tanggal}
+  onChange={(e) => {
+    const newDate = e.target.value;
+    setForm(prev => ({
+      ...prev,
+      tanggal: newDate,
+      recurrence_end_date:
+        prev.recurrence_type !== "none" && !prev.recurrence_count
+          ? getDefaultEndDate(newDate, prev.recurrence_type, prev.recurrence_interval)
+          : prev.recurrence_end_date
+    }));
+  }}
+  className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+  required
+/>
+
             </div>
 
             {/* Waktu Mulai */}
@@ -348,13 +412,48 @@ export default function Agenda() {
                     <label className="block text-sm font-medium text-gray-400 mb-2">
                       Ulangi Setiap
                     </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.recurrence_interval}
-                      onChange={(e) => setForm({ ...form, recurrence_interval: e.target.value })}
-                      className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
-                    />
+
+                    {form.recurrence_type === "daily" && (
+                      <select
+                        value={form.recurrence_interval}
+                        onChange={(e) => setForm({ ...form, recurrence_interval: e.target.value })}
+                        className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                      >
+                        {[...Array(99)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1} hari
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {form.recurrence_type === "weekly" && (
+                      <select
+                        value={form.recurrence_interval}
+                        onChange={(e) => setForm({ ...form, recurrence_interval: e.target.value })}
+                        className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                      >
+                        {[...Array(50)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1} minggu
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {form.recurrence_type === "monthly" && (
+                      <select
+                        value={form.recurrence_interval}
+                        onChange={(e) => setForm({ ...form, recurrence_interval: e.target.value })}
+                        className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                      >
+                        {[...Array(10)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1} bulan
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   {/* End Date */}
@@ -365,8 +464,19 @@ export default function Agenda() {
                     <input
                       type="date"
                       value={form.recurrence_end_date}
-                      onChange={(e) => setForm({ ...form, recurrence_end_date: e.target.value })}
-                      className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          recurrence_end_date: e.target.value,
+                          recurrence_count: e.target.value ? "" : form.recurrence_count, // kosongkan count kalau end_date diisi
+                        })
+                      }
+                      disabled={form.recurrence_count} // disable kalau ada count
+                      className={`w-full p-3 border rounded-xl text-white ${
+                        form.recurrence_count
+                          ? "bg-gray-600/30 border-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-700/50 border-gray-600/30"
+                      }`}
                     />
                   </div>
 
@@ -379,8 +489,19 @@ export default function Agenda() {
                       type="number"
                       min="1"
                       value={form.recurrence_count}
-                      onChange={(e) => setForm({ ...form, recurrence_count: e.target.value })}
-                      className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          recurrence_count: e.target.value,
+                          recurrence_end_date: e.target.value ? "" : form.recurrence_end_date, // kosongkan end_date kalau count diisi
+                        })
+                      }
+                      disabled={form.recurrence_end_date} // disable kalau ada end_date
+                      className={`w-full p-3 border rounded-xl text-white ${
+                        form.recurrence_end_date
+                          ? "bg-gray-600/30 border-gray-600 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-700/50 border-gray-600/30"
+                      }`}
                     />
                   </div>
 
@@ -417,7 +538,7 @@ export default function Agenda() {
                   {form.recurrence_type === "monthly" && (
                     <div className="col-span-2 border border-gray-600/30 p-4 rounded-lg mt-4">
                       <label className="block text-sm font-medium text-gray-400 mb-2">
-                        Mode Bulanan
+                        Terjadi Pada
                       </label>
                       <select
                         value={form.recurrence_monthly_mode}
