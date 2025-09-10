@@ -60,6 +60,12 @@ function App() {
           element={<TvDevicePage />}
         />
 
+        {/* Route TV untuk admin - dipindah ke luar parent route admin */}
+        <Route 
+          path="/admin/tv/:id_gedung/:id_lantai" 
+          element={<TvDevicePage />} 
+        />
+
         {/* ----------------- ROUTE ADMIN ----------------- */}
         <Route path="/admin" element={<Login />} />
         <Route path="/admin" element={<AdminLayout />}>
@@ -72,6 +78,7 @@ function App() {
           <Route path="agenda" element={<Agenda />} />
           <Route path="riwayat" element={<Riwayat />} />
           <Route path="tv_device" element={<TvDevice />} />
+          {/* Route bermasalah sudah dipindah ke atas */}
         </Route>
       </Routes>
     </Router>
