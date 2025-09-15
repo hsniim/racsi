@@ -1,83 +1,83 @@
-import { useEffect, useState } from 'react';
-import { fetchRuanganByGedungLantai, fetchHeaderData, fetchPjGedung } from '../utils/api';
-import RoomCard from '../components/RoomCard';
+import { useState, useEffect } from 'react';
+import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers } from 'lucide-react';
+import axios from 'axios';
 
-function Home() {
-  const [data, setData] = useState([]);
-  const [headerData, setHeaderData] = useState({
-    nama_gedung: "RACSI",
-    nomor_lantai: 3,
-    pj_lantaipagi: "Pak Budi",
-    pj_lantaisiang: "Pak Nasir"
-  });
-  const [pjGedungData, setPjGedungData] = useState({
-    nama: "Husni",
-    no_telp: "0899-8378-498",
-    link_peminjaman: "https://www.example.com",
-    qrcodepath_pinjam: "/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png",
-    qrcodepath_kontak: "/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png"
-  });
-  const [currentDate, setCurrentDate] = useState('');
+function LandingPage() {
+  const [selectedGedung, setSelectedGedung] = useState('');
+  const [selectedLantai, setSelectedLantai] = useState('');
   const [currentTime, setCurrentTime] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [msg, setMsg] = useState({ type: "", text: "" });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Ambil header dulu (bisa berisi nomor_lantai / atau id)
-        const header = await fetchHeaderData();
-        if (header && typeof header === 'object') {
-          setHeaderData(prev => ({
-            ...prev,
-            nama_gedung: header.nama_gedung ?? prev.nama_gedung,
-            nomor_lantai: header.nomor_lantai ?? prev.nomor_lantai,
-            pj_lantaipagi: header.pj_lantaipagi ?? prev.pj_lantaipagi,
-            pj_lantaisiang: header.pj_lantaisiang ?? prev.pj_lantaisiang
-          }));
-        }
+  // Data states - sama seperti Dashboard.jsx
+  const [gedungs, setGedungs] = useState([]);
+  const [lantais, setLantais] = useState([]);
+  const [filteredLantais, setFilteredLantais] = useState([]);
 
-        // Tentukan id_gedung & id_lantai yang akan dipakai untuk fetch ruangan.
-        // Cek beberapa kemungkinan field dari header
-        const idGedung = header?.id_gedung ?? header?.idGedung ?? header?.id ?? 1;
-        const idLantai = header?.id_lantai ?? header?.idLantai ?? header?.nomor_lantai ?? 1;
+  // API configuration - sama seperti Dashboard.jsx
+  const api = axios.create({
+    baseURL: "http://localhost:5000/api",
+    // Tidak menggunakan token karena ini landing page publik
+  });
 
-        // Ambil ruangan berdasarkan gedung & lantai (function yang sudah ada di api.js)
-        const raw = await fetchRuanganByGedungLantai(idGedung, idLantai);
+  // Load data dari API - adaptasi dari Dashboard.jsx
+  const loadData = async () => {
+    try {
+      const [g, l] = await Promise.all([
+        api.get("/gedung"),
+        api.get("/lantai"),
+      ]);
+      
+      setGedungs(g.data.data || []);
+      setLantais(l.data.data || []);
+      
+      console.log("Gedungs:", g.data.data);
+      console.log("Lantais:", l.data.data);
+      
+    } catch (error) {
+      console.error("Error loading data:", error);
+      setMsg({ type: "error", text: "Gagal memuat data gedung dan lantai" });
+      
+      // Fallback ke mock data jika API gagal
+      setGedungs([
+        { id_gedung: 1, nama_gedung: 'SKSG' },
+        { id_gedung: 2, nama_gedung: 'FMIPA' },
+        { id_gedung: 3, nama_gedung: 'FEB' },
+        { id_gedung: 4, nama_gedung: 'FHISIP' },
+        { id_gedung: 5, nama_gedung: 'FKIP' }
+      ]);
+    }
+  };
 
-        // Normalisasi response: bisa berupa array langsung atau objek { data: [...] }
-        let ruanganList = [];
-        if (Array.isArray(raw)) ruanganList = raw;
-        else if (raw && Array.isArray(raw.data)) ruanganList = raw.data;
-        else if (raw && Array.isArray(raw.result)) ruanganList = raw.result;
-        else ruanganList = Array.isArray(raw) ? raw : [];
+  // Handle gedung change - sama seperti Dashboard.jsx
+  const handleGedungChange = (e) => {
+    const selectedGedungId = e.target.value;
+    console.log("Selected gedung ID:", selectedGedungId);
+    
+    setSelectedGedung(selectedGedungId);
+    setSelectedLantai(''); // Reset lantai saat gedung berubah
+    
+    if (selectedGedungId) {
+      // Filter lantai berdasarkan gedung - sama seperti Dashboard.jsx
+      const filtered = lantais.filter(l => String(l.id_gedung) === String(selectedGedungId));
+      console.log("Filtered lantais:", filtered);
+      setFilteredLantais(filtered);
+    } else {
+      setFilteredLantais([]);
+    }
+  };
 
-        setData(ruanganList);
-      } catch (err) {
-        console.error("Gagal load data Home:", err);
-        setData([]); // fallback aman
-      }
+  // Handle lantai change
+  const handleLantaiChange = (e) => {
+    const selectedLantaiId = e.target.value;
+    setSelectedLantai(selectedLantaiId);
+  };
 
-      // PJ Gedung (tetap ambil setelah atau paralel)
-      try {
-        const pjGedung = await fetchPjGedung();
-        if (Array.isArray(pjGedung) && pjGedung.length > 0) {
-          setPjGedungData(pjGedung[0]);
-        }
-      } catch (err) {
-        console.error("Gagal fetch PJ Gedung:", err);
-      }
-    };
-
-    loadData();
-    const interval = setInterval(loadData, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update waktu realtime setiap detik
+  // Update waktu realtime
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentDate(now.toISOString().split('T')[0]); // YYYY-MM-DD
-      setCurrentTime(now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)); // HH:MM
+      setCurrentTime(now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5));
     };
     
     updateTime();
@@ -85,134 +85,67 @@ function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  function getStatusRuangan(ruangan, currentDate, currentTime) {
-    if (!ruangan?.jadwal_list || ruangan.jadwal_list.length === 0) return 'tidak_digunakan';
-    
-    let sedang = false;
-    let akan = false;
-    
-    ruangan.jadwal_list.forEach(jadwal => {
-      if (!jadwal?.tanggal || jadwal.tanggal !== currentDate) return;
-      
-      if (currentTime >= jadwal.waktu_mulai && currentTime <= jadwal.waktu_selesai) sedang = true;
-      else if (currentTime < jadwal.waktu_mulai) akan = true;
-    });
-    
-    if (sedang) return 'sedang_digunakan';
-    if (akan) return 'akan_digunakan';
-    return 'tidak_digunakan';
-  }
+  // Load data saat komponen mount
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const unusedRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'tidak_digunakan');
-  const usedRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'sedang_digunakan');
-  const upcomingRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'akan_digunakan');
-
-  // ScrollableSection sama persis dengan semantik Home sebelumnya
-  const ScrollableSection = ({ title, rooms, maxCards, bgColor, textColor, scrollSpeed = 30 }) => {
-    const shouldScroll = rooms.length > maxCards;
-
-    const getCardHeight = () => {
-      switch (bgColor) {
-        case 'tidak_digunakan':
-          return 117;
-        case 'akan_digunakan':
-        case 'sedang_digunakan':
-          return 195;
-        default:
-          return 120;
-      }
-    };
-
-    const cardHeight = getCardHeight();
-    const containerHeight = maxCards * cardHeight;
-
-    if (!shouldScroll) {
-      return (
-        <div className="min-w-0">
-          <h2 className={`text-xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>
-            {title}
-          </h2>
-          <div className="w-full overflow-hidden" style={{ height: `${containerHeight}px` }}>
-            <div className="flex flex-col">
-              {rooms.length > 0 ? (
-                rooms.slice(0, maxCards).map((room) => (
-                  <div
-                    key={room.id_ruangan}
-                    style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }}
-                    className="flex-shrink-0"
-                  >
-                    <RoomCard room={room} type={bgColor} />
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-400 text-center">Tidak ada ruangan.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
+  const handleViewRooms = async () => {
+    if (!selectedGedung || !selectedLantai) {
+      setMsg({ type: "error", text: "Harap pilih gedung dan lantai" });
+      return;
     }
-
-    return (
-      <div className="min-w-0">
-        <h2 className={`text-xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>
-          {title}
-        </h2>
-        <div className="w-full overflow-hidden relative" style={{ height: `${containerHeight}px` }}>
-          <div className={`scroll-${bgColor} absolute top-0 left-0 w-full`} style={{ '--scroll-speed': `${scrollSpeed}s` }}>
-            <div className="room-set">
-              {rooms.map((room) => (
-                <div key={`first-${room.id_ruangan}`} style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }} className="flex-shrink-0">
-                  <RoomCard room={room} type={bgColor} />
-                </div>
-              ))}
-            </div>
-            <div className="room-set">
-              {rooms.map((room) => (
-                <div key={`second-${room.id_ruangan}`} style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }} className="flex-shrink-0">
-                  <RoomCard room={room} type={bgColor} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    
+    setIsLoading(true);
+    setMsg({ type: "", text: "" });
+    
+    try {
+      // Simulasi loading
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redirect ke halaman tampilan dengan parameter gedung & lantai
+      // Sesuaikan dengan routing sistem Anda
+      window.open(`/tv_device/${selectedGedung}/${selectedLantai}`, "_blank");
+      
+      setMsg({ type: "success", text: "Berhasil membuka tampilan ruangan" });
+    } catch (error) {
+      setMsg({ type: "error", text: "Gagal membuka tampilan ruangan" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  const isFormValid = selectedGedung && selectedLantai;
+
+  // Get selected gedung and lantai names untuk display
+  const selectedGedungName = gedungs.find(g => g.id_gedung === parseInt(selectedGedung))?.nama_gedung || '';
+  const selectedLantaiName = filteredLantais.find(l => l.id_lantai === parseInt(selectedLantai))?.nomor_lantai || '';
+
   return (
-    <div className="h-full w-full bg-primary text-white">
-      <div className="w-full max-w-none px-4 py-6">
-        {/* Header dengan Dynamic Data */}
-        <div className='flex justify-between items-center mb-7 p-6 bg-gray-800 rounded-lg'>
-          {/* Logo dan Title */}
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4 transform rotate-45">
+    <div className="min-h-screen bg-gray800 text-white relative overflow-hidden">
+      {/* Background Pattern - sama dengan design sebelumnya */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
+        <div className="absolute bottom-20 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
+        <div className="absolute bottom-40 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
+      </div>
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <header className="p-6 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center transform rotate-45">
               <div className="w-6 h-6 bg-gray-800 rounded-sm transform -rotate-45 flex items-center justify-center">
                 <div className="w-3 h-2 bg-white rounded-sm"></div>
               </div>
             </div>
-            <h1 className="text-5xl font-bold text-white">
-              {headerData.nama_gedung}
-            </h1>
+            <h1 className="text-2xl font-bold">RACSI</h1>
           </div>
-
-          {/* Info Tengah */}
-          <div className="text-center">
-            <p className="text-3xl text-white font-medium">
-              Lantai {headerData.nomor_lantai}
-            </p>
-            <p className="text-2xl text-gray-300">
-              {headerData.pj_lantaipagi} | {headerData.pj_lantaisiang}
-            </p>
-          </div>
-
-          {/* Waktu */}
+          
           <div className="text-right">
-            <p className="text-4xl font-bold text-white">{currentTime}</p>
-            <p className="text-base text-gray-300">
+            <p className="text-xl font-bold">{currentTime}</p>
+            <p className="text-sm text-gray-300">
               {new Date().toLocaleDateString('id-ID', {
                 weekday: 'long',
                 day: 'numeric',
@@ -221,115 +154,150 @@ function Home() {
               })}
             </p>
           </div>
-        </div>
+        </header>
 
-        {/* Container Flex untuk 3 kolom sejajar dengan proporsi berbeda */}
-        <div className="flex gap-6 w-full">
-          <div className="flex-[1]">
-            <ScrollableSection
-              title="Tidak Digunakan"
-              rooms={unusedRuangan}
-              maxCards={5}
-              bgColor="tidak_digunakan"
-              textColor="text-green-400"
-              scrollSpeed={45}
-            />
-          </div>
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full max-w-2xl">
+            {/* Hero Section */}
+            <div className="text-center mb-12">
+              <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-45 shadow-2xl">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl transform -rotate-45 flex items-center justify-center">
+                  <Building className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              
+              <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                RACSI
+              </h1>
+              <p className="text-xl text-gray-300 mb-2">
+                Room and Control Schedule Interface
+              </p>
+              <p className="text-gray-400 max-w-lg mx-auto">
+                Sistem informasi ketersediaan ruangan kampus untuk memudahkan monitoring dan peminjaman ruang
+              </p>
+            </div>
 
-          <div className="flex-[2]">
-            <ScrollableSection
-              title="Sedang Digunakan"
-              rooms={usedRuangan}
-              maxCards={3}
-              bgColor="sedang_digunakan"
-              textColor="text-red-400"
-              scrollSpeed={30}
-            />
-          </div>
+            {/* Selection Form - dengan styling seperti Dashboard.jsx */}
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-700/30">
+              <h2 className="text-2xl font-semibold mb-6 text-center flex items-center justify-center gap-3 text-gray-300">
+                <MapPin className="w-6 h-6 text-blue-400" />
+                Pilih Lokasi Ruangan
+              </h2>
 
-          <div className="flex-[1]">
-            <ScrollableSection
-              title="Akan Digunakan"
-              rooms={upcomingRuangan}
-              maxCards={3}
-              bgColor="akan_digunakan"
-              textColor="text-yellow-400"
-              scrollSpeed={30}
-            />
+              {/* Message Display - sama seperti Dashboard.jsx */}
+              {msg.text && (
+                <div className={`mb-6 p-3 rounded-xl border ${
+                  msg.type === "success" 
+                    ? "bg-green-600/20 border-green-400/30 text-green-200" 
+                    : "bg-red-600/20 border-red-400/30 text-red-200"
+                }`}>
+                  {msg.text}
+                </div>
+              )}
+
+              <div className="space-y-6">
+                {/* Gedung Selection - sama seperti Dashboard.jsx */}
+                <div>
+                  <label className="block text-sm font-medium mb-3 text-gray-300 flex items-center gap-2">
+                    <Building2 className="w-4 h-4" />
+                    Pilih Gedung *
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedGedung}
+                      onChange={handleGedungChange}
+                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70"
+                      required
+                    >
+                      <option value="" className="text-gray-800">
+                        -- Pilih Gedung --
+                      </option>
+                      {gedungs.map((gedung) => (
+                        <option key={gedung.id_gedung} value={gedung.id_gedung} className="text-gray-800">
+                          {gedung.nama_gedung}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Lantai Selection - sama seperti Dashboard.jsx */}
+                <div>
+                  <label className="block text-sm font-medium mb-3 text-gray-300 flex items-center gap-2">
+                    <Layers className="w-4 h-4" />
+                    Pilih Lantai *
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={selectedLantai}
+                      onChange={handleLantaiChange}
+                      disabled={!selectedGedung}
+                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                      required
+                    >
+                      <option value="" className="text-gray-800">
+                        -- Pilih Lantai --
+                      </option>
+                      {filteredLantais.map((lantai) => (
+                        <option key={lantai.id_lantai} value={lantai.id_lantai} className="text-gray-800">
+                          Lantai {lantai.nomor_lantai}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                  {/* Warning message - sama seperti Dashboard.jsx */}
+                  {selectedGedung && filteredLantais.length === 0 && (
+                    <p className="text-sm text-yellow-400 mt-2">
+                      Tidak ada lantai tersedia untuk gedung ini
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit Button - styling sama dengan Dashboard.jsx */}
+                <button
+                  onClick={handleViewRooms}
+                  disabled={!isFormValid || isLoading}
+                  className="w-full mt-8 p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl font-semibold text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:hover:transform-none flex items-center justify-center gap-3"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Memuat Tampilan...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-5 h-5" />
+                      Lihat Ruangan
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Selected Info - dengan data real dari API */}
+              {isFormValid && (
+                <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                  <div className="flex items-center gap-3 text-green-400">
+                    <Monitor className="w-5 h-5" />
+                    <span className="font-medium">
+                      Akan menampilkan: {selectedGedungName} - Lantai {selectedLantaiName}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </main>
 
         {/* Footer */}
-        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl">
-          <div className="flex justify-between items-center gap-8">
-            <div className='flex items-center gap-3'>
-              <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src={pjGedungData.qrcodepath_kontak} alt="QR Kontak PJ" />
-              </div>
-              <div className="flex flex-col">
-                <div className="flex flex-col gap-0">
-                  <h3 className='text-2xl font-semibold text-white leading-tight'>PJ Gedung</h3>
-                  <p className="text-md text-gray-300 -mt-1">{pjGedungData.no_telp}</p>
-                </div>
-                <p className="text-md text-gray-300 mt-1">{pjGedungData.nama}</p>
-              </div>
-            </div>
-
-            <div className='flex items-center gap-3'>
-              <div className="w-20 h-20">
-                <img className='rounded-md w-full h-full object-cover' src={pjGedungData.qrcodepath_pinjam} alt="QR Peminjaman" />
-              </div>
-              <div className="flex flex-col gap-3">
-                <h3 className='text-2xl font-semibold text-white leading-none'>Peminjaman<br />Ruang</h3>
-                <p className="text-md text-gray-300">{pjGedungData.link_peminjaman}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <footer className="p-6 text-center text-gray-400 text-sm">
+          <p>© 2025 RACSI - Room and Control Schedule Interface</p>
+        </footer>
       </div>
-
-      {/* Global CSS untuk persistent animation */}
-      <style>{`
-        .scroll-tidak_digunakan,
-        .scroll-sedang_digunakan,
-        .scroll-akan_digunakan {
-          display: flex;
-          flex-direction: column;
-          animation: continuousScroll var(--scroll-speed) linear infinite;
-          animation-fill-mode: forwards;
-        }
-
-        .scroll-tidak_digunakan:hover,
-        .scroll-sedang_digunakan:hover,
-        .scroll-akan_digunakan:hover {
-          animation-play-state: paused;
-        }
-
-        .room-set {
-          display: flex;
-          flex-direction: column;
-        }
-
-        @keyframes continuousScroll {
-          from {
-            transform: translateY(0);
-          }
-          to {
-            transform: translateY(-50%);
-          }
-        }
-
-        .scroll-tidak_digunakan,
-        .scroll-sedang_digunakan,
-        .scroll-akan_digunakan {
-          backface-visibility: hidden;
-          perspective: 1000px;
-          transform-style: preserve-3d;
-          will-change: transform;
-        }
-      `}</style>
     </div>
   );
 }
 
-export default Home;
+export default LandingPage;
