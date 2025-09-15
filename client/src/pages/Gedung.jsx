@@ -5,9 +5,16 @@ import { Building2, MapPin, Plus, Edit, Trash2, X } from "lucide-react";
 export default function Gedung() {
   const [gedungs, setGedungs] = useState([]);
   const [form, setForm] = useState({
-    nama_gedung: "",
-    lokasi_gedung: "Jakarta",
-  });
+  nama_gedung: "",
+  lokasi_gedung: "Jakarta",
+  pj: {
+    nama: "",
+    no_telp: "",
+    link_peminjaman: "",
+    qrcodepath_pinjam: "",
+    qrcodepath_kontak: "",
+  },
+});
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -15,58 +22,75 @@ export default function Gedung() {
   const token = localStorage.getItem("token");
 
   const fetchGedungs = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/gedung", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setGedungs(res.data.data || []);
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      setError(err.response?.data?.message || "Gagal mengambil data gedung");
-    }
-  };
+  try {
+    const res = await axios.get("http://localhost:5000/api/gedung", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("Data gedung dari backend:", res.data); // <-- tambahkan ini
+    setGedungs(res.data.data || []);
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setError(err.response?.data?.message || "Gagal mengambil data gedung");
+  }
+};
 
   useEffect(() => {
     fetchGedungs();
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      if (editId) {
-        // Update gedung
-        await axios.put(`http://localhost:5000/api/gedung/${editId}`, form, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSuccess("Gedung berhasil diperbarui!");
-      } else {
-        // Tambah gedung
-        await axios.post("http://localhost:5000/api/gedung", form, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSuccess("Gedung berhasil ditambahkan!");
-      }
-
-      setForm({ nama_gedung: "", lokasi_gedung: "Jakarta" });
-      setEditId(null);
-      setError("");
-      fetchGedungs();
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      setError(err.response?.data?.message || "Gagal menyimpan gedung");
-      setSuccess("");
+  try {
+    if (editId) {
+      await axios.put(`http://localhost:5000/api/gedung/${editId}`, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccess("Gedung + PJ berhasil diperbarui!");
+    } else {
+      await axios.post("http://localhost:5000/api/gedung", form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSuccess("Gedung + PJ berhasil ditambahkan!");
     }
-  };
+
+    setForm({
+      nama_gedung: "",
+      lokasi_gedung: "Jakarta",
+      pj: {
+        nama: "",
+        no_telp: "",
+        link_peminjaman: "",
+        qrcodepath_pinjam: "",
+        qrcodepath_kontak: "",
+      },
+    });
+    setEditId(null);
+    setError("");
+    fetchGedungs();
+    setTimeout(() => setSuccess(""), 3000);
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    setError(err.response?.data?.message || "Gagal menyimpan gedung");
+    setSuccess("");
+  }
+};
 
   const handleEdit = (g) => {
-    setEditId(g.id_gedung);
-    setForm({
-      nama_gedung: g.nama_gedung,
-      lokasi_gedung: g.lokasi_gedung,
-    });
-  };
+  setEditId(g.id_gedung);
+  setForm({
+    nama_gedung: g.nama_gedung || "",
+    lokasi_gedung: g.lokasi_gedung || "Jakarta",
+    pj: {
+      nama: g.pj?.nama || "",
+      no_telp: g.pj?.no_telp || "",
+      link_peminjaman: g.pj?.link_peminjaman || "",
+      qrcodepath_pinjam: g.pj?.qrcodepath_pinjam || "",
+      qrcodepath_kontak: g.pj?.qrcodepath_kontak || "",
+    },
+  });
+};
+
 
   const handleDelete = async (id) => {
     if (!confirm("Yakin ingin menghapus gedung ini?")) return;
@@ -84,13 +108,24 @@ export default function Gedung() {
   };
 
   const cancelEdit = () => {
-    setEditId(null);
-    setForm({ nama_gedung: "", lokasi_gedung: "Jakarta" });
-    setError("");
-  };
+  setEditId(null);
+  setForm({
+    nama_gedung: "",
+    lokasi_gedung: "Jakarta",
+    pj: {
+      nama: "",
+      no_telp: "",
+      link_peminjaman: "",
+      qrcodepath_pinjam: "",
+      qrcodepath_kontak: "",
+    },
+  });
+  setError("");
+};
+
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full px-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
@@ -148,6 +183,77 @@ export default function Gedung() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nama PJ */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Nama PJ Gedung
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan nama penanggung jawab"
+                value={form.pj.nama}
+                onChange={(e) => setForm({ ...form, pj: { ...form.pj, nama: e.target.value } })}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+              />
+            </div>
+
+            {/* No Telepon */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                No Telepon
+              </label>
+              <input
+                type="text"
+                placeholder="08xxxxxxx"
+                value={form.pj.no_telp}
+                onChange={(e) => setForm({ ...form, pj: { ...form.pj, no_telp: e.target.value } })}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+              />
+            </div>
+
+            {/* Link Peminjaman */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Link Peminjaman
+              </label>
+              <input
+                type="text"
+                placeholder="Masukkan link peminjaman"
+                value={form.pj.link_peminjaman}
+                onChange={(e) => setForm({ ...form, pj: { ...form.pj, link_peminjaman: e.target.value } })}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+              />
+            </div>
+
+            {/* QR Code Peminjaman */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                QR Code Peminjaman
+              </label>
+              <input
+                type="text"
+                placeholder="Path QR Code"
+                value={form.pj.qrcodepath_pinjam}
+                onChange={(e) => setForm({ ...form, pj: { ...form.pj, qrcodepath_pinjam: e.target.value } })}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+              />
+            </div>
+
+            {/* QR Code Kontak */}
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                QR Code Kontak
+              </label>
+              <input
+                type="text"
+                placeholder="Path QR Code"
+                value={form.pj.qrcodepath_kontak}
+                onChange={(e) => setForm({ ...form, pj: { ...form.pj, qrcodepath_kontak: e.target.value } })}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+              />
+            </div>
+          </div>
           <div className="flex gap-2 mt-4">
             {editId && (
               <button
@@ -183,6 +289,8 @@ export default function Gedung() {
               <tr className="bg-gray-700/50">
                 <th className="p-4 text-left text-gray-300 text-center first:rounded-tl-xl first:rounded-bl-xl">Nama Gedung</th>
                 <th className="p-4 text-left text-gray-300 text-center">Lokasi</th>
+                <th className="p-4 text-left text-gray-300 text-center">PJ Gedung</th>
+                <th className="p-4 text-left text-gray-300 text-center">No Telepon</th>
                 <th className="p-4 text-center text-gray-300 last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
               </tr>
             </thead>
@@ -192,6 +300,8 @@ export default function Gedung() {
                   <tr key={g.id_gedung} className="border-b border-gray-700/30 hover:bg-gray-700/30">
                     <td className="p-4 text-gray-200 text-center first:rounded-tl-xl first:rounded-bl-xl">{g.nama_gedung}</td>
                     <td className="p-4 text-gray-200 text-center">{g.lokasi_gedung}</td>
+                    <td className="p-4 text-gray-200 text-center">{g.pj?.nama || "-"}</td>
+                    <td className="p-4 text-gray-200 text-center">{g.pj?.no_telp || "-"}</td>
                     <td className="p-4 text-center space-x-2 last:rounded-tr-xl last:rounded-br-xl">
                       <button
                         onClick={() => handleEdit(g)}
@@ -210,7 +320,7 @@ export default function Gedung() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="p-8 text-center text-gray-400">
+                  <td colSpan="5" className="p-8 text-center text-gray-400">
                     Tidak ada data gedung
                   </td>
                 </tr>

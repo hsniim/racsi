@@ -255,7 +255,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full px-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
@@ -345,23 +345,23 @@ useEffect(() => {
             {/* Tanggal */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Tanggal</label>
-<input
-  type="date"
-  value={form.tanggal}
-  onChange={(e) => {
-    const newDate = e.target.value;
-    setForm(prev => ({
-      ...prev,
-      tanggal: newDate,
-      recurrence_end_date:
-        prev.recurrence_type !== "none" && !prev.recurrence_count
-          ? getDefaultEndDate(newDate, prev.recurrence_type, prev.recurrence_interval)
-          : prev.recurrence_end_date
-    }));
-  }}
-  className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
-  required
-/>
+              <input
+                type="date"
+                value={form.tanggal}
+                onChange={(e) => {
+                  const newDate = e.target.value;
+                  setForm(prev => ({
+                    ...prev,
+                    tanggal: newDate,
+                    recurrence_end_date:
+                      prev.recurrence_type !== "none" && !prev.recurrence_count
+                        ? getDefaultEndDate(newDate, prev.recurrence_type, prev.recurrence_interval)
+                        : prev.recurrence_end_date
+                  }));
+                }}
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                required
+              />
 
             </div>
 

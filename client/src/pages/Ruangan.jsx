@@ -105,7 +105,7 @@ export default function Ruangan() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="w-full px-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">

@@ -52,9 +52,12 @@ CREATE TABLE IF NOT EXISTS pj_lantai (
     shift ENUM('pagi','siang','malam') NOT NULL,
     nama VARCHAR(30) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_pj_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai) ON DELETE CASCADE,
+    CONSTRAINT fk_pj_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai) 
+        ON DELETE CASCADE,
+    CONSTRAINT uq_lantai_shift UNIQUE (id_lantai, shift), -- ⬅️ unik per lantai+shift
     INDEX idx_pj_lantai (id_lantai)
 );
+
 
 CREATE TABLE IF NOT EXISTS tv_device (
     id_device INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

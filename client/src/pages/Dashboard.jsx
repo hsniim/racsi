@@ -401,19 +401,19 @@ export default function Dashboard() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-700/50">
-                <th className="p-3 text-left text-gray-300 font-medium">ID</th>
-                <th className="p-3 text-left text-gray-300 font-medium">Gedung</th>
-                <th className="p-3 text-left text-gray-300 font-medium">Lantai</th>
-                <th className="p-3 text-center text-gray-300 font-medium">Aksi</th>
+                <th className="p-3 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">ID</th>
+                <th className="p-3 text-left text-gray-300 font-medium text-center">Gedung</th>
+                <th className="p-3 text-left text-gray-300 font-medium text-center">Lantai</th>
+                <th className="p-3 text-center text-gray-300 font-medium  last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {devices.length ? devices.map(d => (
                 <tr key={d.id_device} className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200">
-                  <td className="p-3 text-gray-200">{d.id_device}</td>
-                  <td className="p-3 text-gray-200">{d.nama_gedung}</td>
-                  <td className="p-3 text-gray-200">Lantai {d.nomor_lantai}</td>
-                  <td className="p-3 text-center">
+                  <td className="p-3 text-gray-200 first:rounded-tl-xl first:rounded-bl-xl">{d.id_device}</td>
+                  <td className="p-3 text-gray-200 text-center">{d.nama_gedung}</td>
+                  <td className="p-3 text-gray-200 text-center">Lantai {d.nomor_lantai}</td>
+                  <td className="p-3 text-center last:rounded-tr-xl last:rounded-br-xl">
                     <div className="flex items-center justify-center gap-2 flex-wrap">
                       <button
                         onClick={() => editDevice(d)}
@@ -458,7 +458,7 @@ export default function Dashboard() {
       {/* Updates Table */}
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-300">Pembaruan Terkini</h2>
+          <h2 className="text-xl font-semibold text-gray-300">Agenda Terkini</h2>
           <span className="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full border border-gray-600/30">
             {updates.length} Update
           </span>
@@ -488,7 +488,7 @@ export default function Dashboard() {
                 <th className="p-4 text-left text-gray-300 font-medium">
                   <div className="flex items-center gap-2">
                     <ClipboardList className="w-4 h-4" />
-                    Kegiatan
+                    Agenda
                   </div>
                 </th>
                 <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">

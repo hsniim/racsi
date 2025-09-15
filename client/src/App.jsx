@@ -10,9 +10,7 @@ import TvDevicePage from "./pages/TvDevicePage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Gedung from "./pages/Gedung";
-import PJGedung from "./pages/PJGedung";
 import Lantai from "./pages/Lantai";
-import PJLantai from "./pages/PJLantai";
 import Ruangan from "./pages/Ruangan";
 import Agenda from "./pages/Agenda";
 import Riwayat from "./pages/Riwayat";
@@ -71,9 +69,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="gedung" element={<Gedung />} />
-          <Route path="pj_gedung" element={<PJGedung />} />
           <Route path="lantai" element={<Lantai />} />
-          <Route path="pj_lantai" element={<PJLantai />} />
           <Route path="ruangan" element={<Ruangan />} />
           <Route path="agenda" element={<Agenda />} />
           <Route path="riwayat" element={<Riwayat />} />

@@ -25,20 +25,20 @@ const agendaRoutes = require("./routes/agendaRoutes");
 const tvRoutes = require('./routes/tvRoutes');
 const riwayatRoutes = require('./routes/riwayatRoutes');
 const headerRoutes = require('./routes/headerRoutes');
-const pjGedungRoutes = require("./routes/pjGedungRoutes");
 const pjLantaiRoutes = require("./routes/pjLantaiRoutes");
+const pjGedungRoutes = require("./routes/pjGedungRoutes");
 const tvDeviceRoutes = require('./routes/tvDeviceRoutes');
 
 app.use('/api', adminRoutes);
-app.use('/api/', gedungRoutes);
-app.use('/api/', lantaiRoutes);
+app.use('/api/gedung', gedungRoutes);
+app.use('/api/lantai', lantaiRoutes);
 app.use('/api/', ruanganRoutes);  
 app.use("/api/agenda", agendaRoutes);
 app.use('/api/tv', tvRoutes);
 app.use('/api/', riwayatRoutes);
 app.use('/api/', headerRoutes);
-app.use("/api/pj-gedung", pjGedungRoutes);
 app.use("/api/pj-lantai", pjLantaiRoutes);
+app.use("/api/pj-gedung", pjGedungRoutes);
 app.use('/api', tvDeviceRoutes);
 
 // Socket.IO
