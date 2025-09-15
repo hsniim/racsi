@@ -122,7 +122,7 @@ function LandingPage() {
   const selectedLantaiName = filteredLantais.find(l => l.id_lantai === parseInt(selectedLantai))?.nomor_lantai || '';
 
   return (
-    <div className="min-h-screen bg-gray800 text-white relative overflow-hidden">
+    <div className="h-screen bg-gray800 text-white relative overflow-hidden">
       {/* Background Pattern - sama dengan design sebelumnya */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>

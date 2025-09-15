@@ -27,6 +27,25 @@ function TvDevicePage() {
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
 
+  // Force fullscreen on component mount
+  useEffect(() => {
+    // Add fullscreen class to body and remove any default margins/paddings
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+
+    return () => {
+      // Cleanup on unmount
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -176,10 +195,31 @@ function TvDevicePage() {
   };
 
   return (
-    <div className="h-full w-full bg-primary text-white">
-      <div className="w-full max-w-none px-4 py-6">
+    <div 
+      className="bg-primary text-white"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh',
+        margin: 0,
+        padding: 0,
+        overflow: 'hidden'
+      }}
+    >
+      <div 
+        className="w-full h-full flex flex-col"
+        style={{
+          maxHeight: '100vh',
+          boxSizing: 'border-box',
+          padding: '24px'
+        }}
+      >
         {/* Header */}
-        <div className="flex justify-between items-center mb-7 p-6 bg-gray-800 rounded-lg">
+        <div className="flex justify-between items-center mb-6 p-6 bg-gray-800 rounded-lg flex-shrink-0">
           <div className="flex items-center">
             <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4 transform rotate-45">
               <div className="w-6 h-6 bg-gray-800 rounded-sm transform -rotate-45 flex items-center justify-center">
@@ -203,7 +243,7 @@ function TvDevicePage() {
         </div>
 
         {/* Konten */}
-        <div className="flex gap-6 w-full">
+        <div className="flex gap-6 w-full flex-1 min-h-0">
           <div className="flex-[1]">
             <ScrollableSection title="Tidak Digunakan" rooms={unusedRuangan} maxCards={5} bgColor="tidak_digunakan" textColor="text-green-400" scrollSpeed={45} />
           </div>
@@ -216,7 +256,7 @@ function TvDevicePage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl">
+        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl flex-shrink-0">
           <div className="flex justify-between items-center gap-8">
             <div className="flex items-center gap-3">
               <div className="w-20 h-20">
