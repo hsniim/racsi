@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers, Globe, CheckCircle, Clock, Users, Shield, Zap, Calendar, BarChart } from 'lucide-react';
 
 function LandingPage() {
+  const navigate = useNavigate();
   const [selectedGedung, setSelectedGedung] = useState('');
   const [selectedLantai, setSelectedLantai] = useState('');
   const [currentTime, setCurrentTime] = useState('');
@@ -202,6 +204,13 @@ function LandingPage() {
     setMsg({ type: "", text: "" });
   };
 
+  // Navigation handler
+  const handleNavigation = (page) => {
+    if (page === 'about') {
+      navigate('/about');
+    }
+  };
+
   // Update waktu realtime
   useEffect(() => {
     const updateTime = () => {
@@ -283,12 +292,15 @@ function LandingPage() {
 
           {/* Navigation Menu */}
           <nav className="flex items-center gap-8">
-            <a href="#home" className="text-white text-xl font-medium border-b-2 border-blue-400 pb-1 transition-colors">
+            <span className="text-white text-xl font-medium border-b-2 border-blue-400 pb-1 transition-colors">
               Beranda
-            </a>
-            <a href="#about" className="text-gray-300 text-xl hover:text-white transition-colors duration-200">
+            </span>
+            <button 
+              onClick={() => handleNavigation('about')}
+              className="text-gray-300 text-xl hover:text-white transition-colors duration-200 bg-transparent border-none cursor-pointer"
+            >
               Tentang Kami
-            </a>
+            </button>
           </nav>
           
           <div className="text-right">
