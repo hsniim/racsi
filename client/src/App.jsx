@@ -4,6 +4,7 @@ import { fetchRuangan, fetchJadwal } from "./utils/api";
 
 // Halaman Publik
 import Home from "./pages/Home";
+import About from "./pages/About"
 import TvDevicePage from "./pages/TvDevicePage";
 
 // Halaman Admin
@@ -51,6 +52,7 @@ function App() {
             </div>
           }
         />
+        <Route path="/about" element={<About />} />
 
         {/* Halaman TV Device (Publik, mirip Home tapi beda data) */}
         <Route
@@ -74,7 +76,6 @@ function App() {
           <Route path="agenda" element={<Agenda />} />
           <Route path="riwayat" element={<Riwayat />} />
           <Route path="tv_device" element={<TvDevice />} />
-          {/* Route bermasalah sudah dipindah ke atas */}
         </Route>
       </Routes>
     </Router>
