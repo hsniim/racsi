@@ -267,9 +267,9 @@ function LandingPage() {
   const selectedLantaiName = selectedLantaiObj?.nomor_lantai || '';
 
   return (
-    <div className="h-screen bg-primary text-white relative overflow-auto">
+    <div className="h-screen bg-primary text-white relative">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{height: '100%', minHeight: '100vh'}}>
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
         <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
         <div className="absolute bottom-20 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
