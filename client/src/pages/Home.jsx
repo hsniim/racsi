@@ -129,7 +129,7 @@ function LandingPage() {
       }
       
     } catch (apiError) {
-      console.warn("⚠ API failed:", apiError.message);
+      console.warn("⚠️ API failed:", apiError.message);
       
       // Strategy 2: Use hardcoded data that matches your actual database
       console.log("Strategy 2: Using fallback data...");
@@ -267,20 +267,33 @@ function LandingPage() {
   const selectedLantaiName = selectedLantaiObj?.nomor_lantai || '';
 
   return (
-    <div className="h-screen bg-primary text-white relative">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
+    <div className="w-full min-h-screen bg-primary text-white">
+      {/* Background Pattern - Fixed positioning tidak mempengaruhi layout utama */}
+      <div className="fixed inset-0 opacity-10 pointer-events-none z-0">
+        {/* Patterns distributed throughout the page height */}
         <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
         <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
-        <div className="absolute bottom-20 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
-        <div className="absolute bottom-40 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
         <div className="absolute top-96 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
         <div className="absolute top-80 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
+        
+        {/* Mid-section patterns */}
+        <div className="absolute top-10 left-1/2 w-28 h-28 border border-white/15 rounded-full" style={{top: '600px'}}></div>
+        <div className="absolute top-1/2 right-10 w-20 h-20 border border-white/15 rounded-full" style={{top: '800px'}}></div>
+        <div className="absolute left-20 w-18 h-18 border border-white/15 rounded-full" style={{top: '1000px'}}></div>
+        
+        {/* Bottom section patterns */}
+        <div className="absolute left-10 w-24 h-24 border border-white/15 rounded-lg rotate-45" style={{top: '1200px'}}></div>
+        <div className="absolute left-1/2 w-32 h-32 border border-white/15 rounded-lg rotate-12" style={{top: '1400px'}}></div>
+        <div className="absolute right-40 w-22 h-22 border border-white/15 rounded-lg rotate-45" style={{top: '1600px'}}></div>
+        <div className="absolute left-1/4 w-16 h-16 border border-white/20 rounded-full" style={{top: '1800px'}}></div>
+        <div className="absolute right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12" style={{top: '2000px'}}></div>
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header with Navigation */}
-        <header className="p-6 flex justify-between items-center">
+      {/* Main content wrapper dengan proper z-index */}
+      <div className="relative z-10 w-full min-h-screen">
+        
+        {/* Header with Navigation - Pastikan header selalu tampil */}
+        <header className="w-full p-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 flex items-center justify-center">
               <div className="w-30 h-30 flex items-center justify-center">
@@ -316,12 +329,12 @@ function LandingPage() {
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-1 px-6 pt-4 pb-12">
+        {/* Main Content - Pastikan tidak ada padding yang memotong */}
+        <main className="w-full px-6 pt-4 pb-24 relative z-20">
           <div className="w-full max-w-5xl mx-auto">
             
-            {/* Hero Section */}
-            <div className="text-center mb-12 mt-8">
+            {/* Hero Section - Margin yang cukup */}
+            <div className="text-center mb-12 mt-4">
               <div className="w-30 h-30 flex items-center justify-center mx-auto mb-6">
                 <img src="assets/racsi_logo.svg" alt="" />
               </div>
@@ -503,7 +516,7 @@ function LandingPage() {
             </div>
 
             {/* Technology Section */}
-            <div>
+            <div className="mb-16">
               <div className="bg-gradient-to-r from-blue-600/20 to-indigo-600/20 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-blue-500/30">
                 <h3 className="text-3xl font-semibold mb-6 text-center text-gray-200">Teknologi Modern</h3>
                 
@@ -525,7 +538,7 @@ function LandingPage() {
         </main>
 
         {/* Footer */}
-        <footer className="p-6 text-center text-gray-400 text-sm">
+        <footer className="w-full p-6 text-center text-gray-400 text-sm relative z-20">
           <p>© 2025 RACSI - Room and Control Schedule Interface</p>
         </footer>
       </div>

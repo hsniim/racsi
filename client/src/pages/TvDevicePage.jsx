@@ -6,6 +6,7 @@ import {
   fetchPjGedung,
 } from "../utils/api";
 import RoomCard from "../components/RoomCard";
+import FeedbackCard from "../components/FeedbackCard";
 
 function TvDevicePage() {
   // Pastikan nama param sama dengan route: :id_gedung & :id_lantai
@@ -255,9 +256,10 @@ function TvDevicePage() {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-2xl flex-shrink-0">
-          <div className="flex justify-between items-center gap-8">
+        {/* Footer - Updated dengan 3 cards termasuk FeedbackCard */}
+        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-6xl flex-shrink-0">
+          <div className="flex justify-between items-center gap-6">
+            {/* PJ Gedung Card */}
             <div className="flex items-center gap-3">
               <div className="w-20 h-20">
                 <img className="rounded-md w-full h-full object-cover" src={pjGedungData.qrcodepath_kontak} alt="QR Kontak PJ" />
@@ -269,6 +271,10 @@ function TvDevicePage() {
               </div>
             </div>
 
+            {/* Feedback Card */}
+            <FeedbackCard id_gedung={id_gedung} id_lantai={id_lantai} />
+
+            {/* Peminjaman Card */}
             <div className="flex items-center gap-3">
               <div className="w-20 h-20">
                 <img className="rounded-md w-full h-full object-cover" src={pjGedungData.qrcodepath_pinjam} alt="QR Peminjaman" />

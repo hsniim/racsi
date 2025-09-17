@@ -135,7 +135,10 @@ function About() {
 
           {/* Navigation Menu */}
           <nav className="flex items-center gap-8">
-            <button onClick={() => handleNavigation('home')} className="text-gray-300 text-xl hover:text-white transition-colors duration-200 bg-transparent border-none cursor-pointer">
+            <button 
+              onClick={() => handleNavigation('home')} 
+              className="text-gray-300 text-xl hover:text-white transition-colors duration-200 bg-transparent border-none cursor-pointer"
+            >
               Beranda
             </button>
             <span className="text-white text-xl font-medium border-b-2 border-blue-400 pb-1 transition-colors">
