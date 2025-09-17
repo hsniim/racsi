@@ -28,6 +28,7 @@ const headerRoutes = require('./routes/headerRoutes');
 const pjLantaiRoutes = require("./routes/pjLantaiRoutes");
 const pjGedungRoutes = require("./routes/pjGedungRoutes");
 const tvDeviceRoutes = require('./routes/tvDeviceRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 app.use('/api', adminRoutes);
 app.use('/api/gedung', gedungRoutes);
@@ -40,6 +41,7 @@ app.use('/api/', headerRoutes);
 app.use("/api/pj-lantai", pjLantaiRoutes);
 app.use("/api/pj-gedung", pjGedungRoutes);
 app.use('/api', tvDeviceRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Socket.IO
 io.on('connection', (socket) => {

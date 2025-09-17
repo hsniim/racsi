@@ -54,10 +54,9 @@ CREATE TABLE IF NOT EXISTS pj_lantai (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pj_lantai FOREIGN KEY (id_lantai) REFERENCES lantai(id_lantai) 
         ON DELETE CASCADE,
-    CONSTRAINT uq_lantai_shift UNIQUE (id_lantai, shift), -- ⬅️ unik per lantai+shift
+    CONSTRAINT uq_lantai_shift UNIQUE (id_lantai, shift), -- Unik per lantai+shift
     INDEX idx_pj_lantai (id_lantai)
 );
-
 
 CREATE TABLE IF NOT EXISTS tv_device (
     id_device INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -149,7 +148,27 @@ CREATE TABLE IF NOT EXISTS log_aktivitas (
 CREATE INDEX idx_log_waktu ON log_aktivitas(waktu);
 CREATE INDEX idx_log_nama_tabel ON log_aktivitas(nama_tabel);
 
--- 8) HISTORI (gabungan kegiatan + jadwal; di DB utama, penampung sementara)
+-- 8) FEEDBACK RUANGAN
+CREATE TABLE IF NOT EXISTS feedback_ruangan (
+    id_feedback BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_ruangan INT UNSIGNED NOT NULL,
+    nama_pengguna VARCHAR(50) NOT NULL,
+    email_pengguna VARCHAR(100) NULL,
+    rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    komentar TEXT NULL,
+    kategori ENUM('fasilitas','kebersihan','kenyamanan','pelayanan','lainnya') DEFAULT 'lainnya',
+    tanggal_feedback DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_feedback_ruangan 
+        FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan) 
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+-- Index untuk performa
+CREATE INDEX idx_feedback_ruangan ON feedback_ruangan(id_ruangan);
+CREATE INDEX idx_feedback_tanggal ON feedback_ruangan(tanggal_feedback);
+CREATE INDEX idx_feedback_rating ON feedback_ruangan(rating);
+
+-- 9) HISTORI (gabungan kegiatan + jadwal; di DB utama, penampung sementara)
 CREATE TABLE IF NOT EXISTS histori_kegiatan_jadwal (
     id_histori BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_kegiatan INT UNSIGNED,
@@ -192,6 +211,20 @@ CREATE TABLE IF NOT EXISTS histori_kegiatan_jadwal_arsip (
 CREATE UNIQUE INDEX uq_arsip_id_jadwal ON histori_kegiatan_jadwal_arsip(id_jadwal);
 CREATE INDEX idx_arsip_waktu ON histori_kegiatan_jadwal_arsip(waktu_arsip);
 
+-- Arsip feedback ruangan
+CREATE TABLE IF NOT EXISTS feedback_ruangan_arsip (
+    id_feedback_arsip BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id_feedback BIGINT UNSIGNED,
+    id_ruangan INT UNSIGNED,
+    nama_pengguna VARCHAR(50),
+    rating TINYINT,
+    komentar TEXT,
+    kategori VARCHAR(20),
+    tanggal_feedback DATE,
+    waktu_arsip TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_feedback_arsip_tanggal ON feedback_ruangan_arsip(waktu_arsip);
+
 -- (Opsional) Arsip log kalau suatu saat ingin dipindah juga
 CREATE TABLE IF NOT EXISTS log_aktivitas_arsip (
     id_log BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -224,7 +257,7 @@ BEGIN
     WHERE k.id_kegiatan = NEW.id_kegiatan;
 END$$
 
--- Saat jadwal dihapus, kalau sudah tidak ada jadwal lain di ruangan tsb → set tidak_digunakan
+-- Saat jadwal dihapus, kalau sudah tidak ada jadwal lain di ruangan tsb set tidak_digunakan
 CREATE TRIGGER trg_jadwal_after_delete
 AFTER DELETE ON jadwal
 FOR EACH ROW
@@ -282,6 +315,7 @@ FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
   VALUES ('lantai','INSERT', JSON_OBJECT('id_lantai',NEW.id_lantai,'id_gedung',NEW.id_gedung,'nomor_lantai',NEW.nomor_lantai));
 END$$
+
 CREATE TRIGGER log_lantai_upd AFTER UPDATE ON lantai
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
@@ -289,6 +323,7 @@ FOR EACH ROW BEGIN
           JSON_OBJECT('id_lantai',OLD.id_lantai,'id_gedung',OLD.id_gedung,'nomor_lantai',OLD.nomor_lantai),
           JSON_OBJECT('id_lantai',NEW.id_lantai,'id_gedung',NEW.id_gedung,'nomor_lantai',NEW.nomor_lantai));
 END$$
+
 CREATE TRIGGER log_lantai_del AFTER DELETE ON lantai
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
@@ -301,6 +336,7 @@ FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
   VALUES ('ruangan','INSERT', JSON_OBJECT('id_ruangan',NEW.id_ruangan,'id_lantai',NEW.id_lantai,'nama_ruangan',NEW.nama_ruangan,'kapasitas',NEW.kapasitas,'status',NEW.status));
 END$$
+
 CREATE TRIGGER log_ruangan_upd AFTER UPDATE ON ruangan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
@@ -308,6 +344,7 @@ FOR EACH ROW BEGIN
           JSON_OBJECT('id_ruangan',OLD.id_ruangan,'id_lantai',OLD.id_lantai,'nama_ruangan',OLD.nama_ruangan,'kapasitas',OLD.kapasitas,'status',OLD.status),
           JSON_OBJECT('id_ruangan',NEW.id_ruangan,'id_lantai',NEW.id_lantai,'nama_ruangan',NEW.nama_ruangan,'kapasitas',NEW.kapasitas,'status',NEW.status));
 END$$
+
 CREATE TRIGGER log_ruangan_del AFTER DELETE ON ruangan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
@@ -320,6 +357,7 @@ FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
   VALUES ('kegiatan','INSERT', JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'deskripsi_kegiatan',NEW.deskripsi_kegiatan,'pengguna',NEW.pengguna));
 END$$
+
 CREATE TRIGGER log_kegiatan_upd AFTER UPDATE ON kegiatan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
@@ -327,6 +365,7 @@ FOR EACH ROW BEGIN
           JSON_OBJECT('id_kegiatan',OLD.id_kegiatan,'id_ruangan',OLD.id_ruangan,'nama_kegiatan',OLD.nama_kegiatan,'deskripsi_kegiatan',OLD.deskripsi_kegiatan,'pengguna',OLD.pengguna),
           JSON_OBJECT('id_kegiatan',NEW.id_kegiatan,'id_ruangan',NEW.id_ruangan,'nama_kegiatan',NEW.nama_kegiatan,'deskripsi_kegiatan',NEW.deskripsi_kegiatan,'pengguna',NEW.pengguna));
 END$$
+
 CREATE TRIGGER log_kegiatan_del AFTER DELETE ON kegiatan
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
@@ -339,6 +378,7 @@ FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
   VALUES ('jadwal','INSERT', JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'waktu_mulai',NEW.waktu_mulai,'waktu_selesai',NEW.waktu_selesai));
 END$$
+
 CREATE TRIGGER log_jadwal_upd AFTER UPDATE ON jadwal
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
@@ -346,10 +386,41 @@ FOR EACH ROW BEGIN
           JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'waktu_mulai',OLD.waktu_mulai,'waktu_selesai',OLD.waktu_selesai),
           JSON_OBJECT('id_jadwal',NEW.id_jadwal,'id_kegiatan',NEW.id_kegiatan,'tanggal',NEW.tanggal,'waktu_mulai',NEW.waktu_mulai,'waktu_selesai',NEW.waktu_selesai));
 END$$
+
 CREATE TRIGGER log_jadwal_del AFTER DELETE ON jadwal
 FOR EACH ROW BEGIN
   INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
   VALUES ('jadwal','DELETE', JSON_OBJECT('id_jadwal',OLD.id_jadwal,'id_kegiatan',OLD.id_kegiatan,'tanggal',OLD.tanggal,'waktu_mulai',OLD.waktu_mulai,'waktu_selesai',OLD.waktu_selesai));
+END$$
+
+-- FEEDBACK RUANGAN
+CREATE TRIGGER log_feedback_ins AFTER INSERT ON feedback_ruangan
+FOR EACH ROW BEGIN
+  INSERT INTO log_aktivitas(nama_tabel,aksi,data_baru)
+  VALUES ('feedback_ruangan','INSERT', 
+          JSON_OBJECT('id_feedback',NEW.id_feedback,
+                     'id_ruangan',NEW.id_ruangan,
+                     'nama_pengguna',NEW.nama_pengguna,
+                     'rating',NEW.rating,
+                     'kategori',NEW.kategori));
+END$$
+
+CREATE TRIGGER log_feedback_upd AFTER UPDATE ON feedback_ruangan
+FOR EACH ROW BEGIN
+  INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama,data_baru)
+  VALUES ('feedback_ruangan','UPDATE',
+          JSON_OBJECT('id_feedback',OLD.id_feedback,'rating',OLD.rating,'komentar',OLD.komentar),
+          JSON_OBJECT('id_feedback',NEW.id_feedback,'rating',NEW.rating,'komentar',NEW.komentar));
+END$$
+
+CREATE TRIGGER log_feedback_del AFTER DELETE ON feedback_ruangan
+FOR EACH ROW BEGIN
+  INSERT INTO log_aktivitas(nama_tabel,aksi,data_lama)
+  VALUES ('feedback_ruangan','DELETE',
+          JSON_OBJECT('id_feedback',OLD.id_feedback,
+                     'id_ruangan',OLD.id_ruangan,
+                     'nama_pengguna',OLD.nama_pengguna,
+                     'rating',OLD.rating));
 END$$
 
 DELIMITER ;
@@ -369,7 +440,6 @@ DELIMITER ;
 DELIMITER $$
 
 DROP EVENT IF EXISTS ev_pindah_ke_histori$$
-
 CREATE EVENT ev_pindah_ke_histori
 ON SCHEDULE EVERY 5 MINUTE
 STARTS CURRENT_TIMESTAMP
@@ -413,14 +483,12 @@ BEGIN
 
     COMMIT;
 END$$
-
 DELIMITER ;
+
 
 -- EVENT B: BULANAN (tgl 1 jam 02:00) - migrasi histori ke DB arsip
 DELIMITER $$
-
 DROP EVENT IF EXISTS ev_migrasi_ke_arsip$$
-
 CREATE EVENT ev_migrasi_ke_arsip
 ON SCHEDULE EVERY 1 MONTH
 STARTS TIMESTAMP(DATE_FORMAT(DATE_ADD(NOW(), INTERVAL 1 MONTH), '%Y-%m-01 02:00:00'))
@@ -497,14 +565,12 @@ BEGIN
                        'total_migrated', v_total_migrated, 
                        'completion_time', NOW()));
 END$$
-
 DELIMITER ;
+
 
 -- EVENT C: TAHUNAN (1 Jan 03:00) - hapus arsip > 10 tahun
 DELIMITER $$
-
 DROP EVENT IF EXISTS ev_hapus_arsip_lama$$
-
 CREATE EVENT ev_hapus_arsip_lama
 ON SCHEDULE EVERY 1 YEAR
 STARTS TIMESTAMP(CONCAT(YEAR(NOW()) + 1, '-01-01 03:00:00'))
@@ -565,14 +631,12 @@ BEGIN
                        'total_deleted', v_total_deleted, 
                        'completion_time', NOW()));
 END$$
-
 DELIMITER ;
+
 
 -- EVENT D: SETIAP 6 BULAN - bersihkan log_aktivitas utama > 6 bulan
 DELIMITER $$
-
 DROP EVENT IF EXISTS ev_bersihkan_log_utama$$
-
 CREATE EVENT ev_bersihkan_log_utama
 ON SCHEDULE EVERY 6 MONTH
 STARTS '2025-09-01 01:00:00'  -- Mulai 1 September 2025, kemudian setiap 6 bulan
@@ -614,6 +678,80 @@ BEGIN
     VALUES ('event_success', 'INSERT', 
             JSON_OBJECT('event', 'ev_bersihkan_log_utama', 
                        'total_deleted', v_total_deleted, 
+                       'completion_time', NOW()));
+END$$
+DELIMITER ;
+
+
+-- EVENT E: SETIAP 3 BULAN - migrasi feedback lama ke arsip
+DELIMITER $$
+DROP EVENT IF EXISTS ev_arsip_feedback$$
+CREATE EVENT ev_arsip_feedback
+ON SCHEDULE EVERY 3 MONTH
+STARTS '2025-10-01 02:30:00'  -- Mulai 1 Oktober 2025
+COMMENT 'Migrasi feedback lama ke database arsip setiap 3 bulan'
+DO
+BEGIN
+    DECLARE v_batch_size INT DEFAULT 1000;
+    DECLARE v_total_migrated INT DEFAULT 0;
+    DECLARE v_current_batch INT DEFAULT 0;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        INSERT INTO log_aktivitas(nama_tabel, aksi, data_baru) 
+        VALUES ('event_error', 'INSERT', 
+                JSON_OBJECT('event', 'ev_arsip_feedback', 
+                          'error_time', NOW()));
+    END;
+
+    -- Migrasi feedback yang lebih dari 6 bulan
+    migration_loop: LOOP
+        START TRANSACTION;
+        
+        -- Pindahkan batch feedback ke arsip
+        INSERT IGNORE INTO db_racsi_arsip.feedback_ruangan_arsip
+        (id_feedback, id_ruangan, nama_pengguna, rating, komentar, kategori, tanggal_feedback)
+        SELECT id_feedback, id_ruangan, nama_pengguna, rating, komentar, kategori, tanggal_feedback
+        FROM feedback_ruangan
+        WHERE created_at < DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        ORDER BY id_feedback
+        LIMIT v_batch_size;
+
+        SELECT ROW_COUNT() INTO v_current_batch;
+        SET v_total_migrated = v_total_migrated + v_current_batch;
+        COMMIT;
+        
+        -- Keluar dari loop jika batch terakhir < batch_size
+        IF v_current_batch < v_batch_size THEN
+            LEAVE migration_loop;
+        END IF;
+        
+        DO SLEEP(0.1);
+    END LOOP;
+
+    -- Hapus feedback yang sudah diarsipkan (dalam batch)
+    cleanup_loop: LOOP
+        START TRANSACTION;
+        
+        DELETE FROM feedback_ruangan 
+        WHERE created_at < DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        LIMIT v_batch_size;
+        
+        SELECT ROW_COUNT() INTO v_current_batch;
+        COMMIT;
+        
+        IF v_current_batch < v_batch_size THEN
+            LEAVE cleanup_loop;
+        END IF;
+        
+        DO SLEEP(0.1);
+    END LOOP;
+
+    -- Log hasil migrasi
+    INSERT INTO log_aktivitas(nama_tabel, aksi, data_baru) 
+    VALUES ('event_success', 'INSERT', 
+            JSON_OBJECT('event', 'ev_arsip_feedback', 
+                       'total_migrated', v_total_migrated, 
                        'completion_time', NOW()));
 END$$
 
