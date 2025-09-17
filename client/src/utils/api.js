@@ -1,3 +1,4 @@
+// Tambahkan ini di bagian paling atas file api.js setelah import axios
 import axios from "axios";
 
 const API_BASE_URL = "http://localhost:5000/api";
@@ -155,6 +156,80 @@ export const fetchGedungLantaiList = async () => {
   } catch (error) {
     console.error("Gagal mengambil list gedung lantai:", error.response?.data || error.message);
     return [];
+  }
+};
+
+// ================= FEEDBACK API FUNCTIONS (FIXED) ==================
+export const createFeedback = async (feedbackData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feedback`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(feedbackData)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to submit feedback');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating feedback:', error);
+    throw error;
+  }
+};
+
+export const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feedback/summary?id_gedung=${id_gedung}&id_lantai=${id_lantai}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch feedback summary');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching feedback summary:', error);
+    throw error;
+  }
+};
+
+export const fetchFeedbackStats = async (periode = 30) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feedback/stats?periode=${periode}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch feedback stats');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching feedback stats:', error);
+    throw error;
+  }
+};
+
+export const fetchFeedbackByRuangan = async (id_ruangan, options = {}) => {
+  try {
+    const { page = 1, limit = 10, kategori } = options;
+    let url = `${API_BASE_URL}/feedback/ruangan/${id_ruangan}?page=${page}&limit=${limit}`;
+    
+    if (kategori) {
+      url += `&kategori=${kategori}`;
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch feedback by ruangan');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching feedback by ruangan:', error);
+    throw error;
   }
 };
 
