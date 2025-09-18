@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, X, Star } from "lucide-react";
 
 export default function Feedback() {
   const [feedbacks, setFeedbacks] = useState([]);
+  const [ruangans, setRuangans] = useState([]); // ✅ simpan list ruangan
   const [form, setForm] = useState({
     id_ruangan: "",
     nama_pengguna: "",
@@ -11,50 +12,54 @@ export default function Feedback() {
     rating: 5,
     komentar: "",
     kategori: "",
+    tanggal_feedback: "",
   });
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const token = localStorage.getItem("token");
-  const idRuanganDefault = 1; // bisa diganti pakai useParams jika per ruangan
+
+  const fetchRuangans = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/ruangan", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRuangans(res.data.data || []);
+    } catch (err) {
+      console.error("Gagal fetch ruangan:", err);
+    }
+  };
 
   const fetchFeedbacks = async () => {
-  try {
-    const res = await axios.get(
-      `http://localhost:5000/api/feedback/ruangan/${idRuanganDefault}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    console.log("Data feedback dari backend:", res.data);
-    // ambil array feedback dari res.data.data
-    setFeedbacks(res.data.data || []);
-  } catch (err) {
-    console.error(err.response?.data || err.message);
-    setError(err.response?.data?.message || "Gagal mengambil data feedback");
-  }
-};
-
+    try {
+      const res = await axios.get("http://localhost:5000/api/feedback", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setFeedbacks(res.data.data || []);
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      setError(err.response?.data?.message || "Gagal mengambil data feedback");
+    }
+  };
 
   useEffect(() => {
     fetchFeedbacks();
+    fetchRuangans();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editId) {
-        await axios.put(
-          `http://localhost:5000/api/feedback/${editId}`,
-          form,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.put(`http://localhost:5000/api/feedback/${editId}`, form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setSuccess("Feedback berhasil diperbarui!");
       } else {
-        await axios.post(
-          "http://localhost:5000/api/feedback",
-          { ...form, id_ruangan: idRuanganDefault },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await axios.post("http://localhost:5000/api/feedback", form, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setSuccess("Feedback berhasil ditambahkan!");
       }
 
@@ -65,6 +70,7 @@ export default function Feedback() {
         rating: 5,
         komentar: "",
         kategori: "",
+        tanggal_feedback: "",
       });
       setEditId(null);
       setError("");
@@ -86,6 +92,9 @@ export default function Feedback() {
       rating: f.rating || 5,
       komentar: f.komentar || "",
       kategori: f.kategori || "",
+      tanggal_feedback: f.tanggal_feedback
+        ? f.tanggal_feedback.split("T")[0]
+        : "",
     });
   };
 
@@ -113,17 +122,22 @@ export default function Feedback() {
       rating: 5,
       komentar: "",
       kategori: "",
+      tanggal_feedback: "",
     });
     setError("");
   };
+
+  const getNamaRuangan = (id) => {
+  const r = ruangans.find((item) => item.id_ruangan === id);
+  return r ? `${r.nama_gedung} - Lt ${r.nomor_lantai} - ${r.nama_ruangan}` : id;
+};
+
 
   return (
     <div className="w-full px-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
-          Kelola Feedback
-        </h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Kelola Feedback</h1>
       </div>
 
       {/* Notifications */}
@@ -139,7 +153,7 @@ export default function Feedback() {
       )}
 
       {/* Form */}
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 mb-8 shadow-2xl">
+      <div className="bg-gray-800/50 rounded-2xl p-6 mb-8 shadow-2xl">
         <h2 className="text-xl font-semibold mb-4 text-gray-300">
           {editId ? "Edit Feedback" : "Tambah Feedback Baru"}
         </h2>
@@ -147,7 +161,39 @@ export default function Feedback() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
+  <label className="block text-sm text-gray-400 mb-2">Pilih Ruangan</label>
+  <select
+    value={form.id_ruangan}
+    onChange={(e) => setForm({ ...form, id_ruangan: e.target.value })}
+    className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+    required
+  >
+    <option value="">Pilih Ruangan</option>
+    {ruangans.map((r) => (
+      <option key={r.id_ruangan} value={r.id_ruangan}>
+        {r.nama_gedung} - Lt {r.nomor_lantai} - {r.nama_ruangan}
+      </option>
+    ))}
+  </select>
+</div>
+
+            <div>
+              <label className="block text-sm text-gray-400 mb-2">
+                Tanggal Feedback
+              </label>
+              <input
+                type="date"
+                value={form.tanggal_feedback}
+                onChange={(e) =>
+                  setForm({ ...form, tanggal_feedback: e.target.value })
+                }
+                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-400 mb-2">
                 Nama Pengguna
               </label>
               <input
@@ -163,9 +209,7 @@ export default function Feedback() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Email
-              </label>
+              <label className="block text-sm text-gray-400 mb-2">Email</label>
               <input
                 type="email"
                 placeholder="Masukkan email"
@@ -179,14 +223,11 @@ export default function Feedback() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">
-                Rating
-              </label>
+              <label className="block text-sm text-gray-400 mb-2">Rating</label>
               <input
                 type="number"
                 min="1"
                 max="5"
-                placeholder="1-5"
                 value={form.rating}
                 onChange={(e) =>
                   setForm({ ...form, rating: Number(e.target.value) })
@@ -196,35 +237,33 @@ export default function Feedback() {
             </div>
 
             <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
+              <label className="block text-sm text-gray-400 mb-2">
                 Kategori
-            </label>
-            <select
+              </label>
+              <select
                 value={form.kategori}
-                onChange={(e) => setForm({ ...form, kategori: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, kategori: e.target.value })
+                }
                 className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
                 required
-            >
+              >
                 <option value="">-- Pilih Kategori --</option>
                 <option value="fasilitas">Fasilitas</option>
                 <option value="kebersihan">Kebersihan</option>
                 <option value="kenyamanan">Kenyamanan</option>
                 <option value="pelayanan">Pelayanan</option>
                 <option value="lainnya">Lainnya</option>
-            </select>
+              </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">
-              Komentar
-            </label>
+            <label className="block text-sm text-gray-400 mb-2">Komentar</label>
             <textarea
               placeholder="Tulis komentar"
               value={form.komentar}
-              onChange={(e) =>
-                setForm({ ...form, komentar: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, komentar: e.target.value })}
               className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
               rows="3"
               required
@@ -253,7 +292,7 @@ export default function Feedback() {
       </div>
 
       {/* Table */}
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 shadow-2xl overflow-hidden">
+      <div className="bg-gray-800/50 rounded-2xl p-6 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-300">
             Daftar Feedback
@@ -267,7 +306,9 @@ export default function Feedback() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-700/50">
-                <th className="p-4 text-gray-300 text-center first:rounded-tl-xl first:rounded-bl-xl">Nama</th>
+                <th className="p-4 text-gray-300 text-center first:rounded-tl-xl first:rounded-bl-xl">Ruangan</th>
+                <th className="p-4 text-gray-300 text-center">Tanggal</th>
+                <th className="p-4 text-gray-300 text-center">Nama</th>
                 <th className="p-4 text-gray-300 text-center">Email</th>
                 <th className="p-4 text-gray-300 text-center">Rating</th>
                 <th className="p-4 text-gray-300 text-center">Kategori</th>
@@ -280,9 +321,16 @@ export default function Feedback() {
                 feedbacks.map((f) => (
                   <tr
                     key={f.id_feedback}
-                    className="border-b border-gray-700/30 hover:bg-gray-700/30"
-                  >
-                    <td className="p-4 text-gray-200 text-center first:rounded-tl-xl first:rounded-bl-xl">
+                    className="border-b border-gray-700/30 hover:bg-gray-700/30">
+                    <td className="p-4 text-gray-200 text-center first:rounded-tl-xl first:rounded-bl-xl">{getNamaRuangan(f.id_ruangan)}</td>
+                    <td className="p-4 text-gray-200 text-center">
+                      {f.tanggal_feedback
+                        ? new Date(f.tanggal_feedback).toLocaleDateString(
+                            "id-ID"
+                          )
+                        : "-"}
+                    </td>
+                    <td className="p-4 text-gray-200 text-center">
                       {f.nama_pengguna}
                     </td>
                     <td className="p-4 text-gray-200 text-center">
@@ -321,7 +369,7 @@ export default function Feedback() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="p-8 text-center text-gray-400">
+                  <td colSpan="8" className="p-8 text-center text-gray-400">
                     Tidak ada data feedback
                   </td>
                 </tr>
