@@ -16,6 +16,7 @@ import Ruangan from "./pages/Ruangan";
 import Agenda from "./pages/Agenda";
 import Riwayat from "./pages/Riwayat";
 import TvDevice from "./pages/TvDevice";
+import Feedback from "./pages/Feedback";
 
 import AdminLayout from "./layouts/AdminLayout";
 
@@ -76,6 +77,7 @@ function App() {
           <Route path="agenda" element={<Agenda />} />
           <Route path="riwayat" element={<Riwayat />} />
           <Route path="tv_device" element={<TvDevice />} />
+          <Route path="feedback" element={<Feedback />} />
         </Route>
       </Routes>
     </Router>

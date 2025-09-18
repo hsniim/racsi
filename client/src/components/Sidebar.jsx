@@ -5,10 +5,9 @@ import {
   Layers,
   DoorClosed,
   ClipboardList,
-  CalendarDays,
   History,
   Monitor,
-  User
+  MessagesSquare
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -68,6 +67,11 @@ export default function Sidebar() {
             <History size={20} />
             <span className="hidden md:inline">Riwayat</span>
           </Link>
+
+        <Link to="/admin/feedback" className={getLinkClasses("/admin/feedback")}>
+          <MessagesSquare size={20} />
+          <span className="hidden md:inline">FeedBack</span>
+        </Link>
         </div>
       </nav>
     </aside>

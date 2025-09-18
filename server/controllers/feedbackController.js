@@ -8,7 +8,6 @@ const feedbackController = {
     try {
       const { 
         id_ruangan, 
-        id_jadwal, 
         nama_pengguna, 
         email_pengguna, 
         rating, 
@@ -17,13 +16,13 @@ const feedbackController = {
       } = req.body;
 
       // Validasi input
-      if (!id_ruangan || !nama_pengguna || !rating) {
+      if (!id_ruangan || !nama_pengguna || rating === undefined || rating === null) {
         return res.status(400).json({ 
           message: 'ID ruangan, nama pengguna, dan rating wajib diisi' 
         });
       }
 
-      if (rating < 1 || rating > 5) {
+      if (isNaN(rating) || rating < 1 || rating > 5) {
         return res.status(400).json({ 
           message: 'Rating harus antara 1-5' 
         });
@@ -38,13 +37,12 @@ const feedbackController = {
 
       const query = `
         INSERT INTO feedback_ruangan 
-        (id_ruangan, id_jadwal, nama_pengguna, email_pengguna, rating, komentar, kategori, tanggal_feedback)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (id_ruangan, nama_pengguna, email_pengguna, rating, komentar, kategori, tanggal_feedback)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
 
       const [result] = await connection.execute(query, [
         id_ruangan,
-        id_jadwal || null,
         nama_pengguna,
         email_pengguna || null,
         rating,
@@ -158,7 +156,6 @@ const feedbackController = {
         SELECT 
           f.id_feedback,
           f.id_ruangan,
-          f.id_jadwal,
           f.nama_pengguna,
           f.email_pengguna,
           f.rating,
@@ -413,56 +410,120 @@ const feedbackController = {
     }
   },
 
-  // Update feedback (untuk admin, misal moderasi komentar)
-  async updateFeedback(req, res) {
+  // Update feedback (semua field bisa diubah)
+async updateFeedback(req, res) {
+  const connection = await pool.getConnection();
+  try {
+    const { id_feedback } = req.params;
+    const { nama_pengguna, email_pengguna, rating, komentar, kategori } = req.body;
+
+    // Cek apakah feedback ada
+    const checkQuery = 'SELECT id_feedback FROM feedback_ruangan WHERE id_feedback = ?';
+    const [existing] = await connection.execute(checkQuery, [id_feedback]);
+    if (existing.length === 0) {
+      return res.status(404).json({ message: 'Feedback tidak ditemukan' });
+    }
+
+    // Siapkan field yang mau diupdate
+    let updateFields = [];
+    let params = [];
+
+    if (nama_pengguna !== undefined) {
+      updateFields.push('nama_pengguna = ?');
+      params.push(nama_pengguna);
+    }
+    if (email_pengguna !== undefined) {
+      updateFields.push('email_pengguna = ?');
+      params.push(email_pengguna);
+    }
+    if (rating !== undefined) {
+      updateFields.push('rating = ?');
+      params.push(rating);
+    }
+    if (komentar !== undefined) {
+      updateFields.push('komentar = ?');
+      params.push(komentar);
+    }
+    if (kategori !== undefined) {
+      const validKategori = ['fasilitas', 'kebersihan', 'kenyamanan', 'pelayanan', 'lainnya'];
+      updateFields.push('kategori = ?');
+      params.push(validKategori.includes(kategori) ? kategori : 'lainnya');
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ message: 'Tidak ada field yang valid untuk diupdate' });
+    }
+
+    // Tambahkan id_feedback di akhir parameter
+    params.push(id_feedback);
+
+    const updateQuery = `
+      UPDATE feedback_ruangan 
+      SET ${updateFields.join(', ')} 
+      WHERE id_feedback = ?
+    `;
+
+    await connection.execute(updateQuery, params);
+
+    res.json({ message: 'Feedback berhasil diupdate' });
+  } catch (error) {
+    console.error('Error updating feedback:', error);
+    res.status(500).json({ message: 'Gagal mengupdate feedback' });
+  } finally {
+    connection.release();
+  }
+},
+
+
+  // Ambil semua feedback (untuk admin dashboard)
+  async getAllFeedback(req, res) {
     const connection = await pool.getConnection();
     try {
-      const { id_feedback } = req.params;
-      const { komentar, kategori } = req.body;
+      const { page = 1, limit = 20 } = req.query;
+      const offset = (page - 1) * limit;
 
-      // Cek apakah feedback ada
-      const checkQuery = 'SELECT id_feedback FROM feedback_ruangan WHERE id_feedback = ?';
-      const [existing] = await connection.execute(checkQuery, [id_feedback]);
-
-      if (existing.length === 0) {
-        return res.status(404).json({ message: 'Feedback tidak ditemukan' });
-      }
-
-      let updateFields = [];
-      let params = [];
-
-      if (komentar !== undefined) {
-        updateFields.push('komentar = ?');
-        params.push(komentar);
-      }
-
-      if (kategori !== undefined) {
-        const validKategori = ['fasilitas', 'kebersihan', 'kenyamanan', 'pelayanan', 'lainnya'];
-        if (validKategori.includes(kategori)) {
-          updateFields.push('kategori = ?');
-          params.push(kategori);
-        }
-      }
-
-      if (updateFields.length === 0) {
-        return res.status(400).json({ message: 'Tidak ada field yang valid untuk diupdate' });
-      }
-
-      params.push(id_feedback);
-
-      const updateQuery = `
-        UPDATE feedback_ruangan 
-        SET ${updateFields.join(', ')} 
-        WHERE id_feedback = ?
+      const query = `
+        SELECT 
+          f.id_feedback,
+          f.id_ruangan,
+          f.nama_pengguna,
+          f.email_pengguna,
+          f.rating,
+          f.komentar,
+          f.kategori,
+          f.tanggal_feedback,
+          f.created_at,
+          r.nama_ruangan,
+          l.nomor_lantai,
+          g.nama_gedung,
+          DATE_FORMAT(f.created_at, '%d %b %Y %H:%i') as waktu_formatted,
+          DATE_FORMAT(f.tanggal_feedback, '%d %b %Y') as tanggal_formatted
+        FROM feedback_ruangan f
+        JOIN ruangan r ON f.id_ruangan = r.id_ruangan
+        JOIN lantai l ON r.id_lantai = l.id_lantai
+        JOIN gedung g ON l.id_gedung = g.id_gedung
+        ORDER BY f.created_at DESC
+        LIMIT ? OFFSET ?
       `;
 
-      await connection.execute(updateQuery, params);
+      const [rows] = await connection.execute(query, [parseInt(limit), parseInt(offset)]);
 
-      res.json({ message: 'Feedback berhasil diupdate' });
+      // Hitung total untuk pagination
+      const countQuery = `SELECT COUNT(*) as total FROM feedback_ruangan`;
+      const [countResult] = await connection.execute(countQuery);
 
+      res.json({
+        data: rows,
+        pagination: {
+          current_page: parseInt(page),
+          per_page: parseInt(limit),
+          total: countResult[0].total,
+          total_pages: Math.ceil(countResult[0].total / limit)
+        }
+      });
     } catch (error) {
-      console.error('Error updating feedback:', error);
-      res.status(500).json({ message: 'Gagal mengupdate feedback' });
+      console.error('Error fetching all feedback:', error);
+      res.status(500).json({ message: 'Gagal mengambil semua feedback' });
     } finally {
       connection.release();
     }

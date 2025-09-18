@@ -13,6 +13,7 @@ export default function AdminLayout() {
     "/admin/jadwal": "Jadwal",
     "/admin/agenda": "Agenda",
     "/admin/riwayat": "Riwayat",
+    "/admin/feedback": "Feedback",
   };
 
   const title = pageTitles[location.pathname] || "Halaman Admin";

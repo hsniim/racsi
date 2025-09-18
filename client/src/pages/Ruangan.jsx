@@ -79,7 +79,6 @@ export default function Ruangan() {
       id_lantai: r.id_lantai,
       nama_ruangan: r.nama_ruangan,
       kapasitas: r.kapasitas,
-      status: r.status,
     });
   };
 
@@ -172,18 +171,6 @@ export default function Ruangan() {
                 required
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">Status</label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white"
-              >
-                <option value="tidak_digunakan">Tidak Digunakan</option>
-                <option value="digunakan">Digunakan</option>
-              </select>
-            </div>
           </div>
 
           <div className="flex gap-2 mt-4">
@@ -223,7 +210,6 @@ export default function Ruangan() {
                 <th className="p-4 text-gray-300 text-center">Lantai</th>
                 <th className="p-4 text-gray-300 text-center">Ruangan</th>
                 <th className="p-4 text-gray-300 text-center">Kapasitas</th>
-                <th className="p-4 text-gray-300 text-center">Status</th>
                 <th className="p-4 text-gray-300 text-center last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
               </tr>
             </thead>
@@ -235,17 +221,6 @@ export default function Ruangan() {
                     <td className="p-4 text-gray-200 text-center">{r.nomor_lantai}</td>
                     <td className="p-4 text-gray-200 text-center">{r.nama_ruangan}</td>
                     <td className="p-4 text-gray-200 text-center">{r.kapasitas}</td>
-                    <td className="p-4 text-gray-200 text-center">
-                      <span
-                        className={`px-3 py-1 text-sm rounded-full border ${
-                          r.status === "digunakan"
-                            ? "bg-green-500/20 border-green-400 text-green-300"
-                            : "bg-gray-700/20 border-gray-600 text-gray-300"
-                        }`}
-                      >
-                        {r.status.replace("_", " ")}
-                      </span>
-                    </td>
                     <td className="p-4 text-center space-x-2 last:rounded-tr-xl last:rounded-br-xl">
                       <button
                         onClick={() => handleEdit(r)}
