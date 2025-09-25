@@ -1,4 +1,4 @@
-function RoomCard({ room, type }) {
+function RoomCard({ room, type, currentDate, currentTime }) {
   if (!room) {
     return (
       <div className="w-full flex items-center bg-gray-800 rounded-lg overflow-hidden shadow-md mb-4">
@@ -10,10 +10,50 @@ function RoomCard({ room, type }) {
     );
   }
 
-  const jadwal =
-    room?.jadwal_list && room.jadwal_list.length > 0
-      ? room.jadwal_list[0]
-      : null;
+  // Cari jadwal yang sesuai dengan tanggal hari ini
+  const todaySchedules = room?.jadwal_list?.filter(jadwal => 
+    jadwal.tanggal === currentDate
+  ) || [];
+
+  // Fungsi untuk format waktu tanpa detik
+  const formatTime = (timeString) => {
+    if (!timeString) return "";
+    return timeString.slice(0, 5); // HH:MM
+  };
+
+  // Debug logging untuk troubleshooting
+  if (room.nama_ruangan && todaySchedules.length > 0) {
+    console.log(`RoomCard ${room.nama_ruangan}: Found ${todaySchedules.length} schedules for ${currentDate}`, todaySchedules);
+  }
+
+  // Pilih jadwal yang relevan berdasarkan waktu saat ini
+  let jadwal = null;
+  if (type === "sedang_digunakan" || type === "akan_digunakan") {
+    // Untuk status sedang/akan digunakan, cari jadwal yang sesuai dengan waktu
+    const timeToMinutes = (timeString) => {
+      const [hours, minutes] = timeString.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const currentMinutes = timeToMinutes(currentTime);
+    
+    if (type === "sedang_digunakan") {
+      // Cari jadwal yang sedang berlangsung
+      jadwal = todaySchedules.find(schedule => {
+        const startMinutes = timeToMinutes(schedule.waktu_mulai);
+        const endMinutes = timeToMinutes(schedule.waktu_selesai);
+        return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+      });
+    } else if (type === "akan_digunakan") {
+      // Cari jadwal terdekat yang akan dimulai
+      const upcomingSchedules = todaySchedules.filter(schedule => {
+        const startMinutes = timeToMinutes(schedule.waktu_mulai);
+        return currentMinutes < startMinutes;
+      }).sort((a, b) => timeToMinutes(a.waktu_mulai) - timeToMinutes(b.waktu_mulai));
+      
+      jadwal = upcomingSchedules.length > 0 ? upcomingSchedules[0] : null;
+    }
+  }
 
   // Warna strip berdasarkan status
   const statusColor =
@@ -22,12 +62,6 @@ function RoomCard({ room, type }) {
       : type === "sedang_digunakan"
       ? "bg-red-500"
       : "bg-yellow-500";
-
-  // Fungsi untuk format waktu tanpa detik
-  const formatTime = (timeString) => {
-    if (!timeString) return "";
-    return timeString.slice(0, 5); // HH:MM
-  };
 
   return (
     <>
@@ -42,13 +76,13 @@ function RoomCard({ room, type }) {
             <h3 className="text-4xl font-semibold text-white">
               {room.nama_ruangan || "Nama Tidak Ada"}
             </h3>
-            <div className="flex items-center text-gray-400 mt-2">
+            <div className="flex items-center text-gray-300 mt-1">
               <img
                 src="/assets/kapasitas_iconsilver.svg"
                 alt="kapasitas"
                 className="w-5 h-5 mr-2"
               />
-              <span className="text-xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
+              <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
             </div>
           </div>
         </div>
@@ -62,19 +96,34 @@ function RoomCard({ room, type }) {
             <h3 className="text-4xl font-semibold">
               {room.nama_ruangan || "Nama Tidak Ada"}
             </h3>
-            <div className="flex items-center text-gray-300 mt-2">
+            <div className="flex items-center text-gray-300 mt-1">
               <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-5 h-5 mr-2" />
-              <span className="text-xl">
+              <span className="text-2xl">
                 {formatTime(jadwal.waktu_mulai)} - {formatTime(jadwal.waktu_selesai)}
               </span>
             </div>
-            <div className="flex items-center text-gray-300 mt-2">
+            <div className="flex items-center text-gray-300 mt-1">
               <img src="/assets/kapasitas_iconsilver.svg" alt="kapasitas" className="w-5 h-5 mr-2" />
-              <span className="text-xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
+              <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
             </div>
-            <div className="flex items-center text-gray-300 mt-2">
+            <div className="flex items-center text-gray-300 mt-1">
               <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-5 h-5 mr-2" />
-              <span className="text-xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
+              <span className="text-2xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AKAN DIGUNAKAN - Fallback jika tidak ada jadwal */}
+      {type === "akan_digunakan" && !jadwal && (
+        <div className="w-full flex bg-gray-800 rounded-lg overflow-hidden shadow-md mb-4">
+          <div className={`w-3 self-stretch ${statusColor}`}></div>
+          <div className="p-4 flex-1 w-full text-white">
+            <h3 className="text-4xl font-semibold">
+              {room.nama_ruangan || "Nama Tidak Ada"}
+            </h3>
+            <div className="flex items-center text-gray-300 mt-1">
+              <span className="text-2xl">Jadwal tidak tersedia</span>
             </div>
           </div>
         </div>
@@ -90,19 +139,19 @@ function RoomCard({ room, type }) {
               <h3 className="text-4xl font-semibold">
                 {room.nama_ruangan || "Nama Tidak Ada"}
               </h3>
-              <div className="flex items-center text-gray-300 mt-2">
+              <div className="flex items-center text-gray-300 mt-1">
                 <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-5 h-5 mr-2" />
-                <span className="text-xl">
+                <span className="text-2xl">
                   {formatTime(jadwal.waktu_mulai)} - {formatTime(jadwal.waktu_selesai)}
                 </span>
               </div>
-              <div className="flex items-center text-gray-300 mt-2">
+              <div className="flex items-center text-gray-300 mt-1">
                 <img src="/assets/kapasitas_iconsilver.svg" alt="kapasitas" className="w-5 h-5 mr-2" />
-                <span className="text-xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
+                <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
               </div>
-              <div className="flex items-center text-gray-300 mt-2">
+              <div className="flex items-center text-gray-300 mt-1">
                 <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-5 h-5 mr-2" />
-                <span className="text-xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
+                <span className="text-2xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
               </div>
             </div>
           </div>
@@ -111,12 +160,27 @@ function RoomCard({ room, type }) {
           <div className="flex-[2] bg-gray-800 rounded-lg overflow-hidden shadow-md">
             <div className={`w-3 self-stretch ${statusColor}`}></div>
             <div className="p-4 flex-1 text-white">
-              <h4 className="text-3xl font-semibold">
+              <h4 className="text-4xl font-semibold">
                 {jadwal.nama_kegiatan || "Nama Kegiatan Tidak Ada"}
               </h4>
-              <p className="text-gray-300 text-md mt-2">
+              <p className="text-gray-300 text-2xl mt-2">
                 {jadwal.deskripsi_kegiatan || "Deskripsi tidak tersedia"}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SEDANG DIGUNAKAN - Fallback jika tidak ada jadwal */}
+      {type === "sedang_digunakan" && !jadwal && (
+        <div className="w-full flex bg-gray-800 rounded-lg overflow-hidden shadow-md mb-4">
+          <div className={`w-3 self-stretch ${statusColor}`}></div>
+          <div className="p-4 flex-1 w-full text-white">
+            <h3 className="text-4xl font-semibold">
+              {room.nama_ruangan || "Nama Tidak Ada"}
+            </h3>
+            <div className="flex items-center text-gray-300 mt-1">
+              <span className="text-2xl">Jadwal tidak tersedia</span>
             </div>
           </div>
         </div>

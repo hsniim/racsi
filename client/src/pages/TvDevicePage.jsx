@@ -3,13 +3,12 @@ import { useParams } from "react-router-dom";
 import {
   fetchRuanganByGedungLantaiTv,
   fetchHeaderDataByIds,
-  fetchPjGedung,
+  fetchPjGedungByGedung,
 } from "../utils/api";
 import RoomCard from "../components/RoomCard";
 import FeedbackCard from "../components/FeedbackCard";
 
 function TvDevicePage() {
-  // Pastikan nama param sama dengan route: :id_gedung & :id_lantai
   const { id_gedung, id_lantai } = useParams();
   const [data, setData] = useState([]);
   const [headerData, setHeaderData] = useState({
@@ -30,7 +29,6 @@ function TvDevicePage() {
 
   // Force fullscreen on component mount
   useEffect(() => {
-    // Add fullscreen class to body and remove any default margins/paddings
     document.body.style.margin = '0';
     document.body.style.padding = '0';
     document.body.style.overflow = 'hidden';
@@ -41,33 +39,96 @@ function TvDevicePage() {
     document.body.style.height = '100%';
 
     return () => {
-      // Cleanup on unmount
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
     };
   }, []);
 
+  // Fungsi untuk menentukan status ruangan
+  function getStatusRuangan(ruangan, currentDate, currentTime) {
+    if (!ruangan?.jadwal_list || ruangan.jadwal_list.length === 0) {
+      return "tidak_digunakan";
+    }
+
+    // Convert current time to minutes for easier comparison
+    const currentMinutes = timeToMinutes(currentTime);
+    
+    let sedang = false;
+    let akan = false;
+
+    ruangan.jadwal_list.forEach((jadwal) => {
+      if (!jadwal?.tanggal) {
+        return;
+      }
+      
+      if (jadwal.tanggal !== currentDate) {
+        return;
+      }
+
+      if (!jadwal.waktu_mulai || !jadwal.waktu_selesai) {
+        return;
+      }
+
+      const startMinutes = timeToMinutes(jadwal.waktu_mulai);
+      const endMinutes = timeToMinutes(jadwal.waktu_selesai);
+
+      if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+        sedang = true;
+      } else if (currentMinutes < startMinutes) {
+        akan = true;
+      }
+    });
+    
+    if (sedang) {
+      return "sedang_digunakan";
+    } else if (akan) {
+      return "akan_digunakan";
+    } else {
+      return "tidak_digunakan";
+    }
+  }
+
+  // Helper function to convert time string to minutes with validation
+  function timeToMinutes(timeString) {
+    if (!timeString) {
+      return 0;
+    }
+    
+    // Handle both HH:MM and HH:MM:SS formats
+    const parts = timeString.split(':');
+    if (parts.length < 2) {
+      return 0;
+    }
+    
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    
+    if (isNaN(hours) || isNaN(minutes)) {
+      return 0;
+    }
+    
+    const totalMinutes = hours * 60 + minutes;
+    return totalMinutes;
+  }
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log(
-          `Fetching data ruangan dari endpoint: /api/ruangan/tv/with-jadwal?id_gedung=${id_gedung}&id_lantai=${id_lantai}`
-        );
-
-        // Ambil ruangan publik untuk TV
+        // Ambil ruangan untuk TV
         const raw = await fetchRuanganByGedungLantaiTv(id_gedung, id_lantai);
         let ruanganList = [];
         if (Array.isArray(raw)) ruanganList = raw;
         else if (raw && Array.isArray(raw.data)) ruanganList = raw.data;
         else ruanganList = Array.isArray(raw) ? raw : [];
+        
         setData(ruanganList);
-        console.log("Data TvDevicePage:", ruanganList);
+
       } catch (err) {
-        console.error("Gagal fetch ruangan TV:", err);
+        console.error("ERROR fetching ruangan TV:", err);
         setData([]);
       }
 
-      // Ambil header spesifik (jika endpoint tersedia)
+      // Load other data (header, PJ, etc.)
       try {
         const header = await fetchHeaderDataByIds(id_gedung, id_lantai);
         if (header && typeof header === 'object') {
@@ -80,58 +141,63 @@ function TvDevicePage() {
           }));
         }
       } catch (err) {
-        console.error("Gagal fetch header by ids:", err);
+        console.error("Gagal fetch header:", err);
       }
 
-      // Ambil PJ Gedung (sama seperti Home)
       try {
-        const pj = await fetchPjGedung();
+        const pj = await fetchPjGedungByGedung(id_gedung);
         if (Array.isArray(pj) && pj.length > 0) {
           setPjGedungData(pj[0]);
+        } else {
+          setPjGedungData({
+            nama: "", no_telp: "", link_peminjaman: "",
+            qrcodepath_pinjam: "", qrcodepath_kontak: "",
+          });
         }
       } catch (err) {
         console.error("Gagal fetch PJ Gedung:", err);
       }
     };
 
-    loadData();
-    const interval = setInterval(loadData, 60000);
-    return () => clearInterval(interval);
+    if (id_gedung && id_lantai) {
+      loadData();
+      // Refresh data setiap 30 detik
+      const interval = setInterval(loadData, 30000);
+      return () => clearInterval(interval);
+    }
   }, [id_gedung, id_lantai]);
 
-  // Update waktu realtime
+  // Update waktu realtime setiap detik
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setCurrentDate(now.toISOString().split("T")[0]);
-      setCurrentTime(now.toLocaleTimeString("en-GB", { hour12: false }).slice(0, 5));
+      const date = now.toISOString().split("T")[0];
+      const time = now.toLocaleTimeString("en-GB", { hour12: false }).slice(0, 5);
+      
+      setCurrentDate(date);
+      setCurrentTime(time);
     };
+    
     updateTime();
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  function getStatusRuangan(ruangan, currentDate, currentTime) {
-    if (!ruangan?.jadwal_list || ruangan.jadwal_list.length === 0) return "tidak_digunakan";
-
-    let sedang = false;
-    let akan = false;
-
-    ruangan.jadwal_list.forEach((jadwal) => {
-      if (!jadwal?.tanggal || jadwal.tanggal !== currentDate) return;
-
-      if (currentTime >= jadwal.waktu_mulai && currentTime <= jadwal.waktu_selesai) sedang = true;
-      else if (currentTime < jadwal.waktu_mulai) akan = true;
-    });
-
-    if (sedang) return "sedang_digunakan";
-    if (akan) return "akan_digunakan";
-    return "tidak_digunakan";
-  }
-
-  const unusedRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'tidak_digunakan');
-  const usedRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'sedang_digunakan');
-  const upcomingRuangan = data.filter(d => getStatusRuangan(d, currentDate, currentTime) === 'akan_digunakan');
+  // Kategorisasi ruangan berdasarkan status
+  const unusedRuangan = data.filter(d => {
+    const status = getStatusRuangan(d, currentDate, currentTime);
+    return status === 'tidak_digunakan';
+  });
+  
+  const usedRuangan = data.filter(d => {
+    const status = getStatusRuangan(d, currentDate, currentTime);
+    return status === 'sedang_digunakan';
+  });
+  
+  const upcomingRuangan = data.filter(d => {
+    const status = getStatusRuangan(d, currentDate, currentTime);
+    return status === 'akan_digunakan';
+  });
 
   const ScrollableSection = ({ title, rooms, maxCards, bgColor, textColor, scrollSpeed = 30 }) => {
     const list = Array.isArray(rooms) ? rooms : [];
@@ -150,13 +216,18 @@ function TvDevicePage() {
     if (!shouldScroll) {
       return (
         <div className="min-w-0">
-          <h2 className={`text-xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
+          <h2 className={`text-2xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
           <div className="w-full overflow-hidden" style={{ height: `${containerHeight}px` }}>
             <div className="flex flex-col">
               {list.length > 0 ? (
                 list.slice(0, maxCards).map((room) => (
                   <div key={room.id_ruangan} style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }} className="flex-shrink-0">
-                    <RoomCard room={room} type={bgColor} />
+                    <RoomCard 
+                      room={room} 
+                      type={bgColor}
+                      currentDate={currentDate}
+                      currentTime={currentTime}
+                    />
                   </div>
                 ))
               ) : (
@@ -172,20 +243,30 @@ function TvDevicePage() {
 
     return (
       <div className="min-w-0">
-        <h2 className={`text-xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
+        <h2 className={`text-2xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
         <div className="w-full overflow-hidden relative" style={{ height: `${containerHeight}px` }}>
           <div className={`scroll-${bgColor} absolute top-0 left-0 w-full`} style={{ '--scroll-speed': `${scrollSpeed}s` }}>
             <div className="room-set">
               {list.map((room) => (
                 <div key={`first-${room.id_ruangan}`} style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }} className="flex-shrink-0">
-                  <RoomCard room={room} type={bgColor} />
+                  <RoomCard 
+                    room={room} 
+                    type={bgColor}
+                    currentDate={currentDate}
+                    currentTime={currentTime}
+                  />
                 </div>
               ))}
             </div>
             <div className="room-set">
               {list.map((room) => (
                 <div key={`second-${room.id_ruangan}`} style={{ height: `${cardHeight}px`, minHeight: `${cardHeight}px` }} className="flex-shrink-0">
-                  <RoomCard room={room} type={bgColor} />
+                  <RoomCard 
+                    room={room} 
+                    type={bgColor}
+                    currentDate={currentDate}
+                    currentTime={currentTime}
+                  />
                 </div>
               ))}
             </div>
@@ -220,24 +301,28 @@ function TvDevicePage() {
         }}
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-6 p-6 bg-gray-800 rounded-lg flex-shrink-0">
+        <div className="flex justify-between items-center mb-6 p-8 bg-gray-800 rounded-lg flex-shrink-0">
           <div className="flex items-center">
             <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4 transform rotate-45">
               <div className="w-6 h-6 bg-gray-800 rounded-sm transform -rotate-45 flex items-center justify-center">
                 <div className="w-3 h-2 bg-white rounded-sm"></div>
               </div>
             </div>
-            <h1 className="text-5xl font-bold text-white">{headerData.nama_gedung}</h1>
+            <h1 className="text-7xl font-bold text-white">{headerData.nama_gedung}</h1>
           </div>
 
           <div className="text-center">
-            <p className="text-3xl text-white font-medium">Lantai {headerData.nomor_lantai}</p>
-            <p className="text-2xl text-gray-300">{headerData.pj_lantaipagi} | {headerData.pj_lantaisiang}</p>
+            <p className="text-5xl text-white font-bold tracking-wide mb-2 drop-shadow-lg">Lantai {headerData.nomor_lantai}</p>
+            <div className="flex items-center justify-center gap-3 text-2xl text-gray-300">
+              <span className="bg-gray-700 px-3 py-1 rounded-md font-medium">{headerData.pj_lantaipagi || "Tidak Ada"}</span>
+              <span className="text-gray-500">|</span>
+              <span className="bg-gray-700 px-3 py-1 rounded-md font-medium">{headerData.pj_lantaisiang || "Tidak Ada"}</span>
+            </div>
           </div>
 
           <div className="text-right">
-            <p className="text-4xl font-bold text-white">{currentTime}</p>
-            <p className="text-base text-gray-300">
+            <p className="text-6xl font-bold text-white">{currentTime}</p>
+            <p className="text-2xl text-gray-300">
               {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           </div>
@@ -256,39 +341,75 @@ function TvDevicePage() {
           </div>
         </div>
 
-        {/* Footer - Updated dengan 3 cards termasuk FeedbackCard */}
-        <div className="mt-5 p-4 bg-gray-800 rounded-lg mx-auto max-w-6xl flex-shrink-0">
-          <div className="flex justify-between items-center gap-6">
-            {/* PJ Gedung Card */}
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-20">
-                <img className="rounded-md w-full h-full object-cover" src={pjGedungData.qrcodepath_kontak} alt="QR Kontak PJ" />
+        {/* Footer */}
+        <div className="mt-6 flex-shrink-0 flex justify-center">
+          <div className="p-5 bg-gray-800 rounded-lg inline-flex items-center gap-12">
+            <div className="flex-shrink-0">
+              <FeedbackCard 
+                id_gedung={id_gedung} 
+                id_lantai={id_lantai}
+                key={`feedback-${id_gedung}-${id_lantai}-${Math.floor(Date.now() / 30000)}`}
+              />
+            </div>
+
+            <div className="w-px h-28 bg-gray-600 flex-shrink-0"></div>
+
+            <div className="flex items-center gap-5 flex-shrink-0">
+              <div className="w-28 h-28">
+                {pjGedungData.qrcodepath_kontak ? (
+                  <img 
+                    className="rounded-md w-full h-full object-cover" 
+                    src={pjGedungData.qrcodepath_kontak} 
+                    alt="QR Kontak PJ" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full bg-gray-600 rounded-md flex items-center justify-center ${pjGedungData.qrcodepath_kontak ? 'hidden' : 'flex'}`}>
+                  <span className="text-gray-400 text-sm">No QR</span>
+                </div>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-2xl font-semibold text-white leading-tight">PJ Gedung</h3>
-                <p className="text-md text-gray-300 -mt-1">{pjGedungData.no_telp}</p>
-                <p className="text-md text-gray-300 mt-1">{pjGedungData.nama}</p>
+                <h3 className="text-3xl font-semibold text-white leading-tight mb-1">PJ Gedung</h3>
+                <p className="text-xl text-gray-300 whitespace-nowrap">{pjGedungData.no_telp}</p>
+                <p className="text-xl text-gray-300 whitespace-nowrap">{pjGedungData.nama}</p>
               </div>
             </div>
 
-            {/* Feedback Card */}
-            <FeedbackCard id_gedung={id_gedung} id_lantai={id_lantai} />
+            <div className="w-px h-28 bg-gray-600 flex-shrink-0"></div>
 
-            {/* Peminjaman Card */}
-            <div className="flex items-center gap-3">
-              <div className="w-20 h-20">
-                <img className="rounded-md w-full h-full object-cover" src={pjGedungData.qrcodepath_pinjam} alt="QR Peminjaman" />
+            <div className="flex items-center gap-5 flex-shrink-0">
+              <div className="w-28 h-28">
+                {pjGedungData.qrcodepath_pinjam ? (
+                  <img 
+                    className="rounded-md w-full h-full object-cover" 
+                    src={pjGedungData.qrcodepath_pinjam} 
+                    alt="QR Peminjaman" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className={`w-full h-full bg-gray-600 rounded-md flex items-center justify-center ${pjGedungData.qrcodepath_pinjam ? 'hidden' : 'flex'}`}>
+                  <span className="text-gray-400 text-sm">No QR</span>
+                </div>
               </div>
-              <div className="flex flex-col gap-3">
-                <h3 className="text-2xl font-semibold text-white leading-none">Peminjaman<br />Ruang</h3>
-                <p className="text-md text-gray-300">{pjGedungData.link_peminjaman}</p>
+              <div className="flex flex-col">
+                <h3 className="text-3xl font-semibold text-white leading-tight mb-1">
+                  Peminjaman<br />Ruang
+                </h3>
+                <p className="text-xl text-gray-300 whitespace-nowrap">
+                  {pjGedungData.link_peminjaman}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Animasi scroll */}
       <style>{`
         .scroll-tidak_digunakan,
         .scroll-sedang_digunakan,

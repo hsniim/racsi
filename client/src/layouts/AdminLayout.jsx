@@ -19,7 +19,7 @@ export default function AdminLayout() {
   const title = pageTitles[location.pathname] || "Halaman Admin";
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-primary">
 
       {/* Sidebar tetap fix di kiri */}
       <Sidebar />

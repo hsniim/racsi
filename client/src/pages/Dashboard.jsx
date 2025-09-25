@@ -13,7 +13,11 @@ import {
   Save,
   Trash2,
   Edit,
-  X
+  X,
+  ChevronDown,
+  TrendingUp,
+  Activity,
+  Users
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -36,7 +40,7 @@ export default function Dashboard() {
   const [deviceForm, setDeviceForm] = useState({
     id_gedung: "",
     id_lantai: "",
-    nama_device: "" // Tambahkan ini jika backend masih memerlukannya
+    nama_device: ""
   });
   const [editDeviceId, setEditDeviceId] = useState(null);
   const [deviceMsg, setDeviceMsg] = useState({ type: "", text: "" });
@@ -49,7 +53,7 @@ export default function Dashboard() {
     headers: { Authorization: `Bearer ${token}` }
   });
 
-  // Existing functions
+  // Existing functions (keeping all the existing logic)
   const fetchData = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
@@ -77,7 +81,6 @@ export default function Dashboard() {
     }
   };
 
-  // Device management functions (dari TvDevice.jsx)
   const loadDeviceData = async (preserveFilter = false) => {
     try {
       const [d, g, l] = await Promise.all([
@@ -89,11 +92,6 @@ export default function Dashboard() {
       setGedungs(g.data.data || []);
       setLantais(l.data.data || []);
       
-      // Debug log untuk melihat data yang diterima
-      console.log("Gedungs:", g.data.data);
-      console.log("Lantais:", l.data.data);
-      
-      // Jika tidak preserve filter dan tidak ada gedung yang dipilih, kosongkan filtered lantais
       if (!preserveFilter && !deviceForm.id_gedung) {
         setFilteredLantais([]);
       }
@@ -105,20 +103,16 @@ export default function Dashboard() {
 
   const handleGedungChange = (e) => {
     const selectedGedungId = e.target.value;
-    console.log("Selected gedung ID:", selectedGedungId); // Debug log
     
     setDeviceForm({ 
       ...deviceForm, 
       id_gedung: selectedGedungId, 
       id_lantai: "",
-      nama_device: selectedGedungId ? `Device-${selectedGedungId}` : "" // Auto generate nama device
+      nama_device: selectedGedungId ? `Device-${selectedGedungId}` : ""
     });
     
     if (selectedGedungId) {
-      // Gunakan === untuk strict comparison dan pastikan type data konsisten
       const filtered = lantais.filter(l => String(l.id_gedung) === String(selectedGedungId));
-      console.log("Filtered lantais:", filtered); // Debug log
-      console.log("All lantais:", lantais); // Debug log
       setFilteredLantais(filtered);
     } else {
       setFilteredLantais([]);
@@ -132,7 +126,6 @@ export default function Dashboard() {
     setDeviceForm({ 
       ...deviceForm, 
       id_lantai: selectedLantaiId,
-      // Update nama device dengan info gedung dan lantai
       nama_device: selectedLantaiId ? `Device-${deviceForm.id_gedung}-L${selectedLantai?.nomor_lantai || selectedLantaiId}` : deviceForm.nama_device
     });
   };
@@ -140,21 +133,17 @@ export default function Dashboard() {
   const submitDevice = async (e) => {
     e.preventDefault();
     
-    // Validasi manual
     if (!deviceForm.id_gedung || !deviceForm.id_lantai) {
       setDeviceMsg({ type: "error", text: "Harap pilih gedung dan lantai" });
       return;
     }
     
     try {
-      // Prepare data for submission
       const submitData = {
         id_gedung: deviceForm.id_gedung,
         id_lantai: deviceForm.id_lantai,
         nama_device: deviceForm.nama_device || `Device-${deviceForm.id_gedung}-${deviceForm.id_lantai}`
       };
-      
-      console.log("Submitting data:", submitData); // Debug log
       
       if (editDeviceId) {
         await api.put(`/tv-device/${editDeviceId}`, submitData);
@@ -164,15 +153,12 @@ export default function Dashboard() {
         setDeviceMsg({ type: "success", text: "Device berhasil ditambahkan" });
       }
       
-      // Reset form
       setDeviceForm({ id_gedung: "", id_lantai: "", nama_device: "" });
       setEditDeviceId(null);
       setFilteredLantais([]);
-      // Tutup form setelah berhasil submit
       setShowDeviceSection(false);
       await loadDeviceData();
       
-      // Clear message after 3 seconds
       setTimeout(() => setDeviceMsg({ type: "", text: "" }), 3000);
     } catch (err) {
       console.error("Submit error:", err);
@@ -224,305 +210,389 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Fetch data pertama kali
     fetchData();
     fetchGedungLantaiList();
     loadDeviceData();
 
-    // Refresh otomatis setiap 5 detik
     const interval = setInterval(() => {
       fetchData();
       fetchGedungLantaiList();
-      loadDeviceData(true); // Preserve filter saat auto refresh
+      loadDeviceData(true);
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="space-y-8">
-      {/* Stats Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
-          <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
-            <Building2 className="w-8 h-8" />
-            <span>Total Gedung</span>
-          </div>
-          <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
-            {stats.totalGedung}
-          </div>
-        </div>
-        <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
-          <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
-            <Layers className="w-8 h-8" />
-            <span>Total Lantai</span>
-          </div>
-          <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
-            {stats.totalLantai}
-          </div>
-        </div>
-        <div className="bg-gradient-to-r from-gray-900 to-black text-white rounded-2xl p-6 shadow-lg hover:scale-105 transition-transform duration-300">
-          <div className="flex items-center gap-3 font-semibold text-base md:text-lg mb-2">
-            <DoorOpen className="w-8 h-8" />
-            <span>Total Ruangan</span>
-          </div>
-          <div className="text-3xl md:text-4xl font-extrabold select-none tracking-wide">
-            {stats.totalRuangan}
-          </div>
-        </div>
-      </section>
-
-      {/* Device Management Section */}
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-300 flex items-center gap-2">
-            <Monitor className="w-6 h-6" />
-            Daftar Tampilan
-          </h2>
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full border border-gray-600/30">
-              {devices.length} Tampilan
-            </span>
-            <button
-              onClick={() => setShowDeviceSection(!showDeviceSection)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2"
-            >
-              {showDeviceSection ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-              {showDeviceSection ? 'Tutup' : 'Tambah Tampilan'}
-            </button>
-          </div>
-        </div>
-
-        {/* Device Form - Collapsible */}
-        {showDeviceSection && (
-          <div className="mb-6">
-            {deviceMsg.text && (
-              <div className={`mb-4 p-3 rounded-xl border ${
-                deviceMsg.type === "success" 
-                  ? "bg-green-600/20 border-green-400/30 text-green-200" 
-                  : "bg-red-600/20 border-red-400/30 text-red-200"
-              }`}>
-                {deviceMsg.text}
-              </div>
-            )}
-
-            <div className="bg-gray-700/30 rounded-xl p-4 border border-gray-600/30">
-              <h3 className="text-lg text-gray-200 font-medium mb-4">
-                {editDeviceId ? "Edit Tampilan" : "Tambah Tampilan"}
-              </h3>
-              <form onSubmit={submitDevice} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Pilih Gedung *
-                    </label>
-                    <select
-                      className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={deviceForm.id_gedung}
-                      onChange={handleGedungChange}
-                      required
-                    >
-                      <option value="">-- Pilih Gedung --</option>
-                      {gedungs.map(g => 
-                        <option key={g.id_gedung} value={g.id_gedung}>{g.nama_gedung}</option>
-                      )}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Pilih Lantai *
-                    </label>
-                    <select
-                      className="w-full p-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                      value={deviceForm.id_lantai}
-                      onChange={handleLantaiChange}
-                      required
-                      disabled={!deviceForm.id_gedung}
-                    >
-                      <option value="">-- Pilih Lantai --</option>
-                      {filteredLantais.map(l => (
-                        <option key={l.id_lantai} value={l.id_lantai}>
-                          Lantai {l.nomor_lantai}
-                        </option>
-                      ))}
-                    </select>
-                    {deviceForm.id_gedung && filteredLantais.length === 0 && (
-                      <p className="text-sm text-yellow-400 mt-1">
-                        Tidak ada lantai tersedia untuk gedung ini
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Hidden field untuk nama_device jika masih diperlukan backend */}
-                <input 
-                  type="hidden" 
-                  name="nama_device" 
-                  value={deviceForm.nama_device}
-                />
-                
-                <div className="flex gap-2">
-                  {editDeviceId ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={batalEdit}
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl flex items-center gap-2 transition-colors"
-                      >
-                        <X size={18}/>
-                        Batal
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-colors"
-                      >
-                        <Save size={18}/>
-                        Simpan Perubahan
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-colors"
-                    >
-                      <Plus size={18}/>
-                      Tambah Tampilan
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* Device List */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-700/50">
-                <th className="p-3 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">ID</th>
-                <th className="p-3 text-left text-gray-300 font-medium text-center">Gedung</th>
-                <th className="p-3 text-left text-gray-300 font-medium text-center">Lantai</th>
-                <th className="p-3 text-center text-gray-300 font-medium  last:rounded-tr-xl last:rounded-br-xl">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {devices.length ? devices.map(d => (
-                <tr key={d.id_device} className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200">
-                  <td className="p-3 text-gray-200 first:rounded-tl-xl first:rounded-bl-xl">{d.id_device}</td>
-                  <td className="p-3 text-gray-200 text-center">{d.nama_gedung}</td>
-                  <td className="p-3 text-gray-200 text-center">Lantai {d.nomor_lantai}</td>
-                  <td className="p-3 text-center last:rounded-tr-xl last:rounded-br-xl">
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      <button
-                        onClick={() => editDevice(d)}
-                        className="px-3 py-1 bg-yellow-500/20 text-yellow-300 rounded-lg border border-yellow-400/30 hover:bg-yellow-500/30 transition-colors text-sm flex items-center gap-1"
-                      >
-                        <Edit size={14}/>
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => hapusDevice(d.id_device)}
-                        className="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30 transition-colors text-sm flex items-center gap-1"
-                      >
-                        <Trash2 size={14}/>
-                        Hapus
-                      </button>
-                      <button
-                        onClick={() => handleTampilkanDevice(d.id_gedung, d.id_lantai)}
-                        className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-lg border border-blue-400/30 hover:bg-blue-500/30 transition-colors text-sm flex items-center gap-1"
-                      >
-                        <Monitor size={14}/>
-                        Tampilkan
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="4" className="p-8 text-center text-gray-400">
-                    <div className="flex flex-col items-center">
-                      <Monitor className="w-16 h-16 text-gray-600 mb-4" />
-                      <p className="text-lg mb-2">Belum ada device TV</p>
-                      <p className="text-sm text-gray-500">Tambahkan device TV untuk setiap lantai</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+    <div className="w-full min-h-screen bg-primary text-white relative">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 opacity-10 pointer-events-none z-0">
+        <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
+        <div className="absolute top-96 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
+        <div className="absolute top-80 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
+        <div className="absolute left-1/2 w-28 h-28 border border-white/15 rounded-full" style={{top: '600px'}}></div>
+        <div className="absolute right-10 w-20 h-20 border border-white/15 rounded-full" style={{top: '800px'}}></div>
+        <div className="absolute left-20 w-18 h-18 border border-white/15 rounded-full" style={{top: '1000px'}}></div>
+        <div className="absolute left-10 w-24 h-24 border border-white/15 rounded-lg rotate-45" style={{top: '1200px'}}></div>
       </div>
 
-      {/* Updates Table */}
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-6 shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-300">Agenda Terkini</h2>
-          <span className="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full border border-gray-600/30">
-            {updates.length} Update
-          </span>
+      <div className="relative z-10 space-y-8 p-6">
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent mb-2">
+            Dashboard Admin
+          </h1>
+          <p className="text-xl text-gray-300">
+            Kelola sistem RACSI dengan mudah dan efisien
+          </p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-700/50 backdrop-blur-sm">
-                <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4" />
-                    Gedung
+
+        {/* Stats Cards */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 shadow-2xl hover:transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-300">Total Gedung</h3>
+                <p className="text-3xl font-bold text-white">{stats.totalGedung}</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-green-400">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>Tersedia</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 shadow-2xl hover:transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <Layers className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-300">Total Lantai</h3>
+                <p className="text-3xl font-bold text-white">{stats.totalLantai}</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-green-400">
+              <Activity className="w-4 h-4 mr-1" />
+              <span>Aktif</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 shadow-2xl hover:transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                <DoorOpen className="w-6 h-6 text-purple-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-300">Total Ruangan</h3>
+                <p className="text-3xl font-bold text-white">{stats.totalRuangan}</p>
+              </div>
+            </div>
+            <div className="flex items-center text-sm text-green-400">
+              <Users className="w-4 h-4 mr-1" />
+              <span>Siap Digunakan</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Device Management Section */}
+        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-700/30">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <Monitor className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-200">Kelola Tampilan</h2>
+                <p className="text-gray-400">Atur tampilan untuk setiap lantai/gedung</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30">
+                {devices.length} Tampilan
+              </span>
+              <button
+                onClick={() => setShowDeviceSection(!showDeviceSection)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                {showDeviceSection ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                {showDeviceSection ? 'Tutup Form' : 'Tambah Tampilan'}
+              </button>
+            </div>
+          </div>
+
+          {/* Device Form - Collapsible */}
+          {showDeviceSection && (
+            <div className="mb-8">
+              {deviceMsg.text && (
+                <div className={`mb-6 p-4 rounded-xl border ${
+                  deviceMsg.type === "success" 
+                    ? "bg-green-600/20 border-green-400/30 text-green-200" 
+                    : "bg-red-600/20 border-red-400/30 text-red-200"
+                }`}>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-current rounded-full mr-3 animate-pulse"></div>
+                    {deviceMsg.text}
                   </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4" />
-                    Lantai
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <DoorClosed className="w-4 h-4" />
-                    Ruangan
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium">
-                  <div className="flex items-center gap-2">
-                    <ClipboardList className="w-4 h-4" />
-                    Agenda
-                  </div>
-                </th>
-                <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
-                  <div className="flex items-center gap-2">
-                    <CalendarDays className="w-4 h-4" />
-                    Jadwal
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {updates.length > 0 ? (
-                updates.map((room, idx) => (
-                  <tr key={idx} className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200">
-                    <td className="p-4 text-gray-200">{room.gedung}</td>
-                    <td className="p-4 text-gray-200">{room.lantai}</td>
-                    <td className="p-4 text-gray-200">{room.nama}</td>
-                    <td className="p-4 text-gray-200">{room.kegiatan}</td>
-                    <td className="p-4 text-gray-200">{room.jadwal}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="p-8 text-center text-gray-400">
-                    <div className="flex flex-col items-center">
-                      <DoorOpen className="w-16 h-16 text-gray-600 mb-4" />
-                      <p className="text-lg mb-2">Tidak ada pembaruan terbaru</p>
-                      <p className="text-sm text-gray-500">Kegiatan terbaru akan muncul di sini</p>
-                    </div>
-                  </td>
-                </tr>
+                </div>
               )}
-            </tbody>
-          </table>
+
+              <div className="bg-gray-700/30 backdrop-blur-sm rounded-xl p-6 border border-gray-600/30">
+                <h3 className="text-lg text-gray-200 font-medium mb-6 flex items-center gap-2">
+                  {editDeviceId ? <Edit className="w-5 h-5 text-yellow-400" /> : <Plus className="w-5 h-5 text-blue-400" />}
+                  {editDeviceId ? "Edit Tampilan" : "Tambah Tampilan Baru"}
+                </h3>
+                <form onSubmit={submitDevice} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Pilih Gedung *
+                      </label>
+                      <div className="relative">
+                        <select
+                          className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70"
+                          value={deviceForm.id_gedung}
+                          onChange={handleGedungChange}
+                          required
+                        >
+                          <option value="">-- Pilih Gedung --</option>
+                          {gedungs.map(g => 
+                            <option key={g.id_gedung} value={g.id_gedung}>{g.nama_gedung}</option>
+                          )}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                        <Layers className="w-4 h-4" />
+                        Pilih Lantai *
+                      </label>
+                      <div className="relative">
+                        <select
+                          className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                          value={deviceForm.id_lantai}
+                          onChange={handleLantaiChange}
+                          required
+                          disabled={!deviceForm.id_gedung}
+                        >
+                          <option value="">
+                            {!deviceForm.id_gedung ? "-- Pilih Gedung Dulu --" : "-- Pilih Lantai --"}
+                          </option>
+                          {filteredLantais.map(l => (
+                            <option key={l.id_lantai} value={l.id_lantai}>
+                              Lantai {l.nomor_lantai}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      </div>
+                      {deviceForm.id_gedung && filteredLantais.length === 0 && (
+                        <p className="text-sm text-yellow-400 mt-2">
+                          Tidak ada lantai tersedia untuk gedung ini
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    {editDeviceId ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={batalEdit}
+                          className="px-6 py-3 bg-red-600/20 text-red-300 border border-red-400/30 rounded-xl flex items-center gap-2 hover:bg-red-600/30 transition-all duration-200 hover:shadow-lg"
+                        >
+                          <X className="w-5 h-5" />
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          <Save className="w-5 h-5" />
+                          Simpan Perubahan
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="submit"
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                      >
+                        <Plus className="w-5 h-5" />
+                        Tambah Tampilan
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Device List */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-700/50">
+                  <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="w-4 h-4" />
+                      ID Tampilan
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Gedung
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      Lantai
+                    </div>
+                  </th>
+                  <th className="p-4 text-center text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
+                    Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {devices.length ? devices.map(d => (
+                  <tr key={d.id_device} className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200">
+                    <td className="p-4 text-gray-200 font-medium">#{d.id_device}</td>
+                    <td className="p-4 text-gray-200">{d.nama_gedung}</td>
+                    <td className="p-4 text-gray-200">Lantai {d.nomor_lantai}</td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => editDevice(d)}
+                          className="px-3 py-2 bg-yellow-500/20 text-yellow-300 rounded-lg border border-yellow-400/30 hover:bg-yellow-500/30 transition-all duration-200 text-sm flex items-center gap-1 hover:shadow-lg"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => hapusDevice(d.id_device)}
+                          className="px-3 py-2 bg-red-500/20 text-red-300 rounded-lg border border-red-400/30 hover:bg-red-500/30 transition-all duration-200 text-sm flex items-center gap-1 hover:shadow-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Hapus
+                        </button>
+                        <button
+                          onClick={() => handleTampilkanDevice(d.id_gedung, d.id_lantai)}
+                          className="px-3 py-2 bg-blue-500/20 text-blue-300 rounded-lg border border-blue-400/30 hover:bg-blue-500/30 transition-all duration-200 text-sm flex items-center gap-1 hover:shadow-lg"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Tampilkan
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="4" className="p-12 text-center text-gray-400">
+                      <div className="flex flex-col items-center">
+                        <Monitor className="w-16 h-16 text-gray-600 mb-4" />
+                        <p className="text-lg mb-2">Belum ada tampilan</p>
+                        <p className="text-sm text-gray-500">Tambahkan tampilan untuk setiap lantai</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Updates Table */}
+        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-700/30">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <ClipboardList className="w-6 h-6 text-green-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-200">Agenda Terkini</h2>
+                <p className="text-gray-400">Aktivitas dan agenda ruangan terbaru</p>
+              </div>
+            </div>
+            <span className="px-4 py-2 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30">
+              {updates.length} Update
+            </span>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-700/50 backdrop-blur-sm">
+                  <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Gedung
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
+                      Lantai
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
+                    <div className="flex items-center gap-2">
+                      <DoorClosed className="w-4 h-4" />
+                      Ruangan
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
+                    <div className="flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4" />
+                      Agenda
+                    </div>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium last:rounded-tr-xl last:rounded-br-xl">
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4" />
+                      Jadwal
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {updates.length > 0 ? (
+                  updates.map((room, idx) => (
+                    <tr key={idx} className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200">
+                      <td className="p-4 text-gray-200 font-medium">{room.gedung}</td>
+                      <td className="p-4 text-gray-200">{room.lantai}</td>
+                      <td className="p-4 text-gray-200">{room.nama}</td>
+                      <td className="p-4 text-gray-200">
+                        <div className="max-w-xs truncate" title={room.kegiatan}>
+                          {room.kegiatan}
+                        </div>
+                      </td>
+                      <td className="p-4 text-gray-200">{room.jadwal}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="p-12 text-center text-gray-400">
+                      <div className="flex flex-col items-center">
+                        <Activity className="w-16 h-16 text-gray-600 mb-4" />
+                        <p className="text-lg mb-2">Tidak ada agenda terkini</p>
+                        <p className="text-sm text-gray-500">Agenda dan aktivitas terbaru akan muncul di sini</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

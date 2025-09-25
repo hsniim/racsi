@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building, Users, Heart, Target, Mail, Phone, MapPin, Award, Code, Lightbulb, GraduationCap, BookOpen, Star, Zap, Calendar, Building2, ChevronDown } from 'lucide-react';
+import { Building, Users, Heart, Target, Mail, Phone, MapPin, Award, Code, Lightbulb, GraduationCap, BookOpen, Star, Zap, Calendar, Building2, ChevronDown, Instagram, Linkedin, Github } from 'lucide-react';
 
 function About() {
   const [currentTime, setCurrentTime] = useState('');
@@ -25,32 +25,82 @@ function About() {
 
   const teamMembers = [
     {
-      name: "Ahmad Rizki Pratama",
-      role: "Project Leader & Full Stack Developer",
-      school: "SMK Negeri 1 Teknologi Informasi",
+      name: "Alif Ramadhani",
+      role: "Full Stack Developer",
+      school: "SMK Negeri 46 Jakarta",
       description: "Siswa jurusan Rekayasa Perangkat Lunak yang memimpin tim dalam pengembangan sistem RACSI. Bertanggung jawab atas arsitektur sistem dan koordinasi tim.",
-      icon: Target
+      icon: Code,
+      photo: "assets/team/alif.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/alif_ramadhani",
+        linkedin: "https://linkedin.com/in/alif-ramadhani",
+        github: "https://github.com/aliframadhani"
+      }
     },
     {
-      name: "Siti Nurhaliza",
-      role: "Frontend Developer & UI/UX Designer",
-      school: "SMK Negeri 1 Teknologi Informasi",
+      name: "Elang Nur Fadillah",
+      role: "QA Tester",
+      school: "SMK Negeri 46 Jakarta",
       description: "Siswa jurusan Multimedia yang fokus pada pengembangan antarmuka pengguna yang menarik dan user-friendly untuk sistem RACSI.",
-      icon: Code
+      icon: Target,
+      photo: "assets/team/elang.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/elang_nur",
+        linkedin: "https://linkedin.com/in/elang-nur-fadillah",
+        github: "https://github.com/elangnur"
+      }
     },
     {
-      name: "Budi Setiawan",
-      role: "Backend Developer & Database Administrator",
-      school: "SMK Negeri 1 Teknologi Informasi",
+      name: 'Husni Mubarok',
+      role: 'Project Leader & Full Stack Developer ',
+      school: 'SMK Negeri 46 Jakarta',
+      description: 'Siswa jurusan Rekayasa Perangkat Lunak yang memimpin tim dalam pengembangan sistem RACSI.',
+      icon: Code,
+      photo: "assets/team/husni.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/husni_mubarok",
+        linkedin: "https://linkedin.com/in/husni-mubarok",
+        github: "https://github.com/husnimubarok"
+      }
+    },
+    {
+      name: "Ibnu Habibullah",
+      role: "UI/UX Designer",
+      school: "SMK Negeri 46 Jakarta",
       description: "Siswa jurusan Teknik Komputer dan Jaringan yang mengelola server, database, dan API untuk memastikan performa sistem yang optimal.",
-      icon: Award
+      icon: Lightbulb,
+      photo: "assets/team/ibnu.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/ibnu_habibullah",
+        linkedin: "https://linkedin.com/in/ibnu-habibullah",
+        github: "https://github.com/ibnuhabibullah"
+      }
     },
     {
-      name: "Rina Kusuma Dewi",
-      role: "System Analyst & Quality Assurance",
-      school: "SMK Negeri 1 Teknologi Informasi",
+      name: "Mukafi Arzaqa",
+      role: "QA Tester",
+      school: "SMK Negeri 46 Jakarta",
       description: "Siswa jurusan Rekayasa Perangkat Lunak yang bertanggung jawab dalam analisis kebutuhan sistem dan pengujian kualitas aplikasi.",
-      icon: Lightbulb
+      icon: Target,
+      photo: "assets/team/mukafi.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/mukafi_arzaqa",
+        linkedin: "https://linkedin.com/in/mukafi-arzaqa",
+        github: "https://github.com/mukafiarzaqa"
+      }
+    },
+    {
+      name: "Raditya Putrantoro",
+      role: "UI/UX Designer",
+      school: "SMK Negeri 46 Jakarta",
+      description: "Siswa jurusan Rekayasa Perangkat Lunak yang bertanggung jawab dalam analisis kebutuhan sistem dan pengujian kualitas aplikasi.",
+      icon: Lightbulb,
+      photo: "assets/team/raditya.jpg", // tambahkan path foto
+      social: {
+        instagram: "https://instagram.com/raditya_putrantoro",
+        linkedin: "https://linkedin.com/in/raditya-putrantoro",
+        github: "https://github.com/radityaputrantoro"
+      }
     }
   ];
 
@@ -189,7 +239,7 @@ function About() {
               
               <div className="text-gray-300 text-base sm:text-lg leading-relaxed space-y-4">
                 <p>
-                  RACSI (Room and Control Schedule Interface) adalah proyek PKL yang kami kembangkan sebagai tim siswa SMK Negeri 1 Teknologi Informasi. 
+                  RACSI (Room and Control Schedule Interface) adalah proyek PKL yang kami kembangkan sebagai tim siswa SMK Negeri 46 Jakarta. 
                   Proyek ini merupakan aplikasi dari ilmu yang telah kami pelajari selama di SMK, khususnya dalam bidang pemrograman web dan manajemen database.
                 </p>
                 
@@ -200,8 +250,8 @@ function About() {
                 </p>
                 
                 <p>
-                  Selama 6 bulan masa PKL, kami berhasil menciptakan sistem yang tidak hanya memenuhi kebutuhan teknis, tetapi juga dapat 
-                  memberikan manfaat nyata bagi pengguna di lingkungan kampus universitas.
+                  Selama 3 bulan masa PKL, kami berhasil menciptakan sistem yang tidak hanya memenuhi kebutuhan teknis, tetapi juga dapat 
+                  memberikan manfaat nyata bagi pengguna di lingkungan kampus Universitas Indonesia.
                 </p>
               </div>
             </section>
@@ -262,13 +312,62 @@ function About() {
                 {teamMembers.map((member, index) => (
                   <div key={index} className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-700/30 hover:border-green-400/30 transition-all duration-300">
                     <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <member.icon className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
+                      {/* Photo Profile */}
+                      <div className="flex-shrink-0">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gray-700/50 border-2 border-green-500/30">
+                          <img 
+                            src={member.photo} 
+                            alt={member.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to icon if image fails to load
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                          <div className="w-full h-full bg-green-500/20 flex items-center justify-center hidden">
+                            <member.icon className="w-8 h-8 sm:w-10 sm:h-10 text-green-400" />
+                          </div>
+                        </div>
                       </div>
+                      
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-1 text-gray-200 break-words">{member.name}</h3>
-                        <p className="text-green-400 font-medium mb-1 text-xs sm:text-sm lg:text-base break-words">{member.role}</p>
-                        <p className="text-blue-300 text-xs sm:text-sm mb-2 break-words">{member.school}</p>
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-1 text-gray-200 break-words">{member.name}</h3>
+                            <p className="text-green-400 font-medium mb-1 text-xs sm:text-sm lg:text-base break-words">{member.role}</p>
+                            <p className="text-blue-300 text-xs sm:text-sm mb-2 break-words">{member.school}</p>
+                          </div>
+                          
+                          {/* Social Media Icons */}
+                          <div className="flex gap-2 flex-shrink-0 ml-2">
+                            <a 
+                              href={member.social.instagram} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="w-9 h-9 bg-pink-500/20 rounded-lg flex items-center justify-center hover:bg-pink-500/30 transition-colors duration-200"
+                            >
+                              <Instagram className="w-5 h-5 text-pink-400" />
+                            </a>
+                            <a 
+                              href={member.social.linkedin} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="w-9 h-9 bg-blue-500/20 rounded-lg flex items-center justify-center hover:bg-blue-500/30 transition-colors duration-200"
+                            >
+                              <Linkedin className="w-5 h-5 text-blue-400" />
+                            </a>
+                            <a 
+                              href={member.social.github} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="w-9 h-9 bg-gray-500/20 rounded-lg flex items-center justify-center hover:bg-gray-500/30 transition-colors duration-200"
+                            >
+                              <Github className="w-5 h-5 text-gray-400" />
+                            </a>
+                          </div>
+                        </div>
+                        
                         <p className="text-gray-400 leading-relaxed text-xs sm:text-sm">{member.description}</p>
                       </div>
                     </div>
@@ -318,13 +417,13 @@ function About() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-4 lg:p-6 rounded-xl hover:bg-gray-700/30 transition-colors duration-200 text-center">
                   <GraduationCap className="w-8 h-8 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2 text-gray-200">SMK Negeri 1 Teknologi Informasi</h3>
+                  <h3 className="text-lg font-semibold mb-2 text-gray-200">SMK Negeri 46 Jakarta</h3>
                   <p className="text-gray-400 text-sm">Sekolah yang memberikan bekal ilmu dan keterampilan dalam bidang teknologi informasi</p>
                 </div>
                 
                 <div className="p-4 lg:p-6 rounded-xl hover:bg-gray-700/30 transition-colors duration-200 text-center">
                   <Building className="w-8 h-8 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2 text-gray-200">Universitas Mitra PKL</h3>
+                  <h3 className="text-lg font-semibold mb-2 text-gray-200">Universitas Indonesia - SKSG</h3>
                   <p className="text-gray-400 text-sm">Tempat pelaksanaan PKL yang memberikan kesempatan untuk mengimplementasikan sistem</p>
                 </div>
               </div>
@@ -350,7 +449,7 @@ function About() {
                 <div className="p-4 lg:p-6 rounded-xl hover:bg-gray-700/30 transition-colors duration-200 text-center">
                   <GraduationCap className="w-6 h-6 lg:w-8 lg:h-8 text-yellow-400 mx-auto mb-3 lg:mb-4" />
                   <h3 className="text-base lg:text-lg font-semibold mb-2 text-gray-200">Sekolah</h3>
-                  <p className="text-gray-400 text-sm lg:text-base">SMK Negeri 1 Teknologi Informasi</p>
+                  <p className="text-gray-400 text-sm lg:text-base">SMK Negeri 46 Jakarta</p>
                 </div>
               </div>
             </section>
@@ -365,7 +464,7 @@ function About() {
                 </p>
                 <div className="flex items-center justify-center gap-2 text-blue-300 flex-wrap">
                   <Heart className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-base lg:text-lg">Dibuat dengan dedikasi oleh tim SMK</span>
+                  <span className="text-base lg:text-lg">Dibuat dengan dedikasi oleh tim SMK Negeri 46 Jakarta</span>
                   <Heart className="w-5 h-5 flex-shrink-0" />
                 </div>
               </div>
@@ -376,7 +475,7 @@ function About() {
         {/* Footer */}
         <footer className="border-t border-gray-800/50 bg-gray-900/50 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
-            <p>© 2025 RACSI - Room and Control Schedule Interface | Proyek PKL SMK Negeri 1 Teknologi Informasi</p>
+            <p>© 2025 RACSI - Room and Control Schedule Interface | Proyek PKL Siswa SMK Negeri 46 Jakarta</p>
           </div>
         </footer>
       </div>

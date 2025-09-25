@@ -43,9 +43,9 @@ export const fetchHeaderData = async () => {
     console.error("Gagal mengambil data header:", error.response?.data || error.message);
     return {
       nama_gedung: "RACSI",
-      nomor_lantai: 3,
-      pj_lantaipagi: "Pak Budi",
-      pj_lantaisiang: "Pak Nasir",
+      nomor_lantai: "tidak diketahui",
+      pj_lantaipagi: "Tidak diketahui",
+      pj_lantaisiang: "Tidak diketahui",
     };
   }
 };
@@ -58,14 +58,15 @@ export const fetchHeaderDataByIds = async (id_gedung, id_lantai) => {
     console.error("Gagal mengambil data header spesifik:", error.response?.data || error.message);
     return {
       nama_gedung: "RACSI",
-      nomor_lantai: 3,
-      pj_lantaipagi: "Pak Budi",
-      pj_lantaisiang: "Pak Nasir",
+      nomor_lantai: "tidak diketahui",
+      pj_lantaipagi: "Tidak diketahui",
+      pj_lantaisiang: "Tidak diketahui",
     };
   }
 };
 
 // ================= PJ GEDUNG ==================
+// Fungsi lama untuk mengambil SEMUA PJ Gedung (untuk admin dashboard, dll)
 export const fetchPjGedung = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/pj-gedung`);
@@ -74,11 +75,30 @@ export const fetchPjGedung = async () => {
     console.error("Gagal mengambil data PJ Gedung:", error.response?.data || error.message);
     return [
       {
-        nama: "Husni",
-        no_telp: "0899-8378-498",
+        nama: "Tidak diketahui",
+        no_telp: "08xx",
         link_peminjaman: "https://www.example.com",
-        qrcodepath_pinjam: "/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png",
-        qrcodepath_kontak: "/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png",
+        qrcodepath_pinjam: "/assets/qrcode_peminjaman",
+        qrcodepath_kontak: "/assets/qrcode_pjgedung",
+      },
+    ];
+  }
+};
+
+// FUNGSI BARU: Fetch PJ Gedung berdasarkan ID Gedung spesifik
+export const fetchPjGedungByGedung = async (id_gedung) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/pj-gedung/gedung/${id_gedung}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Gagal mengambil data PJ Gedung by gedung:", error.response?.data || error.message);
+    return [
+      {
+        nama: "Tidak diketahui",
+        no_telp: "08xx",
+        link_peminjaman: "https://www.example.com",
+        qrcodepath_pinjam: "/assets/qrcode_peminjaman",
+        qrcodepath_kontak: "/assets/qrcode_pjgedung",
       },
     ];
   }
@@ -159,9 +179,12 @@ export const fetchGedungLantaiList = async () => {
   }
 };
 
-// ================= FEEDBACK API FUNCTIONS (FIXED) ==================
+// ================= FEEDBACK API FUNCTIONS (TANPA QR CODE) ==================
+
 export const createFeedback = async (feedbackData) => {
   try {
+    console.log('Creating feedback:', feedbackData);
+    
     const response = await fetch(`${API_BASE_URL}/feedback`, {
       method: 'POST',
       headers: {
@@ -171,28 +194,153 @@ export const createFeedback = async (feedbackData) => {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to submit feedback');
+      const errorData = await response.json();
+      console.error('Create feedback error:', errorData);
+      throw new Error(errorData.message || 'Failed to submit feedback');
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log('Feedback created successfully:', result);
+    return result;
   } catch (error) {
     console.error('Error creating feedback:', error);
     throw error;
   }
 };
 
-export const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
+export const updateFeedback = async (id, feedbackData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/feedback/summary?id_gedung=${id_gedung}&id_lantai=${id_lantai}`);
+    console.log('Updating feedback:', { id, feedbackData });
+    
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/feedback/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(feedbackData)
+    });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch feedback summary');
+      const errorData = await response.json();
+      console.error('Update feedback error:', errorData);
+      throw new Error(errorData.message || 'Failed to update feedback');
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log('Feedback updated successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error updating feedback:', error);
+    throw error;
+  }
+};
+
+export const deleteFeedback = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/feedback/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Delete feedback error:', errorData);
+      throw new Error(errorData.message || 'Failed to delete feedback');
+    }
+    
+    const result = await response.json();
+    console.log('Feedback deleted successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error deleting feedback:', error);
+    throw error;
+  }
+};
+
+export const getAllFeedback = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/feedback`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Get all feedback error:', errorData);
+      throw new Error(errorData.message || 'Failed to fetch feedbacks');
+    }
+    
+    const result = await response.json();
+    console.log('All feedbacks fetched successfully');
+    return result;
+  } catch (error) {
+    console.error('Error fetching all feedback:', error);
+    throw error;
+  }
+};
+
+export const getFeedbackById = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_BASE_URL}/feedback/${id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Get feedback by ID error:', errorData);
+      throw new Error(errorData.message || 'Failed to fetch feedback');
+    }
+    
+    const result = await response.json();
+    console.log('Feedback fetched successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error fetching feedback by ID:', error);
+    throw error;
+  }
+};
+
+export const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
+  try {
+    const url = `${API_BASE_URL}/feedback/summary?id_gedung=${id_gedung}&id_lantai=${id_lantai}`;
+    console.log(`Fetching feedback summary from: ${url}`);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error Response:', errorText);
+      throw new Error(`Failed to fetch feedback summary: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Feedback summary response:', data);
+    
+    // Pastikan struktur data yang konsisten (tanpa QR code)
+    return {
+      summary: Array.isArray(data.summary) ? data.summary : [],
+      recent_comments: Array.isArray(data.recent_comments) 
+        ? data.recent_comments
+        : []
+    };
   } catch (error) {
     console.error('Error fetching feedback summary:', error);
-    throw error;
+    return { 
+      summary: [], 
+      recent_comments: [] 
+    };
   }
 };
 
@@ -233,6 +381,32 @@ export const fetchFeedbackByRuangan = async (id_ruangan, options = {}) => {
   }
 };
 
+// Fungsi tambahan untuk debugging feedback
+export const testFeedbackEndpoint = async (id_gedung, id_lantai) => {
+  try {
+    console.log('Testing feedback endpoint...');
+    const response = await fetch(`${API_BASE_URL}/feedback/summary?id_gedung=${id_gedung}&id_lantai=${id_lantai}`);
+    const data = await response.text();
+    console.log('Raw response:', data);
+    
+    if (response.ok) {
+      try {
+        const jsonData = JSON.parse(data);
+        console.log('Parsed JSON:', jsonData);
+        return jsonData;
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        return { error: 'Invalid JSON response' };
+      }
+    } else {
+      return { error: `HTTP ${response.status}: ${data}` };
+    }
+  } catch (error) {
+    console.error('Network error:', error);
+    return { error: error.message };
+  }
+};
+
 // ================= ADMIN ROOM INFO FUNCTIONS ==================
 // Fungsi khusus untuk AdminRoomInfoPage - menggunakan endpoint TV dengan auth admin
 export const fetchRuanganAdminByGedungLantai = async (id_gedung, id_lantai) => {
@@ -264,8 +438,8 @@ export const fetchHeaderDataAdminByIds = async (id_gedung, id_lantai) => {
     return {
       nama_gedung: "RACSI",
       nomor_lantai: 3,
-      pj_lantaipagi: "Pak Budi",
-      pj_lantaisiang: "Pak Nasir",
+      pj_lantaipagi: "Tidak diketahui",
+      pj_lantaisiang: "Tidak diketahui",
     };
   }
 };
@@ -282,11 +456,33 @@ export const fetchPjGedungAdmin = async () => {
     console.error("Gagal mengambil data PJ Gedung admin:", error.response?.data || error.message);
     return [
       {
-        nama: "Husni",
-        no_telp: "0899-8378-498",
+        nama: "Tidak diketahui",
+        no_telp: "08xx",
         link_peminjaman: "https://www.example.com",
-        qrcodepath_pinjam: "/assets/qrcode_peminjaman/jakarta/sksg/qrcode_peminjamansksg.png",
-        qrcodepath_kontak: "/assets/qrcode_pjgedung/jakarta/sksg/qrcode_husni.png",
+        qrcodepath_pinjam: "/assets/qrcode_peminjaman",
+        qrcodepath_kontak: "/assets/qrcode_pjgedung",
+      },
+    ];
+  }
+};
+
+// FUNGSI BARU untuk Admin: Fetch PJ Gedung berdasarkan ID Gedung spesifik dengan auth
+export const fetchPjGedungAdminByGedung = async (id_gedung) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${API_BASE_URL}/pj-gedung/gedung/${id_gedung}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.data;
+  } catch (error) {
+    console.error("Gagal mengambil data PJ Gedung admin by gedung:", error.response?.data || error.message);
+    return [
+      {
+        nama: "Tidak diketahui",
+        no_telp: "08xx",
+        link_peminjaman: "https://www.example.com",
+        qrcodepath_pinjam: "/assets/qrcode_peminjaman",
+        qrcodepath_kontak: "/assets/qrcode_pjgedung",
       },
     ];
   }
