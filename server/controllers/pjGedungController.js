@@ -24,7 +24,7 @@ const addPjGedung = async (req, res) => {
   }
 };
 
-// 🔹 Ambil semua PJ + info Gedung
+// 📹 Ambil semua PJ + info Gedung
 const getAllPjGedung = async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -39,6 +39,28 @@ const getAllPjGedung = async (req, res) => {
     res.status(200).json({ data: rows });
   } catch (error) {
     console.error("Error fetching PJ:", error);
+    res.status(500).json({ message: "Gagal mengambil data PJ Gedung", error: error.message });
+  }
+};
+
+// 🏢 Ambil PJ Gedung berdasarkan ID Gedung (ENDPOINT BARU)
+const getPjGedungByGedung = async (req, res) => {
+  const { id_gedung } = req.params;
+
+  try {
+    const [rows] = await pool.query(`
+      SELECT pj.id_pj_gedung, pj.nama, pj.no_telp, pj.link_peminjaman,
+             pj.qrcodepath_pinjam, pj.qrcodepath_kontak,
+             g.id_gedung, g.nama_gedung, g.lokasi_gedung
+      FROM pj_gedung pj
+      LEFT JOIN gedung g ON pj.id_gedung = g.id_gedung
+      WHERE pj.id_gedung = ?
+      ORDER BY pj.id_pj_gedung DESC
+    `, [id_gedung]);
+
+    res.status(200).json({ data: rows });
+  } catch (error) {
+    console.error("Error fetching PJ by gedung:", error);
     res.status(500).json({ message: "Gagal mengambil data PJ Gedung", error: error.message });
   }
 };
@@ -79,4 +101,10 @@ const deletePjGedung = async (req, res) => {
   }
 };
 
-module.exports = { addPjGedung, getAllPjGedung, updatePjGedung, deletePjGedung };
+module.exports = { 
+  addPjGedung, 
+  getAllPjGedung, 
+  getPjGedungByGedung,  // EXPORT FUNGSI BARU
+  updatePjGedung, 
+  deletePjGedung 
+};

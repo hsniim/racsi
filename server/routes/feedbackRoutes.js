@@ -1,18 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const feedbackController = require('../controllers/feedbackController');
+const feedbackController = require("../controllers/feedbackController");
 
-// Public routes (untuk pengguna umum)
-router.post('/', feedbackController.createFeedback);
-router.get('/summary', feedbackController.getFeedbackSummary);
+// PENTING: Route summary harus SEBELUM route :id agar tidak bentrok
+router.get("/summary", feedbackController.getFeedbackSummary);
+router.get("/stats", feedbackController.getFeedbackStats);
 
-// Admin routes
-router.get('/', feedbackController.getAllFeedback);
-router.get('/stats', feedbackController.getFeedbackStats);
-router.get('/ruangan/:id_ruangan', feedbackController.getFeedbackByRuangan);
+// CRUD Feedback (tanpa QR code routes)
+router.get("/", feedbackController.getAllFeedback);
+router.get("/:id", feedbackController.getFeedbackById);
+router.post("/", feedbackController.createFeedback);
+router.put("/:id", feedbackController.updateFeedback);
+router.delete("/:id", feedbackController.deleteFeedback);
 
-// Update & Delete feedback
-router.put('/:id_feedback', feedbackController.updateFeedback);
-router.delete('/:id_feedback', feedbackController.deleteFeedback);
+// Additional routes
+router.get("/ruangan/:id_ruangan", feedbackController.getFeedbackByRuangan);
 
 module.exports = router;

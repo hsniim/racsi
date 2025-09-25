@@ -3,9 +3,10 @@ const router = express.Router();
 const { getAgenda, createAgenda, updateAgenda, deleteAgenda } = require("../controllers/agendaController");
 const { authenticate } = require('../middleware/auth');
 
-router.get("/", getAgenda);
-router.post("/", createAgenda);
-router.put("/:id", updateAgenda);
-router.delete("/:id", deleteAgenda);
+// Tambahkan authenticate middleware ke semua routes yang membutuhkan auth
+router.get("/", authenticate, getAgenda);
+router.post("/", authenticate, createAgenda);
+router.put("/:id", authenticate, updateAgenda);
+router.delete("/:id", authenticate, deleteAgenda);
 
 module.exports = router;

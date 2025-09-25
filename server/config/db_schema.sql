@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS gedung (
     id_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nama_gedung VARCHAR(50) NOT NULL,
     lokasi_gedung ENUM('jakarta','depok') DEFAULT 'jakarta',
+    qrcode_feedback VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -154,10 +155,11 @@ CREATE TABLE IF NOT EXISTS feedback_ruangan (
     id_ruangan INT UNSIGNED NOT NULL,
     nama_pengguna VARCHAR(50) NOT NULL,
     email_pengguna VARCHAR(100) NULL,
-    rating TINYINT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    rating DECIMAL(2,1) NOT NULL
+        CHECK (rating IN (1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0)),
     komentar TEXT NULL,
     kategori ENUM('fasilitas','kebersihan','kenyamanan','pelayanan','lainnya') DEFAULT 'lainnya',
-    tanggal_feedback DATE NOT NULL,
+    tanggal_feedback DATE NOT NULL DEFAULT (CURDATE()),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_feedback_ruangan 
         FOREIGN KEY (id_ruangan) REFERENCES ruangan(id_ruangan) 
