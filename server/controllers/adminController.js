@@ -1,6 +1,9 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mysqldump = require('mysqldump');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 // Login admin
@@ -91,10 +94,8 @@ const getGedungLantaiList = async (req, res) => {
       ORDER BY g.nama_gedung ASC, l.nomor_lantai ASC
     `;
 
-    // Ganti db.execute dengan pool.query untuk konsistensi
     const [rows] = await pool.query(query);
     
-    // Format data untuk response yang lebih clean
     const formattedRows = rows.map(row => ({
       id_gedung: row.id_gedung,
       id_lantai: row.id_lantai,
@@ -118,9 +119,142 @@ const getGedungLantaiList = async (req, res) => {
   }
 };
 
-// PENTING: Hanya ada SATU module.exports di akhir file
+// Backup Database Utama
+const backupMainDatabase = async (req, res) => {
+  try {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const filename = `racsi_main_backup_${timestamp}.sql`;
+    const backupDir = path.join(__dirname, '../backups');
+    const filepath = path.join(backupDir, filename);
+
+    // Pastikan folder backups ada
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+
+    // Konfigurasi dump dengan kredensial dari .env
+    const dumpOptions = {
+      connection: {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: 'db_racsi', // Database utama
+      },
+      dumpToFile: filepath,
+      compressFile: false,
+    };
+
+    console.log('Starting main database backup...');
+    await mysqldump(dumpOptions);
+    console.log('Main database backup completed');
+
+    // Set headers untuk download
+    res.setHeader('Content-Type', 'application/sql');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', fs.statSync(filepath).size);
+    
+    // Stream file ke response
+    const fileStream = fs.createReadStream(filepath);
+    fileStream.pipe(res);
+
+    // Hapus file setelah dikirim
+    fileStream.on('end', () => {
+      setTimeout(() => {
+        if (fs.existsSync(filepath)) {
+          fs.unlinkSync(filepath);
+          console.log('Backup file cleaned up');
+        }
+      }, 1000);
+    });
+
+    fileStream.on('error', (error) => {
+      console.error('Error streaming backup file:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Error downloading backup file' });
+      }
+    });
+
+  } catch (error) {
+    console.error('Backup main database error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        message: 'Gagal membuat backup database utama',
+        error: error.message 
+      });
+    }
+  }
+};
+
+// Backup Database Arsip
+const backupArchiveDatabase = async (req, res) => {
+  try {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const filename = `racsi_archive_backup_${timestamp}.sql`;
+    const backupDir = path.join(__dirname, '../backups');
+    const filepath = path.join(backupDir, filename);
+
+    // Pastikan folder backups ada
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+
+    // Konfigurasi dump dengan kredensial dari .env
+    const dumpOptions = {
+      connection: {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: 'db_racsi_arsip', // Database arsip
+      },
+      dumpToFile: filepath,
+      compressFile: false,
+    };
+
+    console.log('Starting archive database backup...');
+    await mysqldump(dumpOptions);
+    console.log('Archive database backup completed');
+
+    // Set headers untuk download
+    res.setHeader('Content-Type', 'application/sql');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', fs.statSync(filepath).size);
+    
+    // Stream file ke response
+    const fileStream = fs.createReadStream(filepath);
+    fileStream.pipe(res);
+
+    // Hapus file setelah dikirim
+    fileStream.on('end', () => {
+      setTimeout(() => {
+        if (fs.existsSync(filepath)) {
+          fs.unlinkSync(filepath);
+          console.log('Archive backup file cleaned up');
+        }
+      }, 1000);
+    });
+
+    fileStream.on('error', (error) => {
+      console.error('Error streaming archive backup file:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: 'Error downloading backup file' });
+      }
+    });
+
+  } catch (error) {
+    console.error('Backup archive database error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ 
+        message: 'Gagal membuat backup database arsip',
+        error: error.message 
+      });
+    }
+  }
+};
+
 module.exports = {
   loginAdmin,
   getDashboardStats,
-  getGedungLantaiList
+  getGedungLantaiList,
+  backupMainDatabase,
+  backupArchiveDatabase
 };
