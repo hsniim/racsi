@@ -1,3 +1,5 @@
+import { ClipboardList } from "lucide-react";
+
 function RoomCard({ room, type, currentDate, currentTime }) {
   if (!room) {
     return (
@@ -55,13 +57,13 @@ function RoomCard({ room, type, currentDate, currentTime }) {
     }
   }
 
-  // Warna strip berdasarkan status
+  // Warna strip berdasarkan status - UPDATED COLORS
   const statusColor =
     type === "tidak_digunakan"
       ? "bg-green-500"
       : type === "sedang_digunakan"
-      ? "bg-red-500"
-      : "bg-yellow-500";
+      ? "bg-orange-600" // Changed from bg-red-500 to approximate #AB6A20
+      : "bg-gray-400"; // Changed from bg-yellow-500 to approximate #ACACAC
 
   return (
     <>
@@ -80,7 +82,7 @@ function RoomCard({ room, type, currentDate, currentTime }) {
               <img
                 src="/assets/kapasitas_iconsilver.svg"
                 alt="kapasitas"
-                className="w-5 h-5 mr-2"
+                className="w-6 h-6 mr-2"
               />
               <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
             </div>
@@ -97,17 +99,17 @@ function RoomCard({ room, type, currentDate, currentTime }) {
               {room.nama_ruangan || "Nama Tidak Ada"}
             </h3>
             <div className="flex items-center text-gray-300 mt-1">
-              <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-5 h-5 mr-2" />
+              <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-6 h-6 mr-2" />
               <span className="text-2xl">
                 {formatTime(jadwal.waktu_mulai)} - {formatTime(jadwal.waktu_selesai)}
               </span>
             </div>
             <div className="flex items-center text-gray-300 mt-1">
-              <img src="/assets/kapasitas_iconsilver.svg" alt="kapasitas" className="w-5 h-5 mr-2" />
-              <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
+              <img src="/assets/kegiatan_iconsilver.svg" className="w-6 h-6 mr-2" alt="" />
+              <span className="text-2xl">{jadwal.nama_kegiatan || "Tidak Diketahui"}</span>
             </div>
             <div className="flex items-center text-gray-300 mt-1">
-              <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-5 h-5 mr-2" />
+              <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-6 h-6 mr-2" />
               <span className="text-2xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
             </div>
           </div>
@@ -140,17 +142,17 @@ function RoomCard({ room, type, currentDate, currentTime }) {
                 {room.nama_ruangan || "Nama Tidak Ada"}
               </h3>
               <div className="flex items-center text-gray-300 mt-1">
-                <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-5 h-5 mr-2" />
+                <img src="/assets/jam_iconsilver.svg" alt="jam" className="w-6 h-6 mr-2" />
                 <span className="text-2xl">
                   {formatTime(jadwal.waktu_mulai)} - {formatTime(jadwal.waktu_selesai)}
                 </span>
               </div>
               <div className="flex items-center text-gray-300 mt-1">
-                <img src="/assets/kapasitas_iconsilver.svg" alt="kapasitas" className="w-5 h-5 mr-2" />
+                <img src="/assets/kapasitas_iconsilver.svg" alt="kapasitas" className="w-6 h-6 mr-2" />
                 <span className="text-2xl">{room.kapasitas || "Tidak Diketahui"} Orang</span>
               </div>
               <div className="flex items-center text-gray-300 mt-1">
-                <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-5 h-5 mr-2" />
+                <img src="/assets/orang_iconsilver.svg" alt="pengguna" className="w-6 h-6 mr-2" />
                 <span className="text-2xl">{jadwal.pengguna || "Tidak Diketahui"}</span>
               </div>
             </div>
