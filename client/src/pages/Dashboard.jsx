@@ -17,7 +17,10 @@ import {
   ChevronDown,
   TrendingUp,
   Activity,
-  Users
+  Users,
+  Database,
+  FileText,
+  CheckCircle
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -209,6 +212,101 @@ export default function Dashboard() {
     window.open(`/tv_device/${idGedung}/${idLantai}`, "_blank");
   };
 
+  // PINDAHKAN FUNGSI BACKUP KE LUAR useEffect
+  const handleBackupMain = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/backup/main', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Buat blob dari response
+      const blob = await response.blob();
+      
+      // Buat URL download
+      const url = window.URL.createObjectURL(blob);
+      
+      // Buat element link untuk download
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Ambil filename dari response header atau buat default
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = 'racsi_main_backup.sql';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match) filename = match[1];
+      }
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('Database utama berhasil didownload');
+    } catch (error) {
+      console.error('Error downloading main database:', error);
+      alert('Gagal mendownload database utama: ' + error.message);
+    }
+  };
+
+  const handleBackupArchive = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/backup/archive', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Buat blob dari response
+      const blob = await response.blob();
+      
+      // Buat URL download
+      const url = window.URL.createObjectURL(blob);
+      
+      // Buat element link untuk download
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Ambil filename dari response header atau buat default
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = 'racsi_archive_backup.sql';
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="(.+)"/);
+        if (match) filename = match[1];
+      }
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log('Database arsip berhasil didownload');
+    } catch (error) {
+      console.error('Error downloading archive database:', error);
+      alert('Gagal mendownload database arsip: ' + error.message);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     fetchGedungLantaiList();
@@ -261,8 +359,8 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center text-sm text-green-400">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              <span>Tersedia</span>
+              <CheckCircle className="w-4 h-4 mr-1" />
+              <span>Gedung Tersedia</span>
             </div>
           </div>
 
@@ -277,8 +375,8 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center text-sm text-green-400">
-              <Activity className="w-4 h-4 mr-1" />
-              <span>Aktif</span>
+              <CheckCircle className="w-4 h-4 mr-1" />
+              <span>Lantai Tersedia</span>
             </div>
           </div>
 
@@ -293,8 +391,8 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center text-sm text-green-400">
-              <Users className="w-4 h-4 mr-1" />
-              <span>Siap Digunakan</span>
+              <CheckCircle className="w-4 h-4 mr-1" />
+              <span>Ruangan Tersedia</span>
             </div>
           </div>
         </section>
@@ -592,6 +690,110 @@ export default function Dashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Database Backup Section */}
+        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-700/30">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                <Database className="w-6 h-6 text-amber-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-200">Backup Database</h2>
+                <p className="text-gray-400">Download backup database sistem saat ini</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              Database Aktif
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-gray-700/30 backdrop-blur-sm rounded-xl p-6 border border-gray-600/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <Database className="w-5 h-5 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-200">Database Utama</h3>
+                  <p className="text-sm text-gray-400">db_racsi - Data operasional sistem</p>
+                </div>
+              </div>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Gedung & Lantai:</span>
+                  <span className="text-gray-200">{stats.totalGedung + stats.totalLantai} record</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Ruangan:</span>
+                  <span className="text-gray-200">{stats.totalRuangan} record</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Agenda Aktif:</span>
+                  <span className="text-gray-200">{updates.length} record</span>
+                </div>
+              </div>
+              <button
+                onClick={handleBackupMain}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <Database className="w-5 h-5" />
+                Download Database Utama
+              </button>
+            </div>
+
+            <div className="bg-gray-700/30 backdrop-blur-sm rounded-xl p-6 border border-gray-600/30">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <Database className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-200">Database Arsip</h3>
+                  <p className="text-sm text-gray-400">db_racsi_arsip - Data historis sistem</p>
+                </div>
+              </div>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Histori Kegiatan:</span>
+                  <span className="text-gray-200">Tersimpan</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Feedback Arsip:</span>
+                  <span className="text-gray-200">Tersimpan</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-400">Log Aktivitas:</span>
+                  <span className="text-gray-200">Tersimpan</span>
+                </div>
+              </div>
+              <button
+                onClick={handleBackupArchive}
+                className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <Database className="w-5 h-5" />
+                Download Database Arsip
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 bg-gray-700/20 backdrop-blur-sm rounded-xl p-4 border border-gray-600/20">
+            <div className="flex items-start gap-3">
+              <div className="w-6 h-6 bg-yellow-500/20 rounded-lg flex items-center justify-center mt-0.5 flex-shrink-0">
+                <FileText className="w-4 h-4 text-yellow-400" />
+              </div>
+              <div className="text-sm text-gray-300">
+                <p className="font-medium text-gray-200 mb-1">Catatan Backup Database:</p>
+                <ul className="space-y-1 text-gray-400">
+                  <li>• File backup berformat SQL dump yang dapat di-import kembali</li>
+                  <li>• Database utama berisi data operasional yang sedang aktif</li>
+                  <li>• Database arsip berisi histori data yang sudah dimigrasi</li>
+                  <li>• Disarankan melakukan backup secara berkala</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
