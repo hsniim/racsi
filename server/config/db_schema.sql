@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS gedung (
     id_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nama_gedung VARCHAR(50) NOT NULL,
     lokasi_gedung ENUM('jakarta','depok') DEFAULT 'jakarta',
-    qrcode_feedback VARCHAR(100) NOT NULL,
+    qrcode_feedback TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

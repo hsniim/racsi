@@ -58,6 +58,17 @@ const fetchGedungFeedbackQR = async (id_gedung) => {
   }
 };
 
+// Function to check if string is a URL (for handling both generated QR and local paths)
+const isUrl = (string) => {
+  if (!string) return false;
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 function FeedbackCard({ id_gedung, id_lantai }) {
   const [feedbackData, setFeedbackData] = useState({
     summary: [],
@@ -260,7 +271,7 @@ function FeedbackCard({ id_gedung, id_lantai }) {
 
   return (
     <div className="flex items-center gap-4">
-      {/* QR Code - GUNAKAN QR GEDUNG UNTUK FEEDBACK */}
+      {/* QR Code - GUNAKAN QR GEDUNG UNTUK FEEDBACK dengan dukungan auto-generated */}
       <div className="w-24 h-24 flex-shrink-0 relative">
         <div className="rounded-md w-full h-full bg-white flex items-center justify-center overflow-hidden">
           {gedungQRCode && !qrImageError ? (
@@ -270,12 +281,17 @@ function FeedbackCard({ id_gedung, id_lantai }) {
                 alt="Feedback QR Code untuk Gedung" 
                 className="w-full h-full object-cover rounded-md"
                 onError={handleQRImageError}
-                onLoad={() => console.log('QR Image loaded successfully:', gedungQRCode)}
+                onLoad={() => {
+                  console.log('QR Image loaded successfully:', gedungQRCode);
+                  console.log('QR Type:', isUrl(gedungQRCode) ? 'Generated QR URL' : 'Local Path');
+                }}
               />
-              {/* QR Code indicator */}
+              {/* QR Code indicator with type info */}
               <div className="absolute bottom-1 right-1 bg-black bg-opacity-50 rounded-full p-1">
                 <QrCode className="w-3 h-3 text-white" />
               </div>
+              {/* Debug info - bisa dihapus di production */}
+              {console.log('QR Code Type:', isUrl(gedungQRCode) ? 'Auto-generated' : 'Local file')}
             </>
           ) : (
             generateNoQRPlaceholder()

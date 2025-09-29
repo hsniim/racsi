@@ -1,7 +1,76 @@
-// Tambahkan ini di bagian paling atas file api.js setelah import axios
 import axios from "axios";
+import QRCode from "qrcode"; // Legacy QR Code generator
 
 const API_BASE_URL = "http://localhost:5000/api";
+
+// ================= QR CODE UTILITIES (Legacy Only) ==================
+// Function to check if string is a URL
+export const isUrl = (string) => {
+  if (!string) return false;
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
+// Check if QR code is base64 data URL
+export const isBase64QR = (string) => {
+  return string && string.startsWith('data:image/png;base64,');
+};
+
+// Function to generate QR Code using legacy qrcode library (client-side)
+export const generateQRCodeLegacy = async (url, options = {}) => {
+  try {
+    console.log('Generating QR Code with legacy library for:', url);
+    
+    const qrOptions = {
+      errorCorrectionLevel: 'M',
+      type: 'image/png',
+      quality: 0.92,
+      margin: 1,
+      width: options.width || 300,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    };
+
+    // Generate QR code as data URL (base64)
+    const dataUrl = await QRCode.toDataURL(url, qrOptions);
+    
+    console.log('QR Code generated successfully with legacy library');
+    return dataUrl;
+  } catch (error) {
+    console.error('Error generating QR code with legacy library:', error);
+    throw error;
+  }
+};
+
+// Function to get QR code for gedung feedback
+export const getGedungFeedbackQR = async (id_gedung) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/gedung/${id_gedung}/qr-feedback`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching gedung feedback QR:", error);
+    throw error;
+  }
+};
+
+// Function to generate and save QR code for gedung feedback
+export const generateGedungFeedbackQR = async (id_gedung, url) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/gedung/${id_gedung}/generate-qr-feedback`, 
+      { url }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error generating gedung feedback QR:", error);
+    throw error;
+  }
+};
 
 // ================= UTILS GENERAL ==================
 export const fetchDataTV = async () => {
@@ -30,7 +99,6 @@ export const fetchGedung = async () => {
 };
 
 export const fetchJadwal = async () => {
-  // Implementasi sesuai kebutuhan Anda
   return [];
 };
 
@@ -66,7 +134,6 @@ export const fetchHeaderDataByIds = async (id_gedung, id_lantai) => {
 };
 
 // ================= PJ GEDUNG ==================
-// Fungsi lama untuk mengambil SEMUA PJ Gedung (untuk admin dashboard, dll)
 export const fetchPjGedung = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/pj-gedung`);
@@ -85,7 +152,6 @@ export const fetchPjGedung = async () => {
   }
 };
 
-// FUNGSI BARU: Fetch PJ Gedung berdasarkan ID Gedung spesifik
 export const fetchPjGedungByGedung = async (id_gedung) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/pj-gedung/gedung/${id_gedung}`);
@@ -105,7 +171,6 @@ export const fetchPjGedungByGedung = async (id_gedung) => {
 };
 
 // ================= RUANGAN ==================
-// Default wrapper untuk Home/App (pakai public endpoint)
 const DEFAULT_GEDUNG = 1;
 const DEFAULT_LANTAI = 1;
 
@@ -146,7 +211,6 @@ export const fetchRuanganByGedungLantaiTv = async (id_gedung, id_lantai) => {
 };
 
 // ================= ADMIN FUNCTIONS ==================
-// Fungsi untuk dashboard admin
 export const fetchDashboardStats = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -165,7 +229,6 @@ export const fetchDashboardStats = async () => {
   }
 };
 
-// Fungsi untuk mengambil list gedung & lantai untuk admin dashboard
 export const fetchGedungLantaiList = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -179,8 +242,7 @@ export const fetchGedungLantaiList = async () => {
   }
 };
 
-// ================= FEEDBACK API FUNCTIONS (TANPA QR CODE) ==================
-
+// ================= FEEDBACK API FUNCTIONS ==================
 export const createFeedback = async (feedbackData) => {
   try {
     console.log('Creating feedback:', feedbackData);
@@ -328,7 +390,6 @@ export const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
     const data = await response.json();
     console.log('Feedback summary response:', data);
     
-    // Pastikan struktur data yang konsisten (tanpa QR code)
     return {
       summary: Array.isArray(data.summary) ? data.summary : [],
       recent_comments: Array.isArray(data.recent_comments) 
@@ -381,7 +442,6 @@ export const fetchFeedbackByRuangan = async (id_ruangan, options = {}) => {
   }
 };
 
-// Fungsi tambahan untuk debugging feedback
 export const testFeedbackEndpoint = async (id_gedung, id_lantai) => {
   try {
     console.log('Testing feedback endpoint...');
@@ -408,7 +468,6 @@ export const testFeedbackEndpoint = async (id_gedung, id_lantai) => {
 };
 
 // ================= ADMIN ROOM INFO FUNCTIONS ==================
-// Fungsi khusus untuk AdminRoomInfoPage - menggunakan endpoint TV dengan auth admin
 export const fetchRuanganAdminByGedungLantai = async (id_gedung, id_lantai) => {
   try {
     const token = localStorage.getItem("token");
@@ -425,7 +484,6 @@ export const fetchRuanganAdminByGedungLantai = async (id_gedung, id_lantai) => {
   }
 };
 
-// Fungsi untuk header data dengan auth admin
 export const fetchHeaderDataAdminByIds = async (id_gedung, id_lantai) => {
   try {
     const token = localStorage.getItem("token");
@@ -444,7 +502,6 @@ export const fetchHeaderDataAdminByIds = async (id_gedung, id_lantai) => {
   }
 };
 
-// Fungsi untuk PJ Gedung dengan auth admin
 export const fetchPjGedungAdmin = async () => {
   try {
     const token = localStorage.getItem("token");
@@ -466,7 +523,6 @@ export const fetchPjGedungAdmin = async () => {
   }
 };
 
-// FUNGSI BARU untuk Admin: Fetch PJ Gedung berdasarkan ID Gedung spesifik dengan auth
 export const fetchPjGedungAdminByGedung = async (id_gedung) => {
   try {
     const token = localStorage.getItem("token");

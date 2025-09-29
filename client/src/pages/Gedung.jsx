@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios"; // FIXED: Added missing axios import
+import axios from "axios";
 import { 
   Building2, 
   MapPin, 
@@ -38,8 +38,30 @@ export default function Gedung() {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [qrGenerating, setQrGenerating] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = window.localStorage.getItem("token");
+
+  // Function to check if input is a URL
+  const isUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Check if QR code is base64 data URL
+  const isBase64QR = (string) => {
+    return string && string.startsWith('data:image/png;base64,');
+  };
+
+  // Handle QR Code Feedback input change
+  const handleQrFeedbackChange = (e) => {
+    const value = e.target.value;
+    setForm({ ...form, qrcode_feedback: value });
+  };
 
   const fetchGedungs = async () => {
     setLoading(true);
@@ -68,16 +90,24 @@ export default function Gedung() {
     setLoading(true);
 
     try {
+      const finalForm = { ...form };
+      
+      // Backend will handle QR generation automatically
+      if (finalForm.qrcode_feedback && isUrl(finalForm.qrcode_feedback)) {
+        console.log('URL detected for QR generation:', finalForm.qrcode_feedback);
+        setQrGenerating(true);
+      }
+
       if (editId) {
-        await axios.put(`http://localhost:5000/api/gedung/${editId}`, form, {
+        await axios.put(`http://localhost:5000/api/gedung/${editId}`, finalForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSuccess("Gedung + PJ berhasil diperbarui!");
+        setSuccess("Gedung + PJ berhasil diperbarui dengan QR Code!");
       } else {
-        await axios.post("http://localhost:5000/api/gedung", form, {
+        await axios.post("http://localhost:5000/api/gedung", finalForm, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setSuccess("Gedung + PJ berhasil ditambahkan!");
+        setSuccess("Gedung + PJ berhasil ditambahkan dengan QR Code!");
       }
 
       setForm({
@@ -103,6 +133,7 @@ export default function Gedung() {
       setSuccess("");
     } finally {
       setLoading(false);
+      setQrGenerating(false);
     }
   };
 
@@ -168,10 +199,6 @@ export default function Gedung() {
         <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
         <div className="absolute top-96 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
         <div className="absolute top-80 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
-        <div className="absolute left-1/2 w-28 h-28 border border-white/15 rounded-full" style={{top: '600px'}}></div>
-        <div className="absolute right-10 w-20 h-20 border border-white/15 rounded-full" style={{top: '800px'}}></div>
-        <div className="absolute left-20 w-18 h-18 border border-white/15 rounded-full" style={{top: '1000px'}}></div>
-        <div className="absolute left-10 w-24 h-24 border border-white/15 rounded-lg rotate-45" style={{top: '1200px'}}></div>
       </div>
 
       <div className="relative z-10 w-full px-6 py-8">
@@ -183,7 +210,7 @@ export default function Gedung() {
             </h1>
           </div>
           <p className="text-xl text-gray-300 ml-13">
-            Atur informasi gedung, lokasi, dan penanggung jawab setiap gedung
+            Atur informasi gedung dengan QR Code Generator
           </p>
         </div>
 
@@ -217,7 +244,7 @@ export default function Gedung() {
                   {editId ? "Edit Gedung" : "Gedung Baru"}
                 </h2>
                 <p className="text-gray-400">
-                  {editId ? "Perbarui informasi gedung dan penanggung jawab" : "Tambah gedung baru dengan informasi lengkap"}
+                  {editId ? "Perbarui informasi gedung" : "Tambah gedung baru dengan QR Code"}
                 </p>
               </div>
             </div>
@@ -235,10 +262,9 @@ export default function Gedung() {
             </button>
           </div>
 
-          {/* Form - Collapsible */}
+          {/* Form */}
           {showForm && (
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
               <div className="bg-gray-700/30 backdrop-blur-sm rounded-xl p-6 border border-gray-600/30">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
@@ -285,16 +311,32 @@ export default function Gedung() {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <QrCode className="w-4 h-4" />
-                      QR Code Feedback <span className="text-red-400">*</span>
+                      URL untuk QR Code Feedback <span className="text-red-400">*</span>
+                      {qrGenerating && <div className="w-4 h-4 border border-blue-300/30 border-t-blue-300 rounded-full animate-spin ml-2"></div>}
                     </label>
                     <input
                       type="text"
-                      placeholder="Path/link QR Code feedback"
+                      placeholder="https://example.com/feedback"
                       value={form.qrcode_feedback}
-                      onChange={(e) => setForm({ ...form, qrcode_feedback: e.target.value })}
+                      onChange={handleQrFeedbackChange}
                       className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                       required
                     />
+                    {form.qrcode_feedback && (
+                      <div className="mt-2 text-sm">
+                        {isUrl(form.qrcode_feedback) ? (
+                          <span className="text-green-400 flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" />
+                            URL valid - QR Code akan di-generate otomatis
+                          </span>
+                        ) : (
+                          <span className="text-yellow-400 flex items-center gap-1">
+                            <AlertCircle className="w-4 h-4" />
+                            Masukkan URL yang valid untuk generate QR Code
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -312,7 +354,6 @@ export default function Gedung() {
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Nama PJ */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <User className="w-4 h-4" />
@@ -327,7 +368,6 @@ export default function Gedung() {
                     />
                   </div>
 
-                  {/* No Telepon */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <Phone className="w-4 h-4" />
@@ -342,7 +382,6 @@ export default function Gedung() {
                     />
                   </div>
 
-                  {/* Link Peminjaman */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <Link className="w-4 h-4" />
@@ -357,7 +396,6 @@ export default function Gedung() {
                     />
                   </div>
 
-                  {/* QR Code Peminjaman */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <QrCode className="w-4 h-4" />
@@ -372,7 +410,6 @@ export default function Gedung() {
                     />
                   </div>
 
-                  {/* QR Code Kontak */}
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <QrCode className="w-4 h-4" />
@@ -405,16 +442,16 @@ export default function Gedung() {
                 <button
                   type="submit"
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
-                  disabled={loading}
+                  disabled={loading || qrGenerating}
                 >
-                  {loading ? (
+                  {loading || qrGenerating ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-1"></div>
                   ) : editId ? (
                     <Save className="w-5 h-5" />
                   ) : (
                     <Plus className="w-5 h-5" />
                   )}
-                  {loading ? "Memproses..." : (editId ? "Simpan Perubahan" : "Tambah Gedung")}
+                  {loading ? "Memproses..." : qrGenerating ? "Generate QR..." : (editId ? "Simpan Perubahan" : "Tambah Gedung")}
                 </button>
               </div>
             </form>
@@ -430,7 +467,7 @@ export default function Gedung() {
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-200">Daftar Gedung</h2>
-                <p className="text-gray-400">Semua gedung yang terdaftar dalam sistem</p>
+                <p className="text-gray-400">QR Code generated automatically</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -490,14 +527,13 @@ export default function Gedung() {
                       <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300 mb-4"></div>
                         <p className="text-lg mb-2">Memuat data gedung...</p>
-                        <p className="text-sm text-gray-500">Tunggu sebentar</p>
                       </div>
                     </td>
                   </tr>
                 ) : gedungs.length > 0 ? (
                   gedungs.map((g) => (
                     <tr key={g.id_gedung} className="border-b border-gray-700/20 hover:bg-gray-700/20 transition-all duration-200">
-                      <td className="p-4 text-gray-200 font-medium first:rounded-tl-xl first:rounded-bl-xl">
+                      <td className="p-4 text-gray-200 font-medium">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
                             <Building2 className="w-4 h-4 text-blue-400" />
@@ -517,10 +553,15 @@ export default function Gedung() {
                       </td>
                       <td className="p-4 text-gray-200">
                         {g.qrcode_feedback ? (
-                          <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-300 border border-green-400/30">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Tersedia
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-300 border border-green-400/30">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Tersedia
+                            </span>
+                            <span className="text-xs text-purple-400">
+                              {isBase64QR(g.qrcode_feedback) ? 'Generated' : 'Legacy'}
+                            </span>
+                          </div>
                         ) : (
                           <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-gray-500/20 text-gray-400 border border-gray-400/30">
                             <X className="w-3 h-3 mr-1" />
@@ -550,7 +591,7 @@ export default function Gedung() {
                           <span className="text-gray-500">-</span>
                         )}
                       </td>
-                      <td className="p-4 text-center last:rounded-tr-xl last:rounded-br-xl">
+                      <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(g)}
@@ -580,7 +621,6 @@ export default function Gedung() {
                           <>
                             <AlertCircle className="w-16 h-16 mb-4 opacity-50" />
                             <p className="text-lg font-medium mb-2">Gagal memuat data gedung</p>
-                            <p className="text-sm mb-4">Periksa koneksi server dan coba lagi</p>
                             <button
                               onClick={fetchGedungs}
                               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
