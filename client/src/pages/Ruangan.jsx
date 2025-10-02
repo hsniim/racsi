@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Building, Layers, Edit, Trash2, X, Building2, DoorOpen, Users, ChevronDown, MapPin, Save, Grid } from "lucide-react";
+import { Plus, Building, Layers, Edit, Trash2, X, Building2, DoorOpen, Users, ChevronDown, MapPin, Save, Search, Filter, RefreshCw } from "lucide-react";
 
 export default function Ruangan() {
   const [ruangans, setRuangans] = useState([]);
+  const [filteredRuangans, setFilteredRuangans] = useState([]);
   const [lantais, setLantais] = useState([]);
   const [form, setForm] = useState({
     id_lantai: "",
@@ -16,6 +17,10 @@ export default function Ruangan() {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // State untuk filter dan pencarian
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterGedung, setFilterGedung] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -25,6 +30,7 @@ export default function Ruangan() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRuangans(res.data.data || []);
+      setFilteredRuangans(res.data.data || []);
     } catch (err) {
       console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Gagal mengambil data ruangan");
@@ -47,19 +53,47 @@ export default function Ruangan() {
     fetchRuangans();
   }, []);
 
+  // Fungsi filter dan pencarian
+  useEffect(() => {
+    let result = [...ruangans];
+
+    // Filter berdasarkan pencarian
+    if (searchQuery) {
+      result = result.filter((r) => 
+        r.nama_ruangan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.nama_gedung.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.nomor_lantai.toString().includes(searchQuery)
+      );
+    }
+
+    // Filter berdasarkan gedung
+    if (filterGedung) {
+      result = result.filter((r) => r.nama_gedung === filterGedung);
+    }
+
+    setFilteredRuangans(result);
+  }, [searchQuery, filterGedung, ruangans]);
+
+  // Mendapatkan daftar gedung unik
+  const uniqueGedung = [...new Set(ruangans.map((r) => r.nama_gedung))];
+
+  const handleRefresh = () => {
+    setSearchQuery("");
+    setFilterGedung("");
+    fetchRuangans();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (editId) {
-        // update ruangan
         await axios.put(`http://localhost:5000/api/ruangan/${editId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Ruangan berhasil diperbarui!");
       } else {
-        // tambah ruangan
         await axios.post("http://localhost:5000/api/ruangan", form, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -160,6 +194,57 @@ export default function Ruangan() {
             </div>
           </div>
         )}
+
+        {/* Filter & Pencarian */}
+        <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 mb-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center">
+              <Search className="w-5 h-5 text-green-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-200">Filter & Pencarian</h2>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Pencarian */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Cari ruangan, gedung, atau lantai..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            {/* Filter Gedung */}
+            <div className="lg:w-64 relative">
+              <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <select
+                value={filterGedung}
+                onChange={(e) => setFilterGedung(e.target.value)}
+                className="w-full pl-12 pr-10 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+              >
+                <option value="">Semua Gedung</option>
+                {uniqueGedung.map((gedung) => (
+                  <option key={gedung} value={gedung}>
+                    {gedung}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Tombol Refresh */}
+            <button
+              onClick={handleRefresh}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
+            >
+              <RefreshCw className="w-5 h-5" />
+              Refresh
+            </button>
+          </div>
+        </div>
 
         {/* Form Section */}
         <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-8 mb-8 shadow-2xl">
@@ -298,7 +383,7 @@ export default function Ruangan() {
             <div className="flex items-center gap-3">
               <span className="px-4 py-2 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30 font-medium flex items-center gap-2">
                 <DoorOpen className="w-4 h-4" />
-                Total: {ruangans.length} Ruangan
+                Total: {filteredRuangans.length} Ruangan
               </span>
             </div>
           </div>
@@ -346,8 +431,8 @@ export default function Ruangan() {
                       </div>
                     </td>
                   </tr>
-                ) : ruangans.length > 0 ? (
-                  ruangans.map((r) => (
+                ) : filteredRuangans.length > 0 ? (
+                  filteredRuangans.map((r) => (
                     <tr key={r.id_ruangan} className="border-b border-gray-700/20 hover:bg-gray-700/20 transition-all duration-200">
                       <td className="p-4 text-gray-200 font-medium first:rounded-tl-xl first:rounded-bl-xl">
                         <div className="flex items-center gap-2">
@@ -405,8 +490,12 @@ export default function Ruangan() {
                     <td colSpan="5" className="p-12 text-center">
                       <div className="flex flex-col items-center text-gray-400">
                         <DoorOpen className="w-16 h-16 mb-4 opacity-50" />
-                        <p className="text-lg font-medium mb-2">Belum ada data ruangan</p>
-                        <p className="text-sm">Tambahkan ruangan pertama dengan tombol di atas</p>
+                        <p className="text-lg font-medium mb-2">
+                          {searchQuery || filterGedung ? "Tidak ada ruangan yang sesuai" : "Belum ada data ruangan"}
+                        </p>
+                        <p className="text-sm">
+                          {searchQuery || filterGedung ? "Coba ubah filter atau kata kunci pencarian" : "Tambahkan ruangan pertama dengan tombol di atas"}
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -418,4 +507,4 @@ export default function Ruangan() {
       </div>
     </div>
   );
-}
+} 
