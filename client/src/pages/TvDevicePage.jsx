@@ -27,6 +27,54 @@ function TvDevicePage() {
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
 
+  // Helper function to convert DB path to full URL
+  const convertPathToURL = (qrPath) => {
+    if (!qrPath) return null;
+    
+    // Handle Buffer object from JSON {type: 'Buffer', data: Array}
+    if (typeof qrPath === 'object' && qrPath.type === 'Buffer' && Array.isArray(qrPath.data)) {
+      try {
+        qrPath = String.fromCharCode.apply(null, qrPath.data);
+      } catch (e) {
+        console.error('Error converting Buffer to string:', e);
+        return null;
+      }
+    }
+    
+    // Handle ArrayBuffer
+    if (qrPath instanceof ArrayBuffer) {
+      const decoder = new TextDecoder();
+      qrPath = decoder.decode(qrPath);
+    }
+    
+    // Convert Buffer-like objects to string (fallback)
+    if (typeof qrPath === 'object' && qrPath.data && Array.isArray(qrPath.data)) {
+      try {
+        qrPath = String.fromCharCode.apply(null, qrPath.data);
+      } catch (e) {
+        console.error('Error converting data array to string:', e);
+        return null;
+      }
+    }
+    
+    // Jika sudah data:image atau http, return as is
+    if (typeof qrPath === 'string' && (qrPath.startsWith('data:image') || qrPath.startsWith('http'))) {
+      return qrPath;
+    }
+    
+    // Jika sudah dimulai dengan /uploads, tambahkan base URL
+    if (typeof qrPath === 'string' && qrPath.startsWith('/uploads')) {
+      return `http://localhost:5000${qrPath}`;
+    }
+    
+    // Default fallback - assume it's just filename
+    if (typeof qrPath === 'string' && qrPath.length > 0) {
+      return `http://localhost:5000/uploads/${qrPath}`;
+    }
+    
+    return null;
+  };
+
   // Force fullscreen on component mount
   useEffect(() => {
     document.body.style.margin = '0';
@@ -45,76 +93,95 @@ function TvDevicePage() {
   }, []);
 
   // Fungsi untuk menentukan status ruangan
-  function getStatusRuangan(ruangan, currentDate, currentTime) {
-    if (!ruangan?.jadwal_list || ruangan.jadwal_list.length === 0) {
-      return "tidak_digunakan";
-    }
+  // GANTI fungsi getStatusRuangan di TvDevicePage.jsx dengan ini:
 
-    // Convert current time to minutes for easier comparison
-    const currentMinutes = timeToMinutes(currentTime);
-    
-    let sedang = false;
-    let akan = false;
-
-    ruangan.jadwal_list.forEach((jadwal) => {
-      if (!jadwal?.tanggal) {
-        return;
-      }
-      
-      if (jadwal.tanggal !== currentDate) {
-        return;
-      }
-
-      if (!jadwal.waktu_mulai || !jadwal.waktu_selesai) {
-        return;
-      }
-
-      const startMinutes = timeToMinutes(jadwal.waktu_mulai);
-      const endMinutes = timeToMinutes(jadwal.waktu_selesai);
-
-      if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
-        sedang = true;
-      } else if (currentMinutes < startMinutes) {
-        akan = true;
-      }
-    });
-    
-    if (sedang) {
-      return "sedang_digunakan";
-    } else if (akan) {
-      return "akan_digunakan";
-    } else {
-      return "tidak_digunakan";
-    }
+function getStatusRuangan(ruangan, currentDate, currentTime) {
+  if (!ruangan?.jadwal_list || ruangan.jadwal_list.length === 0) {
+    return "tidak_digunakan";
   }
 
-  // Helper function to convert time string to minutes with validation
-  function timeToMinutes(timeString) {
-    if (!timeString) {
-      return 0;
-    }
+  const currentMinutes = timeToMinutes(currentTime);
+  
+  let sedang = false;
+  let akan = false;
+
+  // Filter jadwal untuk hari ini saja
+  const todaySchedules = ruangan.jadwal_list.filter(jadwal => {
+    if (!jadwal?.tanggal) return false;
     
-    // Handle both HH:MM and HH:MM:SS formats
-    const parts = timeString.split(':');
-    if (parts.length < 2) {
-      return 0;
-    }
+    // Normalize tanggal untuk perbandingan
+    const jadwalDate = jadwal.tanggal.split('T')[0]; // Ambil hanya YYYY-MM-DD
     
-    const hours = parseInt(parts[0], 10);
-    const minutes = parseInt(parts[1], 10);
+    console.log(`Comparing dates - Jadwal: ${jadwalDate}, Current: ${currentDate}`);
     
-    if (isNaN(hours) || isNaN(minutes)) {
-      return 0;
-    }
-    
-    const totalMinutes = hours * 60 + minutes;
-    return totalMinutes;
+    return jadwalDate === currentDate;
+  });
+
+  console.log(`Room ${ruangan.nama_ruangan}: Found ${todaySchedules.length} schedules for today (${currentDate})`);
+
+  // Jika tidak ada jadwal hari ini, status tidak digunakan
+  if (todaySchedules.length === 0) {
+    return "tidak_digunakan";
   }
+
+  // Cek setiap jadwal hari ini
+  todaySchedules.forEach((jadwal) => {
+    if (!jadwal.waktu_mulai || !jadwal.waktu_selesai) {
+      console.warn(`Invalid time in jadwal for room ${ruangan.nama_ruangan}`);
+      return;
+    }
+
+    const startMinutes = timeToMinutes(jadwal.waktu_mulai);
+    const endMinutes = timeToMinutes(jadwal.waktu_selesai);
+
+    console.log(`Room ${ruangan.nama_ruangan}: Schedule ${jadwal.waktu_mulai}-${jadwal.waktu_selesai}, Current time minutes: ${currentMinutes}`);
+
+    // Cek apakah sedang berlangsung
+    if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+      console.log(`Room ${ruangan.nama_ruangan}: SEDANG DIGUNAKAN`);
+      sedang = true;
+    } 
+    // Cek apakah akan digunakan (dalam 2 jam ke depan)
+    else if (currentMinutes < startMinutes && (startMinutes - currentMinutes) <= 120) {
+      console.log(`Room ${ruangan.nama_ruangan}: AKAN DIGUNAKAN`);
+      akan = true;
+    }
+  });
+  
+  if (sedang) {
+    return "sedang_digunakan";
+  } else if (akan) {
+    return "akan_digunakan";
+  } else {
+    return "tidak_digunakan";
+  }
+}
+
+function timeToMinutes(timeString) {
+  if (!timeString) {
+    return 0;
+  }
+  
+  // Handle format HH:MM:SS atau HH:MM
+  const parts = timeString.split(':');
+  if (parts.length < 2) {
+    return 0;
+  }
+  
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  
+  if (isNaN(hours) || isNaN(minutes)) {
+    return 0;
+  }
+  
+  const totalMinutes = hours * 60 + minutes;
+  return totalMinutes;
+}
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Ambil ruangan untuk TV
         const raw = await fetchRuanganByGedungLantaiTv(id_gedung, id_lantai);
         let ruanganList = [];
         if (Array.isArray(raw)) ruanganList = raw;
@@ -128,7 +195,6 @@ function TvDevicePage() {
         setData([]);
       }
 
-      // Load other data (header, PJ, etc.)
       try {
         const header = await fetchHeaderDataByIds(id_gedung, id_lantai);
         if (header && typeof header === 'object') {
@@ -146,9 +212,33 @@ function TvDevicePage() {
 
       try {
         const pj = await fetchPjGedungByGedung(id_gedung);
+        console.log("Raw PJ Gedung data:", pj);
+        
         if (Array.isArray(pj) && pj.length > 0) {
-          setPjGedungData(pj[0]);
+          const pjRaw = pj[0];
+          
+          // FIXED: Handle both field names and convert to URLs
+          const qrPeminjaman = pjRaw.qrcode_peminjaman || pjRaw.qrcodepath_pinjam;
+          const qrKontak = pjRaw.qrcode_pjgedung || pjRaw.qrcodepath_kontak;
+          
+          console.log("QR Peminjaman raw:", qrPeminjaman);
+          console.log("QR Kontak raw:", qrKontak);
+          
+          const processedPJ = {
+            nama: pjRaw.nama || "",
+            no_telp: pjRaw.no_telp || "",
+            link_peminjaman: pjRaw.link_peminjaman || "",
+            qrcodepath_pinjam: convertPathToURL(qrPeminjaman),
+            qrcodepath_kontak: convertPathToURL(qrKontak),
+          };
+          
+          console.log("Processed PJ Gedung data:", processedPJ);
+          console.log("QR Peminjaman URL:", processedPJ.qrcodepath_pinjam);
+          console.log("QR Kontak URL:", processedPJ.qrcodepath_kontak);
+          
+          setPjGedungData(processedPJ);
         } else {
+          console.log("No PJ Gedung data found");
           setPjGedungData({
             nama: "", no_telp: "", link_peminjaman: "",
             qrcodepath_pinjam: "", qrcodepath_kontak: "",
@@ -161,13 +251,11 @@ function TvDevicePage() {
 
     if (id_gedung && id_lantai) {
       loadData();
-      // Refresh data setiap 30 detik
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
     }
   }, [id_gedung, id_lantai]);
 
-  // Update waktu realtime setiap detik
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -183,7 +271,6 @@ function TvDevicePage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Kategorisasi ruangan berdasarkan status
   const unusedRuangan = data.filter(d => {
     const status = getStatusRuangan(d, currentDate, currentTime);
     return status === 'tidak_digunakan';
@@ -328,7 +415,7 @@ function TvDevicePage() {
           </div>
         </div>
 
-        {/* Konten - UPDATED COLORS HERE */}
+        {/* Konten */}
         <div className="flex gap-6 w-full flex-1 min-h-0">
           <div className="flex-[1]">
             <ScrollableSection title="Tidak Digunakan" rooms={unusedRuangan} maxCards={5} bgColor="tidak_digunakan" textColor="text-green-400" scrollSpeed={45} />
@@ -360,16 +447,21 @@ function TvDevicePage() {
                   <img 
                     className="rounded-md w-full h-full object-cover" 
                     src={pjGedungData.qrcodepath_kontak} 
-                    alt="QR Kontak PJ" 
+                    alt="QR Kontak PJ"
+                    style={{ display: 'block' }}
                     onError={(e) => {
+                      console.error('QR Kontak failed to load:', pjGedungData.qrcodepath_kontak);
                       e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                    onLoad={() => {
+                      console.log('QR Kontak loaded successfully:', pjGedungData.qrcodepath_kontak);
                     }}
                   />
-                ) : null}
-                <div className={`w-full h-full bg-gray-600 rounded-md flex items-center justify-center ${pjGedungData.qrcodepath_kontak ? 'hidden' : 'flex'}`}>
-                  <span className="text-gray-400 text-sm">No QR</span>
-                </div>
+                ) : (
+                  <div className="w-full h-full bg-gray-600 rounded-md flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No QR</span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col">
                 <h3 className="text-3xl font-semibold text-white leading-tight mb-1">PJ Gedung</h3>
@@ -386,16 +478,21 @@ function TvDevicePage() {
                   <img 
                     className="rounded-md w-full h-full object-cover" 
                     src={pjGedungData.qrcodepath_pinjam} 
-                    alt="QR Peminjaman" 
+                    alt="QR Peminjaman"
+                    style={{ display: 'block' }}
                     onError={(e) => {
+                      console.error('QR Peminjaman failed to load:', pjGedungData.qrcodepath_pinjam);
                       e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                    onLoad={() => {
+                      console.log('QR Peminjaman loaded successfully:', pjGedungData.qrcodepath_pinjam);
                     }}
                   />
-                ) : null}
-                <div className={`w-full h-full bg-gray-600 rounded-md flex items-center justify-center ${pjGedungData.qrcodepath_pinjam ? 'hidden' : 'flex'}`}>
-                  <span className="text-gray-400 text-sm">No QR</span>
-                </div>
+                ) : (
+                  <div className="w-full h-full bg-gray-600 rounded-md flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No QR</span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col">
                 <h3 className="text-3xl font-semibold text-white leading-tight mb-1">

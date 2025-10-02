@@ -2,7 +2,7 @@ const pool = require("../config/db");
 
 // ➕ Tambah PJ Gedung
 const addPjGedung = async (req, res) => {
-  const { id_gedung, nama, no_telp, link_peminjaman, qrcodepath_pinjam, qrcodepath_kontak } = req.body;
+  const { id_gedung, nama, no_telp, link_peminjaman, qrcode_peminjaman, qrcode_pjgedung } = req.body;
 
   // Validasi field wajib
   if (!id_gedung || !nama || !no_telp) {
@@ -12,9 +12,9 @@ const addPjGedung = async (req, res) => {
   try {
     const [result] = await pool.query(
       `INSERT INTO pj_gedung 
-       (id_gedung, nama, no_telp, link_peminjaman, qrcodepath_pinjam, qrcodepath_kontak) 
+       (id_gedung, nama, no_telp, link_peminjaman, qrcode_peminjaman, qrcode_pjgedung) 
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [id_gedung, nama, no_telp, link_peminjaman || "", qrcodepath_pinjam || "", qrcodepath_kontak || ""]
+      [id_gedung, nama, no_telp, link_peminjaman || "", qrcode_peminjaman || "", qrcode_pjgedung || ""]
     );
 
     res.status(201).json({ id_pj_gedung: result.insertId, message: "PJ Gedung berhasil ditambahkan" });
@@ -29,7 +29,7 @@ const getAllPjGedung = async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT pj.id_pj_gedung, pj.nama, pj.no_telp, pj.link_peminjaman,
-             pj.qrcodepath_pinjam, pj.qrcodepath_kontak,
+             pj.qrcode_peminjaman, pj.qrcode_pjgedung,
              g.id_gedung, g.nama_gedung, g.lokasi_gedung
       FROM pj_gedung pj
       LEFT JOIN gedung g ON pj.id_gedung = g.id_gedung
@@ -43,14 +43,14 @@ const getAllPjGedung = async (req, res) => {
   }
 };
 
-// 🏢 Ambil PJ Gedung berdasarkan ID Gedung (ENDPOINT BARU)
+// 🏢 Ambil PJ Gedung berdasarkan ID Gedung
 const getPjGedungByGedung = async (req, res) => {
   const { id_gedung } = req.params;
 
   try {
     const [rows] = await pool.query(`
       SELECT pj.id_pj_gedung, pj.nama, pj.no_telp, pj.link_peminjaman,
-             pj.qrcodepath_pinjam, pj.qrcodepath_kontak,
+             pj.qrcode_peminjaman, pj.qrcode_pjgedung,
              g.id_gedung, g.nama_gedung, g.lokasi_gedung
       FROM pj_gedung pj
       LEFT JOIN gedung g ON pj.id_gedung = g.id_gedung
@@ -68,7 +68,7 @@ const getPjGedungByGedung = async (req, res) => {
 // 🔄 Update PJ Gedung
 const updatePjGedung = async (req, res) => {
   const { id } = req.params;
-  const { id_gedung, nama, no_telp, link_peminjaman, qrcodepath_pinjam, qrcodepath_kontak } = req.body;
+  const { id_gedung, nama, no_telp, link_peminjaman, qrcode_peminjaman, qrcode_pjgedung } = req.body;
 
   if (!id_gedung || !nama || !no_telp) {
     return res.status(400).json({ message: "id_gedung, nama, dan no_telp wajib diisi" });
@@ -77,9 +77,9 @@ const updatePjGedung = async (req, res) => {
   try {
     await pool.query(
       `UPDATE pj_gedung 
-       SET id_gedung=?, nama=?, no_telp=?, link_peminjaman=?, qrcodepath_pinjam=?, qrcodepath_kontak=?
+       SET id_gedung=?, nama=?, no_telp=?, link_peminjaman=?, qrcode_peminjaman=?, qrcode_pjgedung=?
        WHERE id_pj_gedung=?`,
-      [id_gedung, nama, no_telp, link_peminjaman || "", qrcodepath_pinjam || "", qrcodepath_kontak || "", id]
+      [id_gedung, nama, no_telp, link_peminjaman || "", qrcode_peminjaman || "", qrcode_pjgedung || "", id]
     );
 
     res.status(200).json({ message: "PJ Gedung berhasil diperbarui" });
@@ -104,7 +104,7 @@ const deletePjGedung = async (req, res) => {
 module.exports = { 
   addPjGedung, 
   getAllPjGedung, 
-  getPjGedungByGedung,  // EXPORT FUNGSI BARU
+  getPjGedungByGedung,
   updatePjGedung, 
   deletePjGedung 
 };

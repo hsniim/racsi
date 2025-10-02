@@ -16,7 +16,9 @@ import {
   AlertCircle,
   CheckCircle,
   Users,
-  Zap
+  Zap,
+  Upload,
+  Image as ImageIcon
 } from "lucide-react";
 
 export default function Gedung() {
@@ -25,12 +27,15 @@ export default function Gedung() {
     nama_gedung: "",
     lokasi_gedung: "jakarta",
     qrcode_feedback: "",
+    qrcode_feedback_file: null,
     pj: {
       nama: "",
       no_telp: "",
       link_peminjaman: "",
       qrcodepath_pinjam: "",
+      qrcodepath_pinjam_file: null,
       qrcodepath_kontak: "",
+      qrcodepath_kontak_file: null,
     },
   });
   const [editId, setEditId] = useState(null);
@@ -38,29 +43,132 @@ export default function Gedung() {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [qrGenerating, setQrGenerating] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewPinjam, setPreviewPinjam] = useState(null);
+  const [previewKontak, setPreviewKontak] = useState(null);
 
   const token = window.localStorage.getItem("token");
 
-  // Function to check if input is a URL
-  const isUrl = (string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
+  // Handle file upload untuk QR Feedback
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
+        setError("File harus berformat .png, .jpg, atau .jpeg");
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Ukuran file maksimal 5MB");
+        return;
+      }
+
+      setForm({ ...form, qrcode_feedback_file: file });
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      setError("");
     }
   };
 
-  // Check if QR code is base64 data URL
-  const isBase64QR = (string) => {
-    return string && string.startsWith('data:image/png;base64,');
+  // Handle file upload untuk QR Peminjaman
+  const handlePinjamFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
+        setError("File harus berformat .png, .jpg, atau .jpeg");
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Ukuran file maksimal 5MB");
+        return;
+      }
+
+      setForm({ 
+        ...form, 
+        pj: { 
+          ...form.pj, 
+          qrcodepath_pinjam_file: file 
+        } 
+      });
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewPinjam(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      setError("");
+    }
   };
 
-  // Handle QR Code Feedback input change
-  const handleQrFeedbackChange = (e) => {
-    const value = e.target.value;
-    setForm({ ...form, qrcode_feedback: value });
+  // Handle file upload untuk QR Kontak
+  const handleKontakFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match(/image\/(png|jpg|jpeg)/)) {
+        setError("File harus berformat .png, .jpg, atau .jpeg");
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Ukuran file maksimal 5MB");
+        return;
+      }
+
+      setForm({ 
+        ...form, 
+        pj: { 
+          ...form.pj, 
+          qrcodepath_kontak_file: file 
+        } 
+      });
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewKontak(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      setError("");
+    }
+  };
+
+  // Clear file input
+  const handleClearFile = () => {
+    setForm({ ...form, qrcode_feedback_file: null, qrcode_feedback: "" });
+    setPreviewImage(null);
+  };
+
+  // Clear QR Peminjaman
+  const handleClearPinjam = () => {
+    setForm({ 
+      ...form, 
+      pj: { 
+        ...form.pj, 
+        qrcodepath_pinjam_file: null, 
+        qrcodepath_pinjam: "" 
+      } 
+    });
+    setPreviewPinjam(null);
+  };
+
+  // Clear QR Kontak
+  const handleClearKontak = () => {
+    setForm({ 
+      ...form, 
+      pj: { 
+        ...form.pj, 
+        qrcodepath_kontak_file: null, 
+        qrcodepath_kontak: "" 
+      } 
+    });
+    setPreviewKontak(null);
   };
 
   const fetchGedungs = async () => {
@@ -90,50 +198,95 @@ export default function Gedung() {
     setLoading(true);
 
     try {
-      const finalForm = { ...form };
+      const formData = new FormData();
+      formData.append('nama_gedung', form.nama_gedung);
+      formData.append('lokasi_gedung', form.lokasi_gedung);
       
-      // Backend will handle QR generation automatically
-      if (finalForm.qrcode_feedback && isUrl(finalForm.qrcode_feedback)) {
-        console.log('URL detected for QR generation:', finalForm.qrcode_feedback);
-        setQrGenerating(true);
+      // Upload QR Feedback Gedung
+      if (form.qrcode_feedback_file) {
+        formData.append('qrcode_feedback', form.qrcode_feedback_file);
+        console.log('Adding qrcode_feedback file:', form.qrcode_feedback_file.name);
+      }
+      
+      // Prepare PJ data
+      const pjData = {
+        nama: form.pj.nama,
+        no_telp: form.pj.no_telp,
+        link_peminjaman: form.pj.link_peminjaman,
+        qrcodepath_pinjam: form.pj.qrcodepath_pinjam,
+        qrcodepath_kontak: form.pj.qrcodepath_kontak,
+      };
+      
+      formData.append('pj', JSON.stringify(pjData));
+      
+      // FIXED: Upload file QR Peminjaman dengan fieldname yang benar
+      if (form.pj.qrcodepath_pinjam_file) {
+        formData.append('qrcode_peminjaman', form.pj.qrcodepath_pinjam_file);
+        console.log('Adding qrcode_peminjaman file:', form.pj.qrcodepath_pinjam_file.name);
+      }
+      
+      // FIXED: Upload file QR Kontak PJ dengan fieldname yang benar
+      if (form.pj.qrcodepath_kontak_file) {
+        formData.append('qrcode_pjgedung', form.pj.qrcodepath_kontak_file);
+        console.log('Adding qrcode_pjgedung file:', form.pj.qrcodepath_kontak_file.name);
+      }
+
+      // Debug: Log all formData entries
+      console.log('FormData contents:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], ':', pair[1]);
       }
 
       if (editId) {
-        await axios.put(`http://localhost:5000/api/gedung/${editId}`, finalForm, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await axios.put(`http://localhost:5000/api/gedung/${editId}`, formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          },
         });
-        setSuccess("Gedung + PJ berhasil diperbarui dengan QR Code!");
+        console.log('Update response:', response.data);
+        setSuccess("Gedung + PJ berhasil diperbarui!");
       } else {
-        await axios.post("http://localhost:5000/api/gedung", finalForm, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await axios.post("http://localhost:5000/api/gedung", formData, {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          },
         });
-        setSuccess("Gedung + PJ berhasil ditambahkan dengan QR Code!");
+        console.log('Create response:', response.data);
+        setSuccess("Gedung + PJ berhasil ditambahkan!");
       }
 
+      // Reset form
       setForm({
         nama_gedung: "",
         lokasi_gedung: "jakarta",
         qrcode_feedback: "",
+        qrcode_feedback_file: null,
         pj: {
           nama: "",
           no_telp: "",
           link_peminjaman: "",
           qrcodepath_pinjam: "",
+          qrcodepath_pinjam_file: null,
           qrcodepath_kontak: "",
+          qrcodepath_kontak_file: null,
         },
       });
+      setPreviewImage(null);
+      setPreviewPinjam(null);
+      setPreviewKontak(null);
       setEditId(null);
       setError("");
       setShowForm(false);
       fetchGedungs();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error(err.response?.data || err.message);
+      console.error('Submit error:', err.response?.data || err.message);
       setError(err.response?.data?.message || "Gagal menyimpan gedung");
       setSuccess("");
     } finally {
       setLoading(false);
-      setQrGenerating(false);
     }
   };
 
@@ -143,14 +296,28 @@ export default function Gedung() {
       nama_gedung: g.nama_gedung || "",
       lokasi_gedung: g.lokasi_gedung || "jakarta",
       qrcode_feedback: g.qrcode_feedback || "",
+      qrcode_feedback_file: null,
       pj: {
         nama: g.pj?.nama || "",
         no_telp: g.pj?.no_telp || "",
         link_peminjaman: g.pj?.link_peminjaman || "",
         qrcodepath_pinjam: g.pj?.qrcodepath_pinjam || "",
+        qrcodepath_pinjam_file: null,
         qrcodepath_kontak: g.pj?.qrcodepath_kontak || "",
+        qrcodepath_kontak_file: null,
       },
     });
+    
+    if (g.qrcode_feedback) {
+      setPreviewImage(g.qrcode_feedback);
+    }
+    if (g.pj?.qrcodepath_pinjam) {
+      setPreviewPinjam(g.pj.qrcodepath_pinjam);
+    }
+    if (g.pj?.qrcodepath_kontak) {
+      setPreviewKontak(g.pj.qrcodepath_kontak);
+    }
+    
     setShowForm(true);
   };
 
@@ -180,16 +347,25 @@ export default function Gedung() {
       nama_gedung: "",
       lokasi_gedung: "jakarta",
       qrcode_feedback: "",
+      qrcode_feedback_file: null,
       pj: {
         nama: "",
         no_telp: "",
         link_peminjaman: "",
         qrcodepath_pinjam: "",
+        qrcodepath_pinjam_file: null,
         qrcodepath_kontak: "",
+        qrcodepath_kontak_file: null,
       },
     });
+    setPreviewImage(null);
+    setPreviewPinjam(null);
+    setPreviewKontak(null);
     setError("");
   };
+
+  // BAGIAN RETURN JSX - Lanjutan dari Part 1
+  // Gabungkan Part 1 dan Part 2 menjadi satu file Gedung.jsx
 
   return (
     <div className="w-full min-h-screen bg-primary text-white relative">
@@ -310,33 +486,52 @@ export default function Gedung() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
-                      <QrCode className="w-4 h-4" />
-                      URL untuk QR Code Feedback <span className="text-red-400">*</span>
-                      {qrGenerating && <div className="w-4 h-4 border border-blue-300/30 border-t-blue-300 rounded-full animate-spin ml-2"></div>}
+                      <ImageIcon className="w-4 h-4" />
+                      QR Code Feedback (Upload Image) <span className="text-red-400">*</span>
                     </label>
-                    <input
-                      type="text"
-                      placeholder="https://example.com/feedback"
-                      value={form.qrcode_feedback}
-                      onChange={handleQrFeedbackChange}
-                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                      required
-                    />
-                    {form.qrcode_feedback && (
-                      <div className="mt-2 text-sm">
-                        {isUrl(form.qrcode_feedback) ? (
-                          <span className="text-green-400 flex items-center gap-1">
-                            <CheckCircle className="w-4 h-4" />
-                            URL valid - QR Code akan di-generate otomatis
-                          </span>
-                        ) : (
-                          <span className="text-yellow-400 flex items-center gap-1">
-                            <AlertCircle className="w-4 h-4" />
-                            Masukkan URL yang valid untuk generate QR Code
-                          </span>
-                        )}
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="qr-feedback-upload"
+                      />
+                      <label
+                        htmlFor="qr-feedback-upload"
+                        className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white cursor-pointer hover:bg-gray-700/70 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-5 h-5" />
+                        {form.qrcode_feedback_file 
+                          ? form.qrcode_feedback_file.name 
+                          : (editId && form.qrcode_feedback ? "Ganti QR Code" : "Upload QR Code (.png, .jpg)")}
+                      </label>
+                    </div>
+                    
+                    {(previewImage || (editId && form.qrcode_feedback)) && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="w-20 h-20 bg-white rounded-lg overflow-hidden">
+                          <img 
+                            src={previewImage || form.qrcode_feedback} 
+                            alt="QR Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleClearFile}
+                          className="px-3 py-2 bg-red-600/20 text-red-300 border border-red-400/30 rounded-lg hover:bg-red-600/30 transition-all duration-200 flex items-center gap-2"
+                        >
+                          <X className="w-4 h-4" />
+                          Hapus
+                        </button>
                       </div>
                     )}
+                    
+                    <p className="mt-2 text-xs text-gray-400">
+                      Format: .png, .jpg, .jpeg | Max: 5MB
+                    </p>
                   </div>
                 </div>
               </div>
@@ -396,32 +591,106 @@ export default function Gedung() {
                     />
                   </div>
 
+                  {/* QR Code Peminjaman - File Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <QrCode className="w-4 h-4" />
-                      QR Code Peminjaman
+                      QR Code Peminjaman Ruang (Upload Image)
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Path QR Code Peminjaman"
-                      value={form.pj.qrcodepath_pinjam}
-                      onChange={(e) => setForm({ ...form, pj: { ...form.pj, qrcodepath_pinjam: e.target.value } })}
-                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                    />
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handlePinjamFileChange}
+                        className="hidden"
+                        id="qr-pinjam-upload"
+                      />
+                      <label
+                        htmlFor="qr-pinjam-upload"
+                        className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white cursor-pointer hover:bg-gray-700/70 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-5 h-5" />
+                        {form.pj.qrcodepath_pinjam_file 
+                          ? form.pj.qrcodepath_pinjam_file.name 
+                          : (editId && form.pj.qrcodepath_pinjam ? "Ganti QR Peminjaman" : "Upload QR (.png, .jpg)")}
+                      </label>
+                    </div>
+                    
+                    {(previewPinjam || (editId && form.pj.qrcodepath_pinjam)) && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="w-20 h-20 bg-white rounded-lg overflow-hidden">
+                          <img 
+                            src={previewPinjam || form.pj.qrcodepath_pinjam} 
+                            alt="QR Pinjam Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleClearPinjam}
+                          className="px-3 py-2 bg-red-600/20 text-red-300 border border-red-400/30 rounded-lg hover:bg-red-600/30 transition-all duration-200 flex items-center gap-2"
+                        >
+                          <X className="w-4 h-4" />
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                    
+                    <p className="mt-2 text-xs text-gray-400">
+                      Format: .png, .jpg, .jpeg | Max: 5MB
+                    </p>
                   </div>
 
+                  {/* QR Code Kontak - File Upload */}
                   <div className="lg:col-span-2">
                     <label className="block text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
                       <QrCode className="w-4 h-4" />
-                      QR Code Kontak
+                      QR Code Kontak PJ Gedung (Upload Image)
                     </label>
-                    <input
-                      type="text"
-                      placeholder="Path QR Code Kontak"
-                      value={form.pj.qrcodepath_kontak}
-                      onChange={(e) => setForm({ ...form, pj: { ...form.pj, qrcodepath_kontak: e.target.value } })}
-                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                    />
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        onChange={handleKontakFileChange}
+                        className="hidden"
+                        id="qr-kontak-upload"
+                      />
+                      <label
+                        htmlFor="qr-kontak-upload"
+                        className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white cursor-pointer hover:bg-gray-700/70 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-5 h-5" />
+                        {form.pj.qrcodepath_kontak_file 
+                          ? form.pj.qrcodepath_kontak_file.name 
+                          : (editId && form.pj.qrcodepath_kontak ? "Ganti QR Kontak" : "Upload QR (.png, .jpg)")}
+                      </label>
+                    </div>
+                    
+                    {(previewKontak || (editId && form.pj.qrcodepath_kontak)) && (
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="w-20 h-20 bg-white rounded-lg overflow-hidden">
+                          <img 
+                            src={previewKontak || form.pj.qrcodepath_kontak} 
+                            alt="QR Kontak Preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleClearKontak}
+                          className="px-3 py-2 bg-red-600/20 text-red-300 border border-red-400/30 rounded-lg hover:bg-red-600/30 transition-all duration-200 flex items-center gap-2"
+                        >
+                          <X className="w-4 h-4" />
+                          Hapus
+                        </button>
+                      </div>
+                    )}
+                    
+                    <p className="mt-2 text-xs text-gray-400">
+                      Format: .png, .jpg, .jpeg | Max: 5MB
+                    </p>
                   </div>
                 </div>
               </div>
@@ -442,16 +711,16 @@ export default function Gedung() {
                 <button
                   type="submit"
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50"
-                  disabled={loading || qrGenerating}
+                  disabled={loading}
                 >
-                  {loading || qrGenerating ? (
+                  {loading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-1"></div>
                   ) : editId ? (
                     <Save className="w-5 h-5" />
                   ) : (
                     <Plus className="w-5 h-5" />
                   )}
-                  {loading ? "Memproses..." : qrGenerating ? "Generate QR..." : (editId ? "Simpan Perubahan" : "Tambah Gedung")}
+                  {loading ? "Memproses..." : (editId ? "Simpan Perubahan" : "Tambah Gedung")}
                 </button>
               </div>
             </form>
@@ -467,7 +736,7 @@ export default function Gedung() {
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-200">Daftar Gedung</h2>
-                <p className="text-gray-400">QR Code generated automatically</p>
+                <p className="text-gray-400">Manage your building data</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -515,6 +784,12 @@ export default function Gedung() {
                       No Telepon
                     </div>
                   </th>
+                  <th className="p-4 text-left text-sm font-medium text-gray-300">
+                    <div className="flex items-center gap-2">
+                      <QrCode className="w-4 h-4" />
+                      QR PJ
+                    </div>
+                  </th>
                   <th className="p-4 text-center text-sm font-medium text-gray-300 last:rounded-tr-xl">
                     Aksi
                   </th>
@@ -523,7 +798,7 @@ export default function Gedung() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="p-12 text-center text-gray-400">
+                    <td colSpan="7" className="p-12 text-center text-gray-400">
                       <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300 mb-4"></div>
                         <p className="text-lg mb-2">Memuat data gedung...</p>
@@ -553,13 +828,10 @@ export default function Gedung() {
                       </td>
                       <td className="p-4 text-gray-200">
                         {g.qrcode_feedback ? (
-                          <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
                             <span className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-green-500/20 text-green-300 border border-green-400/30">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               Tersedia
-                            </span>
-                            <span className="text-xs text-purple-400">
-                              {isBase64QR(g.qrcode_feedback) ? 'Generated' : 'Legacy'}
                             </span>
                           </div>
                         ) : (
@@ -591,6 +863,25 @@ export default function Gedung() {
                           <span className="text-gray-500">-</span>
                         )}
                       </td>
+                      <td className="p-4 text-gray-200">
+                        <div className="flex flex-col gap-1">
+                          {g.pj?.qrcodepath_pinjam ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                              <QrCode className="w-3 h-3 mr-1" />
+                              QR Peminjaman
+                            </span>
+                          ) : null}
+                          {g.pj?.qrcodepath_kontak ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                              <QrCode className="w-3 h-3 mr-1" />
+                              QR Kontak
+                            </span>
+                          ) : null}
+                          {!g.pj?.qrcodepath_pinjam && !g.pj?.qrcodepath_kontak ? (
+                            <span className="text-gray-500 text-xs">-</span>
+                          ) : null}
+                        </div>
+                      </td>
                       <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -615,7 +906,7 @@ export default function Gedung() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="p-12 text-center">
+                    <td colSpan="7" className="p-12 text-center">
                       <div className="flex flex-col items-center text-gray-400">
                         {error ? (
                           <>

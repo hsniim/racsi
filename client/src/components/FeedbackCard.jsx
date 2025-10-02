@@ -37,8 +37,8 @@ const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
 // Fungsi untuk mengambil QR code feedback gedung dari endpoint yang sudah ada
 const fetchGedungFeedbackQR = async (id_gedung) => {
   try {
-    const API_BASE_URL = "http://localhost:5000/api";
-    const url = `${API_BASE_URL}/gedung/${id_gedung}/qr-feedback`;
+    const API_BASE_URL = "http://localhost:5000";
+    const url = `${API_BASE_URL}/api/gedung/${id_gedung}/qr-feedback`;
     console.log(`Fetching gedung feedback QR code from: ${url}`);
     
     const response = await fetch(url);
@@ -51,7 +51,16 @@ const fetchGedungFeedbackQR = async (id_gedung) => {
     const data = await response.json();
     console.log('Gedung feedback QR response:', data);
     
-    return data.qrcodepath_feedback || null;
+    // Convert path to full URL if it's a relative path
+    let qrPath = data.qrcodepath_feedback;
+    if (qrPath && !qrPath.startsWith('http') && !qrPath.startsWith('data:image')) {
+      // Jika path dimulai dengan '/', gunakan langsung dengan base URL
+      // Jika tidak, tambahkan '/' di depan
+      qrPath = `${API_BASE_URL}${qrPath.startsWith('/') ? '' : '/'}${qrPath}`;
+    }
+    
+    console.log('Final QR URL:', qrPath);
+    return qrPath || null;
   } catch (error) {
     console.error('Error fetching gedung feedback QR code:', error);
     return null;
@@ -283,15 +292,13 @@ function FeedbackCard({ id_gedung, id_lantai }) {
                 onError={handleQRImageError}
                 onLoad={() => {
                   console.log('QR Image loaded successfully:', gedungQRCode);
-                  console.log('QR Type:', isUrl(gedungQRCode) ? 'Generated QR URL' : 'Local Path');
+                  console.log('QR Type:', isUrl(gedungQRCode) ? 'URL' : 'Data URL or Path');
                 }}
               />
               {/* QR Code indicator with type info */}
               <div className="absolute bottom-1 right-1 bg-black bg-opacity-50 rounded-full p-1">
                 <QrCode className="w-3 h-3 text-white" />
               </div>
-              {/* Debug info - bisa dihapus di production */}
-              {console.log('QR Code Type:', isUrl(gedungQRCode) ? 'Auto-generated' : 'Local file')}
             </>
           ) : (
             generateNoQRPlaceholder()

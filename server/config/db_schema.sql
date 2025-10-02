@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS gedung (
     id_gedung INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nama_gedung VARCHAR(50) NOT NULL,
     lokasi_gedung ENUM('jakarta','depok') DEFAULT 'jakarta',
-    qrcode_feedback TEXT NOT NULL,
+    qrcode_feedback MEDIUMBLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS pj_gedung (
     nama VARCHAR(30) NOT NULL,
     no_telp VARCHAR(30) NOT NULL,
     link_peminjaman VARCHAR(100) NOT NULL,
-    qrcodepath_pinjam VARCHAR(200) NOT NULL,
-    qrcodepath_kontak VARCHAR(200) NOT NULL,
+    qrcode_peminjaman MEDIUMBLOB NOT NULL,
+    qrcode_pjgedung MEDIUMBLOB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_pj_gedung FOREIGN KEY (id_gedung) REFERENCES gedung(id_gedung) ON DELETE CASCADE,
     INDEX idx_pj_gedung (id_gedung)

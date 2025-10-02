@@ -2,6 +2,8 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +17,24 @@ const io = new Server(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// Pastikan folder upload ada - FIXED FOLDER PATHS
+const uploadFolders = [
+  path.join(__dirname, 'uploads'),
+  path.join(__dirname, 'uploads/qr_feedback'),
+  path.join(__dirname, 'uploads/qr_peminjaman'),
+  path.join(__dirname, 'uploads/qr_pjgedung')
+];
+
+uploadFolders.forEach(folder => {
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder, { recursive: true });
+    console.log(`Created folder: ${folder}`);
+  }
+});
+
+// Serve static files untuk uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 const adminRoutes = require('./routes/adminRoutes');
