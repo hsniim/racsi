@@ -302,31 +302,6 @@ function LandingPage() {
             </div>
             <h1 className="text-4xl font-bold">RACSI</h1>
           </div>
-
-          {/* Navigation Menu */}
-          <nav className="flex items-center gap-8">
-            <span className="text-white text-xl font-medium border-b-2 border-blue-400 pb-1 transition-colors">
-              Beranda
-            </span>
-            <button 
-              onClick={() => handleNavigation('about')}
-              className="text-gray-300 text-xl hover:text-white transition-colors duration-200 bg-transparent border-none cursor-pointer"
-            >
-              Tentang Kami
-            </button>
-          </nav>
-          
-          <div className="text-right">
-            <p className="text-3xl font-bold">{currentTime}</p>
-            <p className="text-md text-gray-300">
-              {new Date().toLocaleDateString('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-              })}
-            </p>
-          </div>
         </header>
 
         {/* Main Content - Pastikan tidak ada padding yang memotong */}
