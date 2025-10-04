@@ -388,6 +388,14 @@ export default function Gedung() {
     setError("");
   };
 
+  // Character limit helper
+  const getCharCountColor = (current, max) => {
+    const percentage = (current / max) * 100;
+    if (percentage >= 90) return "text-red-400";
+    if (percentage >= 75) return "text-yellow-400";
+    return "text-gray-400";
+  };
+
   return (
     <div className="w-full min-h-screen bg-primary text-white relative">
       {/* Background Pattern */}
@@ -480,10 +488,14 @@ export default function Gedung() {
                       type="text"
                       placeholder="Masukkan nama gedung"
                       value={form.nama_gedung}
-                      onChange={(e) => setForm({ ...form, nama_gedung: e.target.value })}
+                      onChange={(e) => setForm({ ...form, nama_gedung: e.target.value.slice(0, 10) })}
                       className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                      maxLength={10}
                       required
                     />
+                    <p className={`text-xs mt-2 ${getCharCountColor(form.nama_gedung.length, 10)}`}>
+                      {form.nama_gedung.length}/10 karakter
+                    </p>
                   </div>
 
                   <div>
@@ -579,9 +591,13 @@ export default function Gedung() {
                       type="text"
                       placeholder="Masukkan nama penanggung jawab"
                       value={form.pj.nama}
-                      onChange={(e) => setForm({ ...form, pj: { ...form.pj, nama: e.target.value } })}
+                      onChange={(e) => setForm({ ...form, pj: { ...form.pj, nama: e.target.value.slice(0, 15) } })}
                       className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                      maxLength={15}
                     />
+                    <p className={`text-xs mt-2 ${getCharCountColor(form.pj.nama.length, 15)}`}>
+                      {form.pj.nama.length}/15 karakter
+                    </p>
                   </div>
 
                   <div>
@@ -821,7 +837,7 @@ export default function Gedung() {
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-200">Daftar Gedung</h2>
-                <p className="text-gray-400">Manage your building data</p>
+                <p className="text-gray-400">Kelola semua gedung</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

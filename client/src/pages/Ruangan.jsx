@@ -99,6 +99,14 @@ export default function Ruangan() {
   // Mendapatkan daftar gedung unik
   const uniqueGedung = [...new Set(ruangans.map((r) => r.nama_gedung))];
 
+  // Character limit helper
+  const getCharCountColor = (current, max) => {
+    const percentage = (current / max) * 100;
+    if (percentage >= 90) return "text-red-400";
+    if (percentage >= 75) return "text-yellow-400";
+    return "text-gray-400";
+  };
+
   // Bulk selection handlers
   const handleSelectRuangan = (id) => {
     setSelectedRuangans(prev => {
@@ -347,10 +355,14 @@ export default function Ruangan() {
                     type="text"
                     placeholder="Masukkan nama ruangan"
                     value={form.nama_ruangan}
-                    onChange={(e) => setForm({ ...form, nama_ruangan: e.target.value })}
+                    onChange={(e) => setForm({ ...form, nama_ruangan: e.target.value.slice(0, 10) })}
                     className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    maxLength={10}
                     required
                   />
+                  <p className={`text-xs mt-2 ${getCharCountColor(form.nama_ruangan.length, 10)}`}>
+                    {form.nama_ruangan.length}/10 karakter
+                  </p>
                 </div>
 
                 {/* Kapasitas */}

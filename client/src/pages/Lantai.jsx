@@ -130,6 +130,14 @@ export default function Lantai() {
     setShowForm(false);
   };
 
+  // Character limit helper
+  const getCharCountColor = (current, max) => {
+    const percentage = (current / max) * 100;
+    if (percentage >= 90) return "text-red-400";
+    if (percentage >= 75) return "text-yellow-400";
+    return "text-gray-400";
+  };
+
   // Filter dan search functionality
   const filteredLantais = lantais.filter((item) => {
     const matchesSearch = 
@@ -277,10 +285,14 @@ export default function Lantai() {
                     type="text"
                     placeholder="Masukkan nama penanggung jawab"
                     value={form.pj.nama}
-                    onChange={(e) => setForm({ ...form, pj: { ...form.pj, nama: e.target.value } })}
+                    onChange={(e) => setForm({ ...form, pj: { ...form.pj, nama: e.target.value.slice(0, 10) } })}
                     className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    maxLength={10}
                     required
                   />
+                  <p className={`text-xs mt-2 ${getCharCountColor(form.pj.nama.length, 10)}`}>
+                    {form.pj.nama.length}/10 karakter
+                  </p>
                 </div>
 
                 {/* PJ Shift */}
@@ -556,6 +568,23 @@ export default function Lantai() {
                             </button>
                           </>
                         ) : searchTerm || filterCategory ? (
+                          <>
+                            <Search className="w-16 h-16 mb-4 opacity-50" />
+                            <p className="text-lg font-medium mb-2">Tidak ada lantai ditemukan</p>
+                            <p className="text-sm mb-4">
+                              Coba ubah kata kunci pencarian atau filter yang digunakan
+                            </p>
+                            <button
+                              onClick={() => {
+                                setSearchTerm("");
+                                setFilterCategory("");
+                              }}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                              Reset Filter
+                            </button>
+                          </>
+                          ) : searchTerm || filterCategory ? (
                           <>
                             <Search className="w-16 h-16 mb-4 opacity-50" />
                             <p className="text-lg font-medium mb-2">Tidak ada lantai ditemukan</p>
