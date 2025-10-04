@@ -142,7 +142,7 @@ function getStatusRuangan(ruangan, currentDate, currentTime) {
       sedang = true;
     } 
     // Cek apakah akan digunakan (dalam 2 jam ke depan)
-    else if (currentMinutes < startMinutes && (startMinutes - currentMinutes) <= 120) {
+    else if (currentMinutes < startMinutes && (startMinutes - currentMinutes) <= 360) {
       console.log(`Room ${ruangan.nama_ruangan}: AKAN DIGUNAKAN`);
       akan = true;
     }

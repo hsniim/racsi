@@ -17,7 +17,13 @@ import {
   X,
   CalendarDays,
   Users,
-  MapPin
+  MapPin,
+  Search,
+  Filter,
+  RefreshCw,
+  Activity,
+  CheckSquare,
+  Square
 } from "lucide-react";
 
 // Utility functions untuk format tanggal Indonesia
@@ -164,6 +170,12 @@ export default function Agenda() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGedung, setFilterGedung] = useState("");
+  
+  // State untuk bulk selection
+  const [selectedAgendas, setSelectedAgendas] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -212,6 +224,85 @@ export default function Agenda() {
     fetchAgendas();
     fetchRuangans();
   }, []);
+
+  // Filter agendas
+  const filteredAgendas = agendas.filter((agenda) => {
+    const matchesSearch = 
+      agenda.nama_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agenda.deskripsi_kegiatan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agenda.pengguna?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agenda.nama_ruangan?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agenda.nama_gedung?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesGedung = filterGedung === "" || agenda.nama_gedung === filterGedung;
+
+    return matchesSearch && matchesGedung;
+  });
+
+  // Get unique values for filters
+  const uniqueGedungs = [...new Set(agendas.map(a => a.nama_gedung).filter(Boolean))];
+
+  // Bulk selection handlers
+  const handleSelectAgenda = (id) => {
+    setSelectedAgendas(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(agendaId => agendaId !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    const currentFilteredIds = filteredAgendas.map(a => a.id_jadwal);
+    const allCurrentSelected = currentFilteredIds.every(id => selectedAgendas.includes(id));
+    
+    if (allCurrentSelected && currentFilteredIds.length > 0) {
+      // Deselect all filtered agendas
+      setSelectedAgendas(prev => prev.filter(id => !currentFilteredIds.includes(id)));
+      setSelectAll(false);
+    } else {
+      // Select all filtered agendas
+      const newSelected = [...new Set([...selectedAgendas, ...currentFilteredIds])];
+      setSelectedAgendas(newSelected);
+      setSelectAll(true);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedAgendas.length === 0) {
+      setError("Pilih minimal satu agenda untuk dihapus");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
+
+    if (!window.confirm(`Yakin ingin menghapus ${selectedAgendas.length} agenda yang dipilih?`)) return;
+
+    try {
+      const deletePromises = selectedAgendas.map(id =>
+        axios.delete(`http://localhost:5000/api/agenda/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      );
+
+      await Promise.all(deletePromises);
+      
+      setSuccess(`${selectedAgendas.length} agenda berhasil dihapus!`);
+      setTimeout(() => setSuccess(""), 3000);
+      setSelectedAgendas([]);
+      setSelectAll(false);
+      fetchAgendas();
+    } catch (err) {
+      setError("Gagal menghapus beberapa agenda");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
+  // Reset selection when filter changes
+  useEffect(() => {
+    setSelectedAgendas([]);
+    setSelectAll(false);
+  }, [searchTerm, filterGedung]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -337,6 +428,14 @@ export default function Agenda() {
     setError("");
   };
 
+  // Character limit helper
+  const getCharCountColor = (current, max) => {
+    const percentage = (current / max) * 100;
+    if (percentage >= 90) return "text-red-400";
+    if (percentage >= 75) return "text-yellow-400";
+    return "text-gray-400";
+  };
+
   return (
     <div className="w-full min-h-screen bg-primary text-white relative">
       {/* Background Pattern */}
@@ -445,10 +544,14 @@ export default function Agenda() {
                     type="text"
                     placeholder="Masukkan nama kegiatan"
                     value={form.nama_kegiatan}
-                    onChange={(e) => setForm({ ...form, nama_kegiatan: e.target.value })}
+                    onChange={(e) => setForm({ ...form, nama_kegiatan: e.target.value.slice(0, 25) })}
                     className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    maxLength={25}
                     required
                   />
+                  <p className={`text-xs mt-2 ${getCharCountColor(form.nama_kegiatan.length, 25)}`}>
+                    {form.nama_kegiatan.length}/25 karakter
+                  </p>
                 </div>
 
                 {/* Pengguna */}
@@ -461,10 +564,14 @@ export default function Agenda() {
                     type="text"
                     placeholder="Nama pengguna atau organisasi"
                     value={form.pengguna}
-                    onChange={(e) => setForm({ ...form, pengguna: e.target.value })}
+                    onChange={(e) => setForm({ ...form, pengguna: e.target.value.slice(0, 25) })}
                     className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                    maxLength={25}
                     required
                   />
+                  <p className={`text-xs mt-2 ${getCharCountColor(form.pengguna.length, 25)}`}>
+                    {form.pengguna.length}/25 karakter
+                  </p>
                 </div>
 
                 {/* Tanggal */}
@@ -531,11 +638,15 @@ export default function Agenda() {
                 <textarea
                   placeholder="Deskripsikan kegiatan yang akan dilakukan..."
                   value={form.deskripsi_kegiatan}
-                  onChange={(e) => setForm({ ...form, deskripsi_kegiatan: e.target.value })}
+                  onChange={(e) => setForm({ ...form, deskripsi_kegiatan: e.target.value.slice(0, 200) })}
                   className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 resize-none"
                   rows={3}
+                  maxLength={200}
                   required
                 />
+                <p className={`text-xs mt-2 ${getCharCountColor(form.deskripsi_kegiatan.length, 200)}`}>
+                  {form.deskripsi_kegiatan.length}/200 karakter
+                </p>
               </div>
 
               {/* Perulangan */}
@@ -784,6 +895,102 @@ export default function Agenda() {
           )}
         </div>
 
+        {/* Filter Section */}
+        <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 mb-8 shadow-2xl">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <Search className="w-4 h-4 text-green-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-200">Filter & Pencarian</h3>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-1 lg:w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari kegiatan, gedung, ruangan, atau pengguna..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              {/* Filter Select */}
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={filterGedung}
+                  onChange={(e) => setFilterGedung(e.target.value)}
+                  className="pl-10 pr-8 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 min-w-[150px]"
+                >
+                  <option value="">Semua Gedung</option>
+                  {uniqueGedungs.map((gedung) => (
+                    <option key={gedung} value={gedung}>
+                      {gedung}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={fetchAgendas}
+                className="px-4 py-3 bg-blue-600/20 text-blue-300 border border-blue-400/30 rounded-xl hover:bg-blue-600/30 transition-all duration-200 flex items-center gap-2 hover:shadow-lg"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Search Results Info */}
+          {(searchTerm || filterGedung) && (
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg">
+              <p className="text-blue-300 text-sm">
+                Menampilkan {filteredAgendas.length} dari {agendas.length} agenda
+                {searchTerm && ` yang mengandung "${searchTerm}"`}
+                {filterGedung && ` di gedung ${filterGedung}`}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Bulk Action Bar - Shows when items are selected */}
+        {selectedAgendas.length > 0 && (
+          <div className="bg-blue-600/20 backdrop-blur-lg border border-blue-400/30 rounded-2xl p-4 mb-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckSquare className="w-5 h-5 text-blue-400" />
+                <span className="text-blue-200 font-medium">
+                  {selectedAgendas.length} agenda dipilih
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setSelectedAgendas([]);
+                    setSelectAll(false);
+                  }}
+                  className="px-4 py-2 bg-gray-600/50 text-gray-300 rounded-xl hover:bg-gray-600/70 transition-all duration-200 flex items-center gap-2"
+                >
+                  <X className="w-4 h-4" />
+                  Batal
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-red-600/30 text-red-300 border border-red-400/30 rounded-xl hover:bg-red-600/40 transition-all duration-200 flex items-center gap-2 hover:shadow-lg"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Hapus {selectedAgendas.length} Agenda
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between p-6 border-b border-gray-700/30">
@@ -796,8 +1003,9 @@ export default function Agenda() {
                 <p className="text-gray-400">Semua agenda kegiatan ruangan</p>
               </div>
             </div>
-            <span className="px-4 py-2 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30">
-              {agendas.length} Agenda
+            <span className="px-4 py-2 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30 flex items-center gap-2 font-medium">
+              <Activity className="w-4 h-4" />
+              Total: {filteredAgendas.length} Agenda
             </span>
           </div>
 
@@ -806,6 +1014,23 @@ export default function Agenda() {
               <thead>
                 <tr className="bg-gray-700/50 backdrop-blur-sm">
                   <th className="p-4 text-left text-gray-300 font-medium first:rounded-tl-xl first:rounded-bl-xl">
+                    <button
+                      onClick={handleSelectAll}
+                      className="flex items-center gap-2 hover:text-blue-400 transition-colors"
+                    >
+                      {(() => {
+                        const currentFilteredIds = filteredAgendas.map(a => a.id_jadwal);
+                        const allCurrentSelected = currentFilteredIds.length > 0 && 
+                          currentFilteredIds.every(id => selectedAgendas.includes(id));
+                        return allCurrentSelected ? (
+                          <CheckSquare className="w-5 h-5" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        );
+                      })()}
+                    </button>
+                  </th>
+                  <th className="p-4 text-left text-gray-300 font-medium">
                     <Building className="w-4 h-4 inline mr-2" /> Gedung
                   </th>
                   <th className="p-4 text-left text-gray-300 font-medium">
@@ -836,14 +1061,29 @@ export default function Agenda() {
                 </tr>
               </thead>
               <tbody>
-                {agendas.length > 0 ? (
-                  agendas.map((a) => {
+                {filteredAgendas.length > 0 ? (
+                  filteredAgendas.map((a) => {
                     const recurrenceInfo = formatRecurrenceInfo(a);
+                    const isSelected = selectedAgendas.includes(a.id_jadwal);
                     return (
                       <tr
                         key={a.id_jadwal}
-                        className="border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200"
+                        className={`border-b border-gray-700/30 hover:bg-gray-700/30 transition-all duration-200 ${
+                          isSelected ? 'bg-blue-600/10' : ''
+                        }`}
                       >
+                        <td className="p-4">
+                          <button
+                            onClick={() => handleSelectAgenda(a.id_jadwal)}
+                            className="text-gray-400 hover:text-blue-400 transition-colors"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-blue-400" />
+                            ) : (
+                              <Square className="w-5 h-5" />
+                            )}
+                          </button>
+                        </td>
                         <td className="p-4 text-gray-200 font-medium">{a.nama_gedung}</td>
                         <td className="p-4 text-gray-200">{a.nomor_lantai}</td>
                         <td className="p-4 text-gray-200">{a.nama_ruangan}</td>
@@ -888,12 +1128,33 @@ export default function Agenda() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan="10" className="p-12 text-center text-gray-400">
-                      <ClipboardList className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                      <p className="text-lg mb-2">Tidak ada agenda</p>
-                      <p className="text-sm text-gray-500">
-                        Mulai dengan menambahkan agenda pertama Anda
-                      </p>
+                    <td colSpan="11" className="p-12 text-center text-gray-400">
+                      {searchTerm || filterGedung ? (
+                        <>
+                          <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg font-medium mb-2">Tidak ada agenda ditemukan</p>
+                          <p className="text-sm mb-4">
+                            Coba ubah kata kunci pencarian atau filter yang digunakan
+                          </p>
+                          <button
+                            onClick={() => {
+                              setSearchTerm("");
+                              setFilterGedung("");
+                            }}
+                            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                          >
+                            Reset Filter
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardList className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                          <p className="text-lg mb-2">Tidak ada agenda</p>
+                          <p className="text-sm text-gray-500">
+                            Mulai dengan menambahkan agenda pertama Anda
+                          </p>
+                        </>
+                      )}
                     </td>
                   </tr>
                 )}

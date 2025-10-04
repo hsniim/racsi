@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Plus, Layers, Edit, Trash2, X, Building2, User, Clock, ChevronDown, Users, MapPin, Save } from "lucide-react";
+import { Plus, Layers, Edit, Trash2, X, Building2, User, Clock, ChevronDown, Users, MapPin, Save, Search, Filter, RefreshCw, Activity } from "lucide-react";
 
 export default function Lantai() {
   const [lantais, setLantais] = useState([]);
@@ -18,18 +18,25 @@ export default function Lantai() {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
 
   const token = localStorage.getItem("token");
 
   const fetchLantais = async () => {
+    setLoading(true);
     try {
       const res = await axios.get("http://localhost:5000/api/lantai", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLantais(res.data.data || []);
+      setError("");
     } catch (err) {
       console.error(err.response?.data || err.message);
       setError(err.response?.data?.message || "Gagal mengambil data lantai");
+      setLantais([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,6 +130,24 @@ export default function Lantai() {
     setShowForm(false);
   };
 
+  // Filter dan search functionality
+  const filteredLantais = lantais.filter((item) => {
+    const matchesSearch = 
+      item.nama_gedung?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.nomor_lantai?.toString().includes(searchTerm.toLowerCase()) ||
+      item.pjs?.some(pj => 
+        pj.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pj.shift?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+    const matchesFilter = filterCategory === "" || item.nama_gedung === filterCategory;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  // Get unique gedung names for filter
+  const uniqueGedungs = [...new Set(lantais.map(item => item.nama_gedung).filter(Boolean))];
+
   return (
     <div className="w-full min-h-screen bg-primary text-white relative">
       {/* Background Pattern */}
@@ -150,7 +175,7 @@ export default function Lantai() {
           </p>
         </div>
 
-        {/* Notifications */}
+        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-600/20 border border-red-500/30 rounded-xl text-red-200 backdrop-blur-sm">
             <div className="flex items-center">
@@ -310,6 +335,70 @@ export default function Lantai() {
           )}
         </div>
 
+        {/* Controls Section */}
+        <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl p-6 mb-8 shadow-2xl">
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <Search className="w-4 h-4 text-green-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-200">Filter & Pencarian</h3>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              {/* Search Input */}
+              <div className="relative flex-1 lg:w-80">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari gedung, lantai, PJ, atau shift..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                />
+              </div>
+
+              {/* Filter Select */}
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="pl-10 pr-8 py-3 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 min-w-[150px]"
+                >
+                  <option value="">Semua Gedung</option>
+                  {uniqueGedungs.map((gedung) => (
+                    <option key={gedung} value={gedung}>
+                      {gedung}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Refresh Button */}
+              <button
+                onClick={fetchLantais}
+                disabled={loading}
+                className="px-4 py-3 bg-blue-600/20 text-blue-300 border border-blue-400/30 rounded-xl hover:bg-blue-600/30 transition-all duration-200 flex items-center gap-2 hover:shadow-lg disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
+          </div>
+
+          {/* Search Results Info */}
+          {(searchTerm || filterCategory) && (
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg">
+              <p className="text-blue-300 text-sm">
+                Menampilkan {filteredLantais.length} dari {lantais.length} lantai
+                {searchTerm && ` yang mengandung "${searchTerm}"`}
+                {filterCategory && ` di gedung ${filterCategory}`}
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Table */}
         <div className="bg-gray-800/50 backdrop-blur-lg border border-gray-700/30 rounded-2xl shadow-2xl overflow-hidden">
           <div className="flex items-center justify-between p-6 border-b border-gray-700/30">
@@ -324,9 +413,12 @@ export default function Lantai() {
             </div>
             <div className="flex items-center gap-3">
               <span className="px-4 py-2 bg-gray-700/50 text-gray-300 text-sm rounded-full border border-gray-600/30 font-medium flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Total: {lantais.length} Lantai
+                <Activity className="w-4 h-4" />
+                Total: {filteredLantais.length} Lantai
               </span>
+              {loading && (
+                <div className="w-6 h-6 border-2 border-blue-300/30 border-t-blue-300 rounded-full animate-spin"></div>
+              )}
             </div>
           </div>
 
@@ -369,12 +461,13 @@ export default function Lantai() {
                     <td colSpan="5" className="p-12 text-center text-gray-400">
                       <div className="flex flex-col items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300 mb-4"></div>
-                        <p>Memuat data lantai...</p>
+                        <p className="text-lg mb-2">Memuat data lantai...</p>
+                        <p className="text-sm text-gray-500">Tunggu sebentar</p>
                       </div>
                     </td>
                   </tr>
-                ) : lantais.length > 0 ? (
-                  lantais.map((l) => (
+                ) : filteredLantais.length > 0 ? (
+                  filteredLantais.map((l) => (
                     <tr
                       key={l.id_lantai}
                       className="border-b border-gray-700/20 hover:bg-gray-700/20 transition-all duration-200"
@@ -449,9 +542,43 @@ export default function Lantai() {
                   <tr>
                     <td colSpan="5" className="p-12 text-center">
                       <div className="flex flex-col items-center text-gray-400">
-                        <MapPin className="w-16 h-16 mb-4 opacity-50" />
-                        <p className="text-lg font-medium mb-2">Belum ada data lantai</p>
-                        <p className="text-sm">Tambahkan lantai pertama dengan tombol di atas</p>
+                        {error ? (
+                          <>
+                            <MapPin className="w-16 h-16 mb-4 opacity-50" />
+                            <p className="text-lg font-medium mb-2">Gagal memuat lantai</p>
+                            <p className="text-sm mb-4">Terjadi kesalahan saat mengambil data</p>
+                            <button
+                              onClick={fetchLantais}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                              Coba Lagi
+                            </button>
+                          </>
+                        ) : searchTerm || filterCategory ? (
+                          <>
+                            <Search className="w-16 h-16 mb-4 opacity-50" />
+                            <p className="text-lg font-medium mb-2">Tidak ada lantai ditemukan</p>
+                            <p className="text-sm mb-4">
+                              Coba ubah kata kunci pencarian atau filter yang digunakan
+                            </p>
+                            <button
+                              onClick={() => {
+                                setSearchTerm("");
+                                setFilterCategory("");
+                              }}
+                              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                              Reset Filter
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="w-16 h-16 mb-4 opacity-50" />
+                            <p className="text-lg font-medium mb-2">Belum ada data lantai</p>
+                            <p className="text-sm">Tambahkan lantai pertama dengan tombol di atas</p>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
