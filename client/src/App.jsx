@@ -19,7 +19,7 @@ import TvDevice from "./pages/TvDevice";
 import Feedback from "./pages/Feedback";
 
 import AdminLayout from "./layouts/AdminLayout";
-import ProtectedRoute from "./components/ProtectedRoute"; // ✅ Tambahan
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import "./index.css";
 
@@ -66,11 +66,13 @@ function App() {
         <Route path="/admin/tv/:id_gedung/:id_lantai" element={<TvDevicePage />} />
 
         {/* ----------------- ROUTE ADMIN ----------------- */}
+
+        {/* Login TIDAK di-protect */}
         <Route path="/admin" element={<Login />} />
 
-        {/* ✅ Bungkus semua route admin dengan ProtectedRoute */}
+        {/* Semua halaman admin SETELAH login */}
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <ProtectedRoute>
               <AdminLayout />

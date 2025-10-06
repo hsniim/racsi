@@ -1,8 +1,19 @@
+import { useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import { Outlet, useLocation } from "react-router-dom";
 
 export default function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // Jika tidak ada token, arahkan ke halaman login admin
+    if (!token) {
+      navigate("/admin/login");
+    }
+  }, [navigate]);
 
   const pageTitles = {
     "/admin/dashboard": "Dashboard",
@@ -20,7 +31,6 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-primary">
-
       {/* Sidebar tetap fix di kiri */}
       <Sidebar />
 
@@ -31,7 +41,6 @@ export default function AdminLayout() {
         </h1>
         <Outlet />
       </main>
-
     </div>
   );
 }
