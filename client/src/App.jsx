@@ -4,7 +4,7 @@ import { fetchRuangan, fetchJadwal } from "./utils/api";
 
 // Halaman Publik
 import Home from "./pages/Home";
-import About from "./pages/About"
+import About from "./pages/About";
 import TvDevicePage from "./pages/TvDevicePage";
 
 // Halaman Admin
@@ -19,6 +19,7 @@ import TvDevice from "./pages/TvDevice";
 import Feedback from "./pages/Feedback";
 
 import AdminLayout from "./layouts/AdminLayout";
+import ProtectedRoute from "./components/ProtectedRoute"; // ✅ Tambahan
 
 import "./index.css";
 
@@ -55,21 +56,27 @@ function App() {
         />
         <Route path="/about" element={<About />} />
 
-        {/* Halaman TV Device (Publik, mirip Home tapi beda data) */}
+        {/* Halaman TV Device (Publik) */}
         <Route
           path="/tv_device/:id_gedung/:id_lantai"
           element={<TvDevicePage />}
         />
 
-        {/* Route TV untuk admin - dipindah ke luar parent route admin */}
-        <Route 
-          path="/admin/tv/:id_gedung/:id_lantai" 
-          element={<TvDevicePage />} 
-        />
+        {/* Route TV untuk admin */}
+        <Route path="/admin/tv/:id_gedung/:id_lantai" element={<TvDevicePage />} />
 
         {/* ----------------- ROUTE ADMIN ----------------- */}
         <Route path="/admin" element={<Login />} />
-        <Route path="/admin" element={<AdminLayout />}>
+
+        {/* ✅ Bungkus semua route admin dengan ProtectedRoute */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="gedung" element={<Gedung />} />
           <Route path="lantai" element={<Lantai />} />
