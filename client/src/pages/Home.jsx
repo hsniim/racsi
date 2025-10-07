@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers, Globe, CheckCircle, Clock, Users, Shield, Zap, Calendar, BarChart } from 'lucide-react';
+import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers, Globe, CheckCircle, Clock, Users, Shield, Zap, Calendar, BarChart, Lock } from 'lucide-react';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -66,8 +66,7 @@ function LandingPage() {
     const apiUrls = [
       `http://localhost:5000/api${endpoint}`,
       `http://127.0.0.1:5000/api${endpoint}`,
-      `http://localhost:3001/api${endpoint}`, // Ganti dengan port server Anda
-      // Tambahkan URL API lain jika perlu
+      `http://localhost:3001/api${endpoint}`,
     ];
 
     for (let url of apiUrls) {
@@ -79,7 +78,7 @@ function LandingPage() {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          mode: 'cors', // Enable CORS
+          mode: 'cors',
         });
         
         if (!response.ok) {
@@ -91,7 +90,7 @@ function LandingPage() {
         return { data };
       } catch (error) {
         console.warn(`Failed to fetch from ${url}:`, error.message);
-        continue; // Try next URL
+        continue;
       }
     }
     
@@ -103,7 +102,6 @@ function LandingPage() {
     console.log("=== STARTING DATA LOAD ===");
     
     try {
-      // Strategy 1: Try real API
       console.log("Strategy 1: Attempting to load from API...");
       
       const [gedungResponse, lantaiResponse] = await Promise.all([
@@ -111,7 +109,6 @@ function LandingPage() {
         fetchFromAPI("/lantai")
       ]);
       
-      // Handle different response formats
       const gedungData = gedungResponse.data?.data || gedungResponse.data || [];
       const lantaiData = lantaiResponse.data?.data || lantaiResponse.data || [];
       
@@ -123,18 +120,15 @@ function LandingPage() {
         setGedungs(gedungData);
         setLantais(lantaiData);
         setMsg({ type: "success", text: "Data berhasil dimuat dari database" });
-        return; // Success, exit function
+        return;
       } else {
         throw new Error("Empty data from API");
       }
       
     } catch (apiError) {
       console.warn("⚠️ API failed:", apiError.message);
-      
-      // Strategy 2: Use hardcoded data that matches your actual database
       console.log("Strategy 2: Using fallback data...");
       
-      // TODO: Ganti dengan data yang sesuai dengan database Anda
       const fallbackGedungs = [
         { id_gedung: 1, nama_gedung: 'SKSG' },
         { id_gedung: 2, nama_gedung: 'FMIPA' },
@@ -154,10 +148,6 @@ function LandingPage() {
         { id_lantai: 8, id_gedung: 5, nomor_lantai: 1 }
       ];
       
-      console.log("Using fallback data:");
-      console.log("Fallback Gedungs:", fallbackGedungs);
-      console.log("Fallback Lantais:", fallbackLantais);
-      
       setGedungs(fallbackGedungs);
       setLantais(fallbackLantais);
       setMsg({ 
@@ -167,7 +157,7 @@ function LandingPage() {
     }
   };
 
-  // Handle gedung change dengan fix
+  // Handle gedung change
   const handleGedungChange = (e) => {
     const selectedGedungId = e.target.value;
     
@@ -176,7 +166,6 @@ function LandingPage() {
     setMsg({ type: "", text: "" });
     
     if (selectedGedungId && selectedGedungId !== '') {
-      // Convert ke number untuk comparison yang akurat
       const gedungIdNum = parseInt(selectedGedungId);
       
       const filtered = lantais.filter(lantai => {
@@ -204,11 +193,9 @@ function LandingPage() {
     setMsg({ type: "", text: "" });
   };
 
-  // Navigation handler
-  const handleNavigation = (page) => {
-    if (page === 'about') {
-      navigate('/about');
-    }
+  // Navigation handlers
+  const handleAdminLogin = () => {
+    navigate('/admin/login');
   };
 
   // Update waktu realtime
@@ -241,7 +228,6 @@ function LandingPage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Redirect ke halaman tampilan
       const url = `/tv_device/${selectedGedung}/${selectedLantai}`;
       window.open(url, "_blank");
       
@@ -255,7 +241,6 @@ function LandingPage() {
 
   const isFormValid = selectedGedung && selectedLantai;
 
-  // Get nama gedung dan lantai yang dipilih
   const selectedGedungObj = gedungs.find(g => 
     parseInt(g.id_gedung) === parseInt(selectedGedung)
   );
@@ -268,20 +253,15 @@ function LandingPage() {
 
   return (
     <div className="w-full min-h-screen bg-primary text-white">
-      {/* Background Pattern - Fixed positioning tidak mempengaruhi layout utama */}
+      {/* Background Pattern */}
       <div className="fixed inset-0 opacity-10 pointer-events-none z-0">
-        {/* Patterns distributed throughout the page height */}
         <div className="absolute top-20 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
         <div className="absolute top-40 right-20 w-24 h-24 border border-white/20 rounded-lg rotate-45"></div>
         <div className="absolute top-96 left-1/4 w-16 h-16 border border-white/20 rounded-full"></div>
         <div className="absolute top-80 right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12"></div>
-        
-        {/* Mid-section patterns */}
         <div className="absolute top-10 left-1/2 w-28 h-28 border border-white/15 rounded-full" style={{top: '600px'}}></div>
         <div className="absolute top-1/2 right-10 w-20 h-20 border border-white/15 rounded-full" style={{top: '800px'}}></div>
         <div className="absolute left-20 w-18 h-18 border border-white/15 rounded-full" style={{top: '1000px'}}></div>
-        
-        {/* Bottom section patterns */}
         <div className="absolute left-10 w-24 h-24 border border-white/15 rounded-lg rotate-45" style={{top: '1200px'}}></div>
         <div className="absolute left-1/2 w-32 h-32 border border-white/15 rounded-lg rotate-12" style={{top: '1400px'}}></div>
         <div className="absolute right-40 w-22 h-22 border border-white/15 rounded-lg rotate-45" style={{top: '1600px'}}></div>
@@ -289,10 +269,10 @@ function LandingPage() {
         <div className="absolute right-1/3 w-20 h-20 border border-white/20 rounded-lg rotate-12" style={{top: '2000px'}}></div>
       </div>
 
-      {/* Main content wrapper dengan proper z-index */}
+      {/* Main content wrapper */}
       <div className="relative z-10 w-full min-h-screen">
         
-        {/* Header with Navigation - Pastikan header selalu tampil */}
+        {/* Header with Navigation */}
         <header className="w-full p-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 flex items-center justify-center">
@@ -302,13 +282,22 @@ function LandingPage() {
             </div>
             <h1 className="text-4xl font-bold">RACSI</h1>
           </div>
+          
+          {/* Admin Login Button */}
+          <button
+            onClick={handleAdminLogin}
+            className="flex items-center gap-3 px-6 py-3 bg-gray-800/50 hover:bg-gray-800/70 backdrop-blur-lg rounded-xl border border-gray-700/30 hover:border-blue-400/30 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            <Lock className="w-5 h-5 text-blue-400" />
+            <span className="font-medium text-gray-200">Admin Login</span>
+          </button>
         </header>
 
-        {/* Main Content - Pastikan tidak ada padding yang memotong */}
+        {/* Main Content */}
         <main className="w-full px-6 pt-4 pb-24 relative z-20">
           <div className="w-full max-w-5xl mx-auto">
             
-            {/* Hero Section - Margin yang cukup */}
+            {/* Hero Section */}
             <div className="text-center mb-12 mt-4">
               <div className="w-30 h-30 flex items-center justify-center mx-auto mb-6">
                 <img src="assets/racsi_logo.svg" alt="" />
