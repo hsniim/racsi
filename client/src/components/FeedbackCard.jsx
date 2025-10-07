@@ -281,25 +281,19 @@ function FeedbackCard({ id_gedung, id_lantai }) {
   return (
     <div className="flex items-center gap-4">
       {/* QR Code - GUNAKAN QR GEDUNG UNTUK FEEDBACK dengan dukungan auto-generated */}
-      <div className="w-24 h-24 flex-shrink-0 relative">
+      <div className="w-28 h-28 flex-shrink-0">
         <div className="rounded-md w-full h-full bg-white flex items-center justify-center overflow-hidden">
           {gedungQRCode && !qrImageError ? (
-            <>
-              <img 
-                src={gedungQRCode} 
-                alt="Feedback QR Code untuk Gedung" 
-                className="w-full h-full object-cover rounded-md"
-                onError={handleQRImageError}
-                onLoad={() => {
-                  console.log('QR Image loaded successfully:', gedungQRCode);
-                  console.log('QR Type:', isUrl(gedungQRCode) ? 'URL' : 'Data URL or Path');
-                }}
-              />
-              {/* QR Code indicator with type info */}
-              <div className="absolute bottom-1 right-1 bg-black bg-opacity-50 rounded-full p-1">
-                <QrCode className="w-3 h-3 text-white" />
-              </div>
-            </>
+            <img 
+              src={gedungQRCode} 
+              alt="Feedback QR Code untuk Gedung" 
+              className="w-full h-full object-cover rounded-md"
+              onError={handleQRImageError}
+              onLoad={() => {
+                console.log('QR Image loaded successfully:', gedungQRCode);
+                console.log('QR Type:', isUrl(gedungQRCode) ? 'URL' : 'Data URL or Path');
+              }}
+            />
           ) : (
             generateNoQRPlaceholder()
           )}
