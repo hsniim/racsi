@@ -303,7 +303,7 @@ function timeToMinutes(timeString) {
     if (!shouldScroll) {
       return (
         <div className="min-w-0">
-          <h2 className={`text-2xl font-bold px-4 py-2 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
+          <h2 className={`text-3xl font-bold px-4 py-4 bg-gray-800 rounded-md ${textColor} mb-4 text-center`}>{title}</h2>
           <div className="w-full overflow-hidden" style={{ height: `${containerHeight}px` }}>
             <div className="flex flex-col">
               {list.length > 0 ? (
@@ -319,7 +319,7 @@ function timeToMinutes(timeString) {
                 ))
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-400 text-center">Tidak ada ruangan.</p>
+                  <p className=" text-2xl text-gray-400 text-center">Tidak ada ruangan.</p>
                 </div>
               )}
             </div>
@@ -390,10 +390,8 @@ function timeToMinutes(timeString) {
         {/* Header */}
         <div className="flex justify-between items-center mb-6 p-8 bg-gray-800 rounded-lg flex-shrink-0">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4 transform rotate-45">
-              <div className="w-6 h-6 bg-gray-800 rounded-sm transform -rotate-45 flex items-center justify-center">
-                <div className="w-3 h-2 bg-white rounded-sm"></div>
-              </div>
+            <div className="w-20 h-20 flex items-center justify-center mr-3">
+              <img src="/assets/racsi_logo.svg" alt="" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-7xl font-bold text-white">{headerData.nama_gedung}</h1>
           </div>
@@ -543,3 +541,22 @@ function timeToMinutes(timeString) {
 }
 
 export default TvDevicePage;
+
+
+{/*Tim Developer Sistem RACSI*/}
+
+/* 
+
+Fullstack Developer :
+- Alif Ramadhani @al.dhani
+- Husni Mubarok @hsniim / https://www.linkedin.com/in/sihusni/
+
+UI/UX Designer :
+- Ibnu Habibullah @1buunnn
+- Raditya Putrantoro @bambwhoo
+
+QA Engineer :
+- Elang Nur Fadillah @el_nurfadh
+- Mukafi Arzaqa @arzahere_
+
+*/
