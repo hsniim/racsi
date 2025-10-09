@@ -795,3 +795,22 @@ function LandingPage() {
 }
 
 export default LandingPage;
+
+
+{/*Tim Developer Sistem RACSI*/}
+
+/* 
+
+Fullstack Developer :
+- Alif Ramadhani @al.dhani
+- Husni Mubarok @hsniim / https://www.linkedin.com/in/sihusni/
+
+UI/UX Designer :
+- Ibnu Habibullah @1buunnn
+- Raditya Putrantoro @bambwhoo
+
+QA Engineer :
+- Elang Nur Fadillah @el_nurfadh
+- Mukafi Arzaqa @arzahere_
+
+*/
