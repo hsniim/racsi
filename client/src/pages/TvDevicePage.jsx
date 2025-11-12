@@ -419,10 +419,10 @@ function timeToMinutes(timeString) {
             <ScrollableSection title="Tidak Digunakan" rooms={unusedRuangan} maxCards={5} bgColor="tidak_digunakan" textColor="text-green-400" scrollSpeed={45} />
           </div>
           <div className="flex-[2]">
-            <ScrollableSection title="Sedang Digunakan" rooms={usedRuangan} maxCards={3} bgColor="sedang_digunakan" textColor="text-orange-400" scrollSpeed={30} />
+            <ScrollableSection title="Sedang Digunakan" rooms={usedRuangan} maxCards={3} bgColor="sedang_digunakan" textColor="text-red-500" scrollSpeed={30} />
           </div>
           <div className="flex-[1]">
-            <ScrollableSection title="Akan Digunakan" rooms={upcomingRuangan} maxCards={3} bgColor="akan_digunakan" textColor="text-gray-300" scrollSpeed={30} />
+            <ScrollableSection title="Akan Digunakan" rooms={upcomingRuangan} maxCards={3} bgColor="akan_digunakan" textColor="text-yellow-500" scrollSpeed={30} />
           </div>
         </div>
 

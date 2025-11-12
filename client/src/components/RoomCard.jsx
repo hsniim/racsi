@@ -62,8 +62,8 @@ function RoomCard({ room, type, currentDate, currentTime }) {
     type === "tidak_digunakan"
       ? "bg-green-500"
       : type === "sedang_digunakan"
-      ? "bg-orange-600" // Changed from bg-red-500 to approximate #AB6A20
-      : "bg-gray-400"; // Changed from bg-yellow-500 to approximate #ACACAC
+      ? "bg-red-600" // Changed from bg-orange-600 to approximate #AB6A20
+      : "bg-yellow-500"; // Changed from bg-gray-400 to approximate #ACACAC
 
   return (
     <>
