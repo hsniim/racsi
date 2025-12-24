@@ -1,7 +1,7 @@
 import axios from "axios";
 import QRCode from "qrcode"; // Legacy QR Code generator
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://racsi-production.up.railway.app/"; // kalau local http://localhost:5000/api 
 
 // ================= QR CODE UTILITIES (Legacy Only) ==================
 // Function to check if string is a URL
