@@ -37,7 +37,7 @@ const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
 // Fungsi untuk mengambil QR code feedback gedung dari endpoint yang sudah ada
 const fetchGedungFeedbackQR = async (id_gedung) => {
   try {
-    const url = `${API_BASE_URL}/api/gedung/${id_gedung}/qr-feedback`;
+    const url = `${API_BASE_URL}/gedung/${id_gedung}/qr-feedback`;
     console.log(`Fetching gedung feedback QR code from: ${url}`);
     
     const response = await fetch(url);
