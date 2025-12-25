@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://racsi-production.up.railway.app/api', /* kalau local 'http://localhost:5173', */ // Sesuaikan dengan port frontend
+    origin: 'https://racsi-9dc.pages.dev', /* kalau local 'http://localhost:5173', */ // Sesuaikan dengan port frontend
     methods: ['GET', 'POST'],
   },
 });
