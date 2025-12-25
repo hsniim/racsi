@@ -24,7 +24,7 @@ import {
   RefreshCw,
   Activity
 } from "lucide-react";
-import { API_BASE_URL } from '../../utils/api.js';
+import { API_BASE_URL } from '../utils/api.js';
 
 export default function Gedung() {
   const [gedungs, setGedungs] = useState([]);
