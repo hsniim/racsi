@@ -102,7 +102,7 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      */ */
+      */
 
       setGedungLantaiList(res.data || []);
     } catch (err) {
