@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Monitor, Plus, Save, Trash2, Edit, X } from "lucide-react";
+import { API_BASE_URL } from "../utils/api.js";
 
 export default function DeviceManager() {
   const token = localStorage.getItem("token");
@@ -15,7 +16,7 @@ export default function DeviceManager() {
   const [msg, setMsg] = useState({ type: "", text: "" });
 
   const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: API_BASE_URL,
     headers: { Authorization: `Bearer ${token}` },
   });
 

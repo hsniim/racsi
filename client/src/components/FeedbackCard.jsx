@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { QrCode, Star } from 'lucide-react';
+import { API_BASE_URL } from "../utils/api.js";
 
 // Updated API function untuk mengambil feedback summary
 const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
   try {
-    const API_BASE_URL = "http://localhost:5000/api";
     const url = `${API_BASE_URL}/feedback/summary?id_gedung=${id_gedung}&id_lantai=${id_lantai}`;
     console.log(`Fetching feedback summary from: ${url}`);
     
@@ -37,7 +37,6 @@ const fetchFeedbackSummary = async (id_gedung, id_lantai) => {
 // Fungsi untuk mengambil QR code feedback gedung dari endpoint yang sudah ada
 const fetchGedungFeedbackQR = async (id_gedung) => {
   try {
-    const API_BASE_URL = "http://localhost:5000";
     const url = `${API_BASE_URL}/api/gedung/${id_gedung}/qr-feedback`;
     console.log(`Fetching gedung feedback QR code from: ${url}`);
     
