@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, AlertCircle, Home } from 'lucide-react';
+import { API_BASE_URL } from '../utils/api.js';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -17,10 +18,20 @@ export default function Login() {
     setError('');
 
     try {
+      const res = await axios.post(`${API_BASE_URL}/admin/login`, { 
+        username, 
+        password 
+      });
+
+      /* KALAU LOCAL PAKAI INI
+
+      try {
       const res = await axios.post('http://localhost:5000/api/admin/login', { 
         username, 
         password 
       });
+
+      */
       
       localStorage.setItem('token', res.data.token);
       navigate('/admin/dashboard');
