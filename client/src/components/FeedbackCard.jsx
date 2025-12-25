@@ -51,15 +51,22 @@ const fetchGedungFeedbackQR = async (id_gedung) => {
     console.log('Gedung feedback QR response:', data);
     
     // Convert path to full URL if it's a relative path
-    let qrPath = data.qrcodepath_feedback;
-    if (qrPath && !qrPath.startsWith('http') && !qrPath.startsWith('data:image')) {
-      // Jika path dimulai dengan '/', gunakan langsung dengan base URL
-      // Jika tidak, tambahkan '/' di depan
-      qrPath = `${API_BASE_URL}${qrPath.startsWith('/') ? '' : '/'}${qrPath}`;
+        // Fix path QR feedback - backend return path dengan /api/uploads, tapi file di /uploads
+    let qrPath = data.qrcodepath_feedback || data.qrcode_url || null;
+    
+    if (qrPath) {
+      // Hapus /api dari path kalau ada (karena API_BASE_URL sudah include /api)
+      qrPath = qrPath.replace('/api/uploads', '/uploads');
+      
+      // Jika masih relative path, tambah base URL tanpa /api
+      if (!qrPath.startsWith('http') && !qrPath.startsWith('data:image')) {
+        const baseWithoutApi = API_BASE_URL.replace('/api', '');
+        qrPath = `${baseWithoutApi}${qrPath.startsWith('/') ? '' : '/'}${qrPath}`;
+      }
     }
     
     console.log('Final QR URL:', qrPath);
-    return qrPath || null;
+    return qrPath;
   } catch (error) {
     console.error('Error fetching gedung feedback QR code:', error);
     return null;
