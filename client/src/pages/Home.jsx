@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers, Globe, CheckCircle, Clock, Users, Shield, Zap, Calendar, BarChart, Lock, Languages } from 'lucide-react';
+import { API_BASE_URL } from '../utils/api.js';
 
 // Translations object
 const translations = {
@@ -193,9 +194,7 @@ function LandingPage() {
   // API configuration dengan multiple fallback options
   const fetchFromAPI = async (endpoint) => {
     const apiUrls = [
-      `http://localhost:5000/api${endpoint}`,
-      `http://127.0.0.1:5000/api${endpoint}`,
-      `http://localhost:3001/api${endpoint}`,
+      `${API_BASE_URL}${endpoint}`,
     ];
 
     for (let url of apiUrls) {

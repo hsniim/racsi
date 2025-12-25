@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Activity
 } from "lucide-react";
+import { API_BASE_URL } from '../../utils/api.js';
 
 export default function Gedung() {
   const [gedungs, setGedungs] = useState([]);
@@ -198,9 +199,17 @@ export default function Gedung() {
   const fetchGedungs = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/gedung", {
+      const res = await axios.get(`${API_BASE_URL}/gedung`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      /* KALAU LOCAL
+      
+      const res = await axios.get(`${API_BASE_URL}/gedung`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      */
       console.log("Data gedung dari backend:", res.data);
       setGedungs(res.data.data || []);
       setError("");
@@ -262,7 +271,7 @@ export default function Gedung() {
       }
 
       if (editId) {
-        const response = await axios.put(`http://localhost:5000/api/gedung/${editId}`, formData, {
+        const response = await axios.put(`${API_BASE_URL}/gedung/${editId}`, formData, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -271,7 +280,7 @@ export default function Gedung() {
         console.log('Update response:', response.data);
         setSuccess("Gedung + PJ berhasil diperbarui!");
       } else {
-        const response = await axios.post("http://localhost:5000/api/gedung", formData, {
+        const response = await axios.post(`${API_BASE_URL}/gedung`, formData, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -350,7 +359,7 @@ export default function Gedung() {
     setLoading(true);
 
     try {
-      await axios.delete(`http://localhost:5000/api/gedung/${id}`, {
+      await axios.delete(`${API_BASE_URL}/gedung/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Gedung berhasil dihapus!");

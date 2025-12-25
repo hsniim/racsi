@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+import { API_BASE_URL } from '../utils/api.js';
   fetchRuanganByGedungLantaiTv,
   fetchHeaderDataByIds,
   fetchPjGedungByGedung,
@@ -64,12 +65,12 @@ function TvDevicePage() {
     
     // Jika sudah dimulai dengan /uploads, tambahkan base URL
     if (typeof qrPath === 'string' && qrPath.startsWith('/uploads')) {
-      return `http://localhost:5000${qrPath}`;
+      return `${API_BASE_URL.replace('/api', '')}${qrPath}`;
     }
     
     // Default fallback - assume it's just filename
     if (typeof qrPath === 'string' && qrPath.length > 0) {
-      return `http://localhost:5000/uploads/${qrPath}`;
+      return `${API_BASE_URL.replace('/api', '')}/uploads/${qrPath}`;
     }
     
     return null;

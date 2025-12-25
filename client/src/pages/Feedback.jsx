@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Edit, Trash2, X, Star, ChevronDown, MessageSquare, User, Mail, Calendar, Building2, ThumbsUp, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from '../utils/api.js';
 
 export default function Feedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -33,7 +34,7 @@ export default function Feedback() {
 
   const fetchRuangans = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/ruangan", {
+      const res = await axios.get(`${API_BASE_URL}/ruangan`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRuangans(res.data.data || []);
@@ -45,7 +46,7 @@ export default function Feedback() {
   const fetchFeedbacks = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/feedback/", {
+      const res = await axios.get(`${API_BASE_URL}/feedback/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -105,12 +106,12 @@ export default function Feedback() {
       console.log("Submit data:", submitData);
 
       if (editId) {
-        await axios.put(`http://localhost:5000/api/feedback/${editId}`, submitData, {
+        await axios.put(`${API_BASE_URL}/feedback/${editId}`, submitData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Feedback berhasil diperbarui!");
       } else {
-        await axios.post("http://localhost:5000/api/feedback", submitData, {
+        await axios.post(`${API_BASE_URL}/feedback`, submitData, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Feedback berhasil ditambahkan!");
@@ -169,7 +170,7 @@ export default function Feedback() {
     
     setLoading(true);
     try {
-      await axios.delete(`http://localhost:5000/api/feedback/${id}`, {
+      await axios.delete(`${API_BASE_URL}/feedback/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Feedback berhasil dihapus!");

@@ -22,6 +22,7 @@ import {
   FileText,
   CheckCircle
 } from "lucide-react";
+import { API_BASE_URL } from '../../utils/api.js';
 
 export default function Dashboard() {
   const token = localStorage.getItem("token");
@@ -52,16 +53,32 @@ export default function Dashboard() {
   const [showDeviceSection, setShowDeviceSection] = useState(false);
 
   const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: API_BASE_URL,
     headers: { Authorization: `Bearer ${token}` }
   });
+
+  /* KALAU LOCAL
+
+  const api = axios.create({
+    baseURL: API_BASE_URL,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  */
 
   // Existing functions (keeping all the existing logic)
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/dashboard", {
+      const res = await axios.get(`${API_BASE_URL}/admin/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      /* KALAU LOCAL
+      const res = await axios.get(`${API_BASE_URL}/admin/dashboard`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      */
+
       setStats({
         totalGedung: res.data.totalGedung || 0,
         totalLantai: res.data.totalLantai || 0,
@@ -75,9 +92,18 @@ export default function Dashboard() {
 
   const fetchGedungLantaiList = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/gedung-lantai-list", {
+      const res = await axios.get(`${API_BASE_URL}/admin/gedung-lantai-list`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      /* KALAU LOCAL
+      
+      const res = await axios.get(`${API_BASE_URL}/admin/gedung-lantai-list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      */ */
+
       setGedungLantaiList(res.data || []);
     } catch (err) {
       console.error("Error fetching gedung lantai list:", err);
@@ -215,13 +241,25 @@ export default function Dashboard() {
   // PINDAHKAN FUNGSI BACKUP KE LUAR useEffect
   const handleBackupMain = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/backup/main', {
+      const response = await fetch(`${API_BASE_URL}/admin/backup/main`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+
+      /* KALAU LOCAL
+
+      const response = await fetch(`${API_BASE_URL.replace("/api", "")}/api/admin/backup/main`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      */
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -262,13 +300,25 @@ export default function Dashboard() {
 
   const handleBackupArchive = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/backup/archive', {
+      const response = await fetch(`${API_BASE_URL}/admin/backup/archive`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+
+      /* KALAU LOCAL
+      
+      const response = await fetch(`${API_BASE_URL.replace("/api", "")}/api/admin/backup/archive`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      */
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

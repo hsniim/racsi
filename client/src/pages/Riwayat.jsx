@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
+import { API_BASE_URL } from '../utils/api.js';
   Building2,
   Layers,
   DoorClosed,
@@ -28,7 +29,7 @@ export default function Riwayat() {
   const fetchRiwayat = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/riwayat", {
+      const res = await axios.get(`${API_BASE_URL}/riwayat`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRiwayat(res.data || []);

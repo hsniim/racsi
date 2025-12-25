@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Layers, Edit, Trash2, X, Building2, User, Clock, ChevronDown, Users, MapPin, Save, Search, Filter, RefreshCw, Activity } from "lucide-react";
+import { API_BASE_URL } from '../utils/api.js';
 
 export default function Lantai() {
   const [lantais, setLantais] = useState([]);
@@ -26,7 +27,7 @@ export default function Lantai() {
   const fetchLantais = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/lantai", {
+      const res = await axios.get(`${API_BASE_URL}/lantai`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLantais(res.data.data || []);
@@ -42,7 +43,7 @@ export default function Lantai() {
 
   const fetchGedungs = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/gedung", {
+      const res = await axios.get(`${API_BASE_URL}/gedung`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setGedungs(res.data.data || []);
@@ -62,12 +63,12 @@ export default function Lantai() {
     
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/lantai/${editId}`, form, {
+        await axios.put(`${API_BASE_URL}/lantai/${editId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Lantai + PJ berhasil diperbarui!");
       } else {
-        await axios.post("http://localhost:5000/api/lantai", form, {
+        await axios.post(`${API_BASE_URL}/lantai`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Lantai + PJ berhasil ditambahkan!");
@@ -109,7 +110,7 @@ export default function Lantai() {
     setLoading(true);
     
     try {
-      await axios.delete(`http://localhost:5000/api/lantai/${id}`, {
+      await axios.delete(`${API_BASE_URL}/lantai/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Lantai berhasil dihapus!");

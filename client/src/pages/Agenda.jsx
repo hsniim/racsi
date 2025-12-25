@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import {
+import { API_BASE_URL } from '../utils/api.js';
   Plus,
   Building,
   Layers,
@@ -181,7 +182,7 @@ export default function Agenda() {
 
   const fetchAgendas = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/agenda", {
+      const res = await axios.get(`${API_BASE_URL}/agenda`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAgendas(res.data.data || []);
@@ -192,7 +193,7 @@ export default function Agenda() {
 
   const fetchRuangans = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/ruangan", {
+      const res = await axios.get(`${API_BASE_URL}/ruangan`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRuangans(res.data.data || []);
@@ -280,7 +281,7 @@ export default function Agenda() {
 
     try {
       const deletePromises = selectedAgendas.map(id =>
-        axios.delete(`http://localhost:5000/api/agenda/${id}`, {
+        axios.delete(`${API_BASE_URL}/agenda/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       );
@@ -319,12 +320,12 @@ export default function Agenda() {
       }
 
       if (editId) {
-        await axios.put(`http://localhost:5000/api/agenda/${editId}`, payload, {
+        await axios.put(`${API_BASE_URL}/agenda/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Agenda berhasil diperbarui!");
       } else {
-        await axios.post("http://localhost:5000/api/agenda", payload, {
+        await axios.post(`${API_BASE_URL}/agenda`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Agenda berhasil ditambahkan!");
@@ -384,7 +385,7 @@ export default function Agenda() {
   const handleDelete = async (id) => {
     if (!window.confirm("Yakin ingin menghapus agenda ini?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/agenda/${id}`, {
+      await axios.delete(`${API_BASE_URL}/agenda/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Agenda berhasil dihapus!");

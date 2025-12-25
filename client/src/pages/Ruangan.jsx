@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { 
+import { API_BASE_URL } from '../utils/api.js';
   Plus, 
   Building, 
   Layers, 
@@ -48,7 +49,7 @@ export default function Ruangan() {
 
   const fetchRuangans = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/ruangan", {
+      const res = await axios.get(`${API_BASE_URL}/ruangan`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRuangans(res.data.data || []);
@@ -61,7 +62,7 @@ export default function Ruangan() {
 
   const fetchLantais = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/lantai", {
+      const res = await axios.get(`${API_BASE_URL}/lantai`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setLantais(res.data.data || []);
@@ -145,7 +146,7 @@ export default function Ruangan() {
 
     try {
       const deletePromises = selectedRuangans.map(id =>
-        axios.delete(`http://localhost:5000/api/ruangan/${id}`, {
+        axios.delete(`${API_BASE_URL}/ruangan/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       );
@@ -181,12 +182,12 @@ export default function Ruangan() {
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/ruangan/${editId}`, form, {
+        await axios.put(`${API_BASE_URL}/ruangan/${editId}`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Ruangan berhasil diperbarui!");
       } else {
-        await axios.post("http://localhost:5000/api/ruangan", form, {
+        await axios.post(`${API_BASE_URL}/ruangan`, form, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setSuccess("Ruangan berhasil ditambahkan!");
@@ -221,7 +222,7 @@ export default function Ruangan() {
     setLoading(true);
 
     try {
-      await axios.delete(`http://localhost:5000/api/ruangan/${id}`, {
+      await axios.delete(`${API_BASE_URL}/ruangan/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Ruangan berhasil dihapus!");
