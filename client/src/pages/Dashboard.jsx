@@ -22,7 +22,7 @@ import {
   FileText,
   CheckCircle
 } from "lucide-react";
-import { API_BASE_URL } from '../../utils/api.js';
+import { API_BASE_URL } from '../utils/api.js';
 
 export default function Dashboard() {
   const token = localStorage.getItem("token");
