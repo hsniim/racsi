@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Building, MapPin, Eye, Monitor, Building2, Layers, Globe, CheckCircle, Clock, Users, Shield, Zap, Calendar, BarChart, Lock, Languages } from 'lucide-react';
-import { API_BASE_URL } from '../utils/api.js';
 
 // Translations object
 const translations = {
@@ -31,58 +29,6 @@ const translations = {
       successLoad: "Data berhasil dimuat dari database",
       warningFallback: "Gagal memuat dari database. Menggunakan data fallback. Periksa koneksi API Anda.",
       warningNoFloor: "Tidak ada lantai tersedia untuk gedung ini"
-    },
-    about: {
-      title: "Apa itu RACSI?",
-      paragraph1: "RACSI (Room and Control Schedule Interface) adalah sistem informasi digital yang dirancang khusus untuk mengelola dan menampilkan informasi ketersediaan ruangan di lingkungan kampus universitas. Sistem ini mengintegrasikan teknologi modern untuk memberikan solusi yang efisien dalam manajemen fasilitas ruangan.",
-      paragraph2: "Dengan RACSI, setiap lantai di gedung kampus dilengkapi dengan display digital yang menampilkan informasi real-time mengenai status ruangan, jadwal penggunaan, dan ketersediaan fasilitas. Hal ini memungkinkan civitas akademika untuk dengan mudah menemukan dan menggunakan ruangan yang dibutuhkan."
-    },
-    features: {
-      title: "Fitur Unggulan",
-      items: [
-        {
-          title: "Real-time Updates",
-          description: "Informasi ketersediaan ruangan diperbarui secara real-time untuk akurasi maksimal"
-        },
-        {
-          title: "Multi-user Access",
-          description: "Dapat diakses oleh seluruh civitas akademika tanpa batasan waktu"
-        },
-        {
-          title: "Secure & Reliable",
-          description: "Sistem yang aman dan dapat diandalkan dengan backup data otomatis"
-        },
-        {
-          title: "Fast Performance",
-          description: "Performa cepat dengan loading time minimal untuk pengalaman pengguna optimal"
-        },
-        {
-          title: "Schedule Integration",
-          description: "Terintegrasi dengan sistem penjadwalan kampus untuk sinkronisasi data"
-        },
-        {
-          title: "Analytics Dashboard",
-          description: "Dashboard analitik untuk monitoring penggunaan ruangan dan statistik"
-        }
-      ]
-    },
-    benefits: {
-      title: "Manfaat RACSI",
-      items: [
-        "Meningkatkan efisiensi penggunaan ruangan kampus",
-        "Mengurangi waktu pencarian ruangan kosong",
-        "Memudahkan perencanaan kegiatan akademik",
-        "Monitoring real-time status ketersediaan ruangan",
-        "Integrasi dengan sistem penjadwalan kampus",
-        "Interface yang user-friendly dan responsif",
-        "Akses 24/7 dari berbagai perangkat",
-        "Laporan dan analitik penggunaan ruangan"
-      ]
-    },
-    technology: {
-      title: "Teknologi Modern",
-      paragraph1: "RACSI dibangun menggunakan teknologi web modern dengan arsitektur yang scalable dan secure. Sistem ini menggunakan React.js untuk frontend yang responsif, Node.js untuk backend yang robust, dan database yang terpercaya untuk menyimpan data secara aman.",
-      paragraph2: "Dengan pendekatan real-time updates dan cloud-based infrastructure, RACSI mampu memberikan performa yang optimal dan reliability yang tinggi untuk mendukung operasional kampus 24/7."
     },
     footer: {
       copyright: "© 2025 RACSI - Room and Control Schedule Interface"
@@ -115,58 +61,6 @@ const translations = {
       warningFallback: "Failed to load from database. Using fallback data. Please check your API connection.",
       warningNoFloor: "No floors available for this building"
     },
-    about: {
-      title: "What is RACSI?",
-      paragraph1: "RACSI (Room and Control Schedule Interface) is a digital information system specifically designed to manage and display room availability information in the university campus environment. This system integrates modern technology to provide efficient solutions in room facility management.",
-      paragraph2: "With RACSI, each floor in campus buildings is equipped with digital displays that show real-time information about room status, usage schedules, and facility availability. This allows the academic community to easily find and use the rooms they need."
-    },
-    features: {
-      title: "Key Features",
-      items: [
-        {
-          title: "Real-time Updates",
-          description: "Room availability information is updated in real-time for maximum accuracy"
-        },
-        {
-          title: "Multi-user Access",
-          description: "Accessible by all academic community members without time restrictions"
-        },
-        {
-          title: "Secure & Reliable",
-          description: "Secure and reliable system with automatic data backup"
-        },
-        {
-          title: "Fast Performance",
-          description: "Fast performance with minimal loading time for optimal user experience"
-        },
-        {
-          title: "Schedule Integration",
-          description: "Integrated with campus scheduling system for data synchronization"
-        },
-        {
-          title: "Analytics Dashboard",
-          description: "Analytics dashboard for monitoring room usage and statistics"
-        }
-      ]
-    },
-    benefits: {
-      title: "RACSI Benefits",
-      items: [
-        "Improve campus room usage efficiency",
-        "Reduce time searching for empty rooms",
-        "Facilitate academic activity planning",
-        "Real-time monitoring of room availability status",
-        "Integration with campus scheduling system",
-        "User-friendly and responsive interface",
-        "24/7 access from various devices",
-        "Room usage reports and analytics"
-      ]
-    },
-    technology: {
-      title: "Modern Technology",
-      paragraph1: "RACSI is built using modern web technology with scalable and secure architecture. This system uses React.js for responsive frontend, Node.js for robust backend, and reliable database to store data securely.",
-      paragraph2: "With real-time updates approach and cloud-based infrastructure, RACSI is able to deliver optimal performance and high reliability to support 24/7 campus operations."
-    },
     footer: {
       copyright: "© 2025 RACSI - Room and Control Schedule Interface"
     }
@@ -174,14 +68,12 @@ const translations = {
 };
 
 function LandingPage() {
-  const navigate = useNavigate();
   const [selectedGedung, setSelectedGedung] = useState('');
   const [selectedLantai, setSelectedLantai] = useState('');
-  const [currentTime, setCurrentTime] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [msg, setMsg] = useState({ type: "", text: "" });
   const [scrollY, setScrollY] = useState(0);
-  const [language, setLanguage] = useState('id'); // Language state
+  const [language, setLanguage] = useState('id');
 
   // Data states
   const [gedungs, setGedungs] = useState([]);
@@ -191,98 +83,30 @@ function LandingPage() {
   // Get current translations
   const t = translations[language];
 
-  // API configuration dengan multiple fallback options
-  const fetchFromAPI = async (endpoint) => {
-    const apiUrls = [
-      `${API_BASE_URL}${endpoint}`,
-    ];
-
-    for (let url of apiUrls) {
-      try {
-        console.log(`Trying to fetch from: ${url}`);
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          mode: 'cors',
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log(`Success fetching from ${url}:`, data);
-        return { data };
-      } catch (error) {
-        console.warn(`Failed to fetch from ${url}:`, error.message);
-        continue;
-      }
-    }
-    
-    throw new Error('All API endpoints failed');
-  };
-
-  // Load data dengan multiple strategies
+  // Load fallback data
   const loadData = async () => {
-    console.log("=== STARTING DATA LOAD ===");
+    const fallbackGedungs = [
+      { id_gedung: 1, nama_gedung: 'SKSG' },
+      { id_gedung: 2, nama_gedung: 'SIL' },
+      { id_gedung: 3, nama_gedung: 'FEB' },
+      { id_gedung: 4, nama_gedung: 'FK' },
+      { id_gedung: 5, nama_gedung: 'FKG' }
+    ];
     
-    try {
-      console.log("Strategy 1: Attempting to load from API...");
-      
-      const [gedungResponse, lantaiResponse] = await Promise.all([
-        fetchFromAPI("/gedung"),
-        fetchFromAPI("/lantai")
-      ]);
-      
-      const gedungData = gedungResponse.data?.data || gedungResponse.data || [];
-      const lantaiData = lantaiResponse.data?.data || lantaiResponse.data || [];
-      
-      if (gedungData.length > 0 && lantaiData.length > 0) {
-        console.log("✅ Successfully loaded from API");
-        console.log("Gedungs:", gedungData);
-        console.log("Lantais:", lantaiData);
-        
-        setGedungs(gedungData);
-        setLantais(lantaiData);
-        setMsg({ type: "success", text: t.selection.successLoad });
-        return;
-      } else {
-        throw new Error("Empty data from API");
-      }
-      
-    } catch (apiError) {
-      console.warn("⚠️ API failed:", apiError.message);
-      console.log("Strategy 2: Using fallback data...");
-      
-      const fallbackGedungs = [
-        { id_gedung: 1, nama_gedung: 'SKSG' },
-        { id_gedung: 2, nama_gedung: 'SIL' },
-        { id_gedung: 3, nama_gedung: 'FEB' },
-        { id_gedung: 4, nama_gedung: 'FK' },
-        { id_gedung: 5, nama_gedung: 'FKG' }
-      ];
-      
-      const fallbackLantais = [
-        { id_lantai: 1, id_gedung: 1, nomor_lantai: 1 },
-        { id_lantai: 2, id_gedung: 1, nomor_lantai: 2 },
-        { id_lantai: 3, id_gedung: 2, nomor_lantai: 1 },
-        { id_lantai: 4, id_gedung: 2, nomor_lantai: 2 },
-        { id_lantai: 5, id_gedung: 3, nomor_lantai: 1 },
-        { id_lantai: 6, id_gedung: 3, nomor_lantai: 2 },
-        { id_lantai: 7, id_gedung: 4, nomor_lantai: 1 },
-        { id_lantai: 8, id_gedung: 5, nomor_lantai: 1 }
-      ];
-      
-      setGedungs(fallbackGedungs);
-      setLantais(fallbackLantais);
-      setMsg({ 
-        type: "warning", 
-        text: t.selection.warningFallback
-      });
-    }
+    const fallbackLantais = [
+      { id_lantai: 1, id_gedung: 1, nomor_lantai: 1 },
+      { id_lantai: 2, id_gedung: 1, nomor_lantai: 2 },
+      { id_lantai: 3, id_gedung: 2, nomor_lantai: 1 },
+      { id_lantai: 4, id_gedung: 2, nomor_lantai: 2 },
+      { id_lantai: 5, id_gedung: 3, nomor_lantai: 1 },
+      { id_lantai: 6, id_gedung: 3, nomor_lantai: 2 },
+      { id_lantai: 7, id_gedung: 4, nomor_lantai: 1 },
+      { id_lantai: 8, id_gedung: 5, nomor_lantai: 1 }
+    ];
+    
+    setGedungs(fallbackGedungs);
+    setLantais(fallbackLantais);
+    setMsg({ type: "success", text: t.selection.successLoad });
   };
 
   // Handle gedung change
@@ -323,7 +147,7 @@ function LandingPage() {
 
   // Navigation handlers
   const handleAdminLogin = () => {
-    navigate('/admin');
+    alert('Admin login clicked');
   };
 
   // Handle language toggle
@@ -339,18 +163,6 @@ function LandingPage() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Update waktu realtime
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5));
-    };
-    
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
   }, []);
 
   // Load data saat komponen mount
@@ -381,10 +193,6 @@ function LandingPage() {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const url = `/tv_device/${selectedGedung}/${selectedLantai}`;
-      window.open(url, "_blank");
-      
       setMsg({ type: "success", text: t.selection.successOpen });
     } catch (error) {
       setMsg({ type: "error", text: t.selection.errorOpen });
@@ -406,7 +214,7 @@ function LandingPage() {
   const selectedLantaiName = selectedLantaiObj?.nomor_lantai || '';
 
   return (
-    <div className="w-full min-h-screen bg-primary text-white">
+    <div className="w-full min-h-screen bg-slate-900 text-white overflow-x-hidden">
       {/* Enhanced Background with Parallax Scrolling Effect */}
       <div 
         className="absolute inset-0 pointer-events-none z-0 overflow-hidden"
@@ -415,120 +223,45 @@ function LandingPage() {
         }}
       >
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-primary to-indigo-900/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-slate-900 to-indigo-900/20"></div>
         <div className="absolute inset-0 bg-gradient-to-tl from-purple-900/10 via-transparent to-blue-900/10"></div>
         
-        {/* Animated Gradient Orbs */}
+        {/* Animated Gradient Orbs - Hidden on mobile for performance */}
         <div 
-          className="absolute top-0 left-0 w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse"
+          className="hidden md:block absolute top-0 left-0 w-64 md:w-96 h-64 md:h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse"
           style={{
             transform: `translateY(${scrollY * 0.3}px)`
           }}
         ></div>
         <div 
-          className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-500/30 rounded-full blur-3xl animate-pulse" 
+          className="hidden md:block absolute bottom-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-indigo-500/30 rounded-full blur-3xl animate-pulse" 
           style={{
             animationDelay: '1s',
             transform: `translateY(${scrollY * -0.2}px)`
           }}
         ></div>
         <div 
-          className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" 
+          className="hidden md:block absolute top-1/2 left-1/2 w-64 md:w-96 h-64 md:h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" 
           style={{
             animationDelay: '2s',
             transform: `translate(-50%, calc(-50% + ${scrollY * 0.4}px))`
           }}
         ></div>
         
-        {/* Animated Geometric Patterns with Parallax */}
-        <div className="absolute inset-0 opacity-20">
+        {/* Animated Geometric Patterns - Simplified for mobile */}
+        <div className="absolute inset-0 opacity-10 md:opacity-20">
           <div 
-            className="absolute top-20 left-10 w-32 h-32 border-2 border-blue-400/40 rounded-full animate-ping" 
+            className="absolute top-20 left-5 md:left-10 w-16 md:w-32 h-16 md:h-32 border-2 border-blue-400/40 rounded-full animate-ping" 
             style={{
               animationDuration: '3s',
               transform: `translateY(${scrollY * 0.6}px)`
             }}
           ></div>
           <div 
-            className="absolute top-40 right-20 w-24 h-24 border-2 border-indigo-400/40 rounded-lg rotate-45 animate-spin" 
+            className="absolute top-40 right-10 md:right-20 w-12 md:w-24 h-12 md:h-24 border-2 border-indigo-400/40 rounded-lg rotate-45 animate-spin" 
             style={{
               animationDuration: '8s',
               transform: `translateY(${scrollY * 0.4}px) rotate(45deg)`
-            }}
-          ></div>
-          <div 
-            className="absolute top-96 left-1/4 w-16 h-16 border-2 border-purple-400/40 rounded-full animate-bounce" 
-            style={{
-              animationDuration: '4s',
-              transform: `translateY(${scrollY * 0.7}px)`
-            }}
-          ></div>
-          <div 
-            className="absolute top-80 right-1/3 w-20 h-20 border-2 border-blue-400/40 rounded-lg rotate-12 animate-pulse"
-            style={{
-              transform: `translateY(${scrollY * 0.5}px) rotate(12deg)`
-            }}
-          ></div>
-          <div 
-            className="absolute left-1/2 w-28 h-28 border-2 border-indigo-400/30 rounded-full animate-ping" 
-            style={{
-              top: '600px', 
-              animationDuration: '4s',
-              transform: `translateY(${scrollY * 0.3}px)`
-            }}
-          ></div>
-          <div 
-            className="absolute right-10 w-20 h-20 border-2 border-purple-400/30 rounded-full animate-bounce" 
-            style={{
-              top: '800px', 
-              animationDuration: '3s',
-              transform: `translateY(${scrollY * 0.6}px)`
-            }}
-          ></div>
-          <div 
-            className="absolute left-20 w-18 h-18 border-2 border-blue-400/30 rounded-full animate-pulse" 
-            style={{
-              top: '1000px',
-              transform: `translateY(${scrollY * 0.4}px)`
-            }}
-          ></div>
-          <div 
-            className="absolute left-10 w-24 h-24 border-2 border-indigo-400/30 rounded-lg rotate-45 animate-spin" 
-            style={{
-              top: '1200px', 
-              animationDuration: '10s',
-              transform: `translateY(${scrollY * 0.5}px) rotate(45deg)`
-            }}
-          ></div>
-          <div 
-            className="absolute left-1/2 w-32 h-32 border-2 border-purple-400/30 rounded-lg rotate-12 animate-ping" 
-            style={{
-              top: '1400px', 
-              animationDuration: '5s',
-              transform: `translateY(${scrollY * 0.35}px) rotate(12deg)`
-            }}
-          ></div>
-          <div 
-            className="absolute right-40 w-22 h-22 border-2 border-blue-400/30 rounded-lg rotate-45 animate-pulse" 
-            style={{
-              top: '1600px',
-              transform: `translateY(${scrollY * 0.45}px) rotate(45deg)`
-            }}
-          ></div>
-          <div 
-            className="absolute left-1/4 w-16 h-16 border-2 border-indigo-400/40 rounded-full animate-bounce" 
-            style={{
-              top: '1800px', 
-              animationDuration: '3.5s',
-              transform: `translateY(${scrollY * 0.55}px)`
-            }}
-          ></div>
-          <div 
-            className="absolute right-1/3 w-20 h-20 border-2 border-purple-400/40 rounded-lg rotate-12 animate-spin" 
-            style={{
-              top: '2000px', 
-              animationDuration: '7s',
-              transform: `translateY(${scrollY * 0.65}px) rotate(12deg)`
             }}
           ></div>
         </div>
@@ -547,66 +280,69 @@ function LandingPage() {
       {/* Main content wrapper */}
       <div className="relative z-10 w-full min-h-screen">
         
-        {/* Header with Navigation */}
-        <header className="w-full p-6 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold">RACSI</h1>
+        {/* Header with Navigation - Responsive */}
+        <header className="w-full p-3 sm:p-4 md:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">RACSI</h1>
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* Language Switch Button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Switch Button - Responsive */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-3 px-6 py-3 bg-gray-800/50 hover:bg-gray-800/70 backdrop-blur-lg rounded-xl border border-gray-700/30 hover:border-blue-400/30 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-800/50 hover:bg-gray-800/70 backdrop-blur-lg rounded-lg sm:rounded-xl border border-gray-700/30 hover:border-blue-400/30 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
-              <Languages className="w-5 h-5 text-blue-400" />
+              <Languages className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
               <span className="font-medium text-gray-200">
                 {language === 'id' ? 'EN' : 'ID'}
               </span>
             </button>
 
-            {/* Admin Login Button */}
+            {/* Admin Login Button - Responsive */}
             <button
               onClick={handleAdminLogin}
-              className="flex items-center gap-3 px-6 py-3 bg-gray-800/50 hover:bg-gray-800/70 backdrop-blur-lg rounded-xl border border-gray-700/30 hover:border-blue-400/30 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-800/50 hover:bg-gray-800/70 backdrop-blur-lg rounded-lg sm:rounded-xl border border-gray-700/30 hover:border-blue-400/30 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
             >
-              <Lock className="w-5 h-5 text-blue-400" />
-              <span className="font-medium text-gray-200">{t.header.adminLogin}</span>
+              <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+              <span className="hidden sm:inline font-medium text-gray-200">{t.header.adminLogin}</span>
+              <span className="sm:hidden font-medium text-gray-200">Admin</span>
             </button>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="w-full px-6 pt-4 pb-24 relative z-20">
+        {/* Main Content - Responsive */}
+        <main className="w-full px-3 sm:px-4 md:px-6 pt-2 sm:pt-4 pb-12 sm:pb-16 md:pb-24 relative z-20">
           <div className="w-full max-w-5xl mx-auto">
             
-            {/* Hero Section */}
-            <div className="text-center mb-12 mt-4">
-              <div className="w-30 h-30 flex items-center justify-center mx-auto mb-6">
-                <img src="assets/racsi_logo.svg" alt="" />
+            {/* Hero Section - Responsive */}
+            <div className="text-center mb-6 sm:mb-8 md:mb-12 mt-2 sm:mt-4">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-30 md:h-30 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <div className="w-full h-full bg-white/10 rounded-full flex items-center justify-center">
+                  <Monitor className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-blue-400" />
+                </div>
               </div>
               
-              <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent px-4">
                 {t.hero.title}
               </h1>
-              <p className="text-xl text-gray-300 mb-2">
+              <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-1 sm:mb-2 px-4">
                 {t.hero.subtitle}
               </p>
-              <p className="text-gray-400 max-w-lg mx-auto">
+              <p className="text-sm sm:text-base text-gray-400 max-w-lg mx-auto px-4">
                 {t.hero.description}
               </p>
             </div>
 
-            {/* Selection Form */}
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-gray-700/30 mb-8">
-              <h2 className="text-2xl font-semibold mb-6 text-center flex items-center justify-center gap-3 text-gray-300">
-                <MapPin className="w-6 h-6 text-blue-400" />
+            {/* Selection Form - Responsive */}
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl border border-gray-700/30 mb-6 sm:mb-8">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6 text-center flex items-center justify-center gap-2 sm:gap-3 text-gray-300">
+                <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                 {t.selection.title}
               </h2>
 
-              {/* Message Display */}
+              {/* Message Display - Responsive */}
               {msg.text && (
-                <div className={`mb-6 p-3 rounded-xl border ${
+                <div className={`mb-4 sm:mb-6 p-2.5 sm:p-3 rounded-lg sm:rounded-xl border text-sm sm:text-base ${
                   msg.type === "success" 
                     ? "bg-green-600/20 border-green-400/30 text-green-200" 
                     : msg.type === "warning"
@@ -617,18 +353,18 @@ function LandingPage() {
                 </div>
               )}
 
-              <div className="space-y-6">
-                {/* Gedung Selection */}
+              <div className="space-y-4 sm:space-y-6">
+                {/* Gedung Selection - Responsive */}
                 <div>
-                  <label className="block text-sm font-medium mb-3 text-gray-300 flex items-center gap-2">
-                    <Building2 className="w-4 h-4" />
+                  <label className="block text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-gray-300 flex items-center gap-2">
+                    <Building2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.selection.gedungLabel} *
                   </label>
                   <div className="relative">
                     <select
                       value={selectedGedung}
                       onChange={handleGedungChange}
-                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70"
+                      className="w-full p-3 sm:p-4 bg-gray-700/50 border border-gray-600/30 rounded-lg sm:rounded-xl text-white text-sm sm:text-base appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70"
                       required
                     >
                       <option value="">{t.selection.gedungPlaceholder}</option>
@@ -638,14 +374,14 @@ function LandingPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Lantai Selection */}
+                {/* Lantai Selection - Responsive */}
                 <div>
-                  <label className="block text-sm font-medium mb-3 text-gray-300 flex items-center gap-2">
-                    <Layers className="w-4 h-4" />
+                  <label className="block text-xs sm:text-sm font-medium mb-2 sm:mb-3 text-gray-300 flex items-center gap-2">
+                    <Layers className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.selection.lantaiLabel} *
                   </label>
                   <div className="relative">
@@ -653,7 +389,7 @@ function LandingPage() {
                       value={selectedLantai}
                       onChange={handleLantaiChange}
                       disabled={!selectedGedung || filteredLantais.length === 0}
-                      className="w-full p-4 bg-gray-700/50 border border-gray-600/30 rounded-xl text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full p-3 sm:p-4 bg-gray-700/50 border border-gray-600/30 rounded-lg sm:rounded-xl text-white text-sm sm:text-base appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:bg-gray-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
                       required
                     >
                       <option value="">
@@ -665,35 +401,35 @@ function LandingPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" />
                   </div>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Button - Responsive */}
                 <button
                   onClick={handleViewRooms}
                   disabled={!isFormValid || isLoading}
-                  className="w-full mt-8 p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl font-semibold text-white transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:hover:transform-none flex items-center justify-center gap-3"
+                  className="w-full mt-4 sm:mt-6 md:mt-8 p-3 sm:p-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg sm:rounded-xl font-semibold text-white text-sm sm:text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:hover:transform-none flex items-center justify-center gap-2 sm:gap-3"
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       {t.selection.buttonLoading}
                     </>
                   ) : (
                     <>
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                       {t.selection.buttonView}
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Selected Info */}
+              {/* Selected Info - Responsive */}
               {isFormValid && (
-                <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                  <div className="flex items-center gap-3 text-green-400">
-                    <Monitor className="w-5 h-5" />
+                <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-lg sm:rounded-xl">
+                  <div className="flex items-center gap-2 sm:gap-3 text-green-400 text-sm sm:text-base">
+                    <Monitor className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                     <span className="font-medium">
                       {t.selection.selectedInfo} {selectedGedungName} - {t.selection.lantaiPrefix} {selectedLantaiName}
                     </span>
@@ -704,8 +440,8 @@ function LandingPage() {
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="w-full p-6 text-center text-gray-400 text-sm relative z-20">
+        {/* Footer - Responsive */}
+        <footer className="w-full p-4 sm:p-6 text-center text-gray-400 text-xs sm:text-sm relative z-20">
           <p>{t.footer.copyright}</p>
         </footer>
       </div>
@@ -714,22 +450,3 @@ function LandingPage() {
 }
 
 export default LandingPage;
-
-
-{/*Tim Developer Sistem RACSI*/}
-
-/* 
-
-Fullstack Developer :
-- Alif Ramadhani @al.dhani
-- Husni Mubarok @hsniim / https://www.linkedin.com/in/sihusni/
-
-UI/UX Designer :
-- Ibnu Habibullah @1buunnn
-- Raditya Putrantoro @bambwhoo
-
-QA Engineer :
-- Elang Nur Fadillah @el_nurfadh
-- Mukafi Arzaqa @arzahere_
-
-*/
