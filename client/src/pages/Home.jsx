@@ -550,11 +550,6 @@ function LandingPage() {
         {/* Header with Navigation */}
         <header className="w-full p-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 flex items-center justify-center">
-              <div className="w-30 h-30 flex items-center justify-center">
-                <img src="assets/racsi_logo.svg" alt="" />
-              </div>
-            </div>
             <h1 className="text-4xl font-bold">RACSI</h1>
           </div>
           
