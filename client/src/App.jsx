@@ -4,7 +4,6 @@ import { fetchRuangan, fetchJadwal } from "./utils/api";
 
 // Halaman Publik
 import Home from "./pages/Home";
-import About from "./pages/About";
 import TvDevicePage from "./pages/TvDevicePage";
 
 // Halaman Admin
@@ -54,7 +53,6 @@ function App() {
             </div>
           }
         />
-        <Route path="/about" element={<About />} />
 
         {/* Halaman TV Device (Publik) */}
         <Route
